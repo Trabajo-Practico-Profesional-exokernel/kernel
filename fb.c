@@ -1,0 +1,72 @@
+#include "io.h"
+
+/* The I/O ports */
+#define FB_COMMAND_PORT 0x3D4
+#define FB_DATA_PORT    0x3D5
+
+/* The I/O port commands */
+#define FB_HIGH_BYTE_COMMAND 14
+#define FB_LOW_BYTE_COMMAND  15
+
+/* Framebuffer memory address */
+#define FB_MEMORY      0xB8000
+#define FB_NUM_COLS    80
+#define FB_NUM_ROWS    25
+#define BLACK_ON_WHITE 0x0F  // atributo de color: texto negro, fondo blanco
+
+static uint8_t *fb = (uint8_t *) FB_MEMORY;
+
+/* Escribe un caracter en (row, col) */
+void fb_write(uint8_t c, uint32_t row, uint32_t col)
+{
+    uint8_t *cell = fb + 2 * (row * FB_NUM_COLS + col);
+    cell[0] = c;
+    cell[1] = BLACK_ON_WHITE;
+}
+
+/* Limpia la pantalla */
+void fb_clear(void)
+{
+    for (uint32_t i = 0; i < FB_NUM_ROWS; i++) {
+        for (uint32_t j = 0; j < FB_NUM_COLS; j++) {
+            fb_write(' ', i, j);
+        }
+    }
+}
+
+/* Mueve el cursor a la celda número `pos` */
+void fb_move_cursor(unsigned short pos)
+{
+    outb(FB_COMMAND_PORT, FB_HIGH_BYTE_COMMAND);
+    outb(FB_DATA_PORT, (pos >> 8) & 0x00FF);
+    outb(FB_COMMAND_PORT, FB_LOW_BYTE_COMMAND);
+    outb(FB_DATA_PORT, pos & 0x00FF);
+}
+
+/* Escribe una cadena de texto a partir de la celda indicada */
+int k_write(const char *buf, int len, uint32_t cell)
+{
+    uint32_t row = cell / FB_NUM_COLS;
+    uint32_t col = cell % FB_NUM_COLS;
+    uint32_t current_cell = cell;
+
+    int written = 0;
+
+    for (int i = 0; i < len; i++) {
+        if (buf[i] == '\0') {   // fin de string
+            break;
+        }
+
+        fb_write((uint8_t)buf[i], row, col);
+        fb_move_cursor(current_cell++);
+        written++;
+
+        col++;
+        if (col >= FB_NUM_COLS) {
+            col = 0;
+            row++;
+        }
+    }
+
+    return written;
+}
