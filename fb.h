@@ -4,7 +4,7 @@
 void fb_clear();
 
 // Escribe una unica letra en una celda
-int k_write(const char *buf, int len, uint32_t cell);
+int k_write(const uint8_t buf[], int len, uint32_t cell);
 
 // Escribe una unica letra en la fila row y columna col
 // Fila va de 0 a 79

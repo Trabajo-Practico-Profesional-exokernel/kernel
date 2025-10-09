@@ -43,14 +43,18 @@ void fb_move_cursor(unsigned short pos)
     outb(FB_DATA_PORT, pos & 0x00FF);
 }
 
+
 /* Escribe una cadena de texto a partir de la celda indicada */
-int k_write(const char *buf, int len, uint32_t cell)
+int k_write(const uint8_t buf[], int len, uint32_t cell)
 {
     uint32_t row = cell / FB_NUM_COLS;
     uint32_t col = cell % FB_NUM_COLS;
-    uint32_t current_cell = cell;
+    uint32_t current_cell = cell+1;
+    
 
     int written = 0;
+
+    // fb_write('h', 0, 0);
 
     for (int i = 0; i < len; i++) {
         if (buf[i] == '\0') {   // fin de string
@@ -67,6 +71,5 @@ int k_write(const char *buf, int len, uint32_t cell)
             row++;
         }
     }
-
     return written;
 }
