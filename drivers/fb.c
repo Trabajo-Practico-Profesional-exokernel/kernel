@@ -35,7 +35,7 @@ void fb_clear(void)
 }
 
 /* Mueve el cursor a la celda número `pos` */
-void fb_move_cursor(unsigned short pos)
+void fb_move_cursor(uint16_t pos)
 {
     outb(FB_COMMAND_PORT, FB_HIGH_BYTE_COMMAND);
     outb(FB_DATA_PORT, (pos >> 8) & 0x00FF);
@@ -43,6 +43,30 @@ void fb_move_cursor(unsigned short pos)
     outb(FB_DATA_PORT, pos & 0x00FF);
 }
 
+
+//devuelve la posicion actual del cursor
+uint16_t get_cursor_position(){
+    uint16_t position = 0;
+
+    //obtengo los bytes mas altos de la posicion actual del cursos a traves del puerto VGA
+    outb(FB_COMMAND_PORT, FB_HIGH_BYTE_COMMAND);
+    position = ((uint16_t)inb(FB_DATA_PORT)) << 8;
+
+    //obtengo los bytes mas bajos de la posicion actual del cursos a traves del puerto VGA
+    outb(FB_COMMAND_PORT, FB_LOW_BYTE_COMMAND);
+    position |= (uint16_t)inb(FB_DATA_PORT);
+    return position;
+}
+
+void putchar(char ch){
+    uint16_t pos = get_cursor_position();
+
+    uint32_t row = pos / FB_NUM_COLS;
+    uint32_t col = pos % FB_NUM_COLS;
+    pos ++;
+    fb_write(ch, row, col);
+    fb_move_cursor(pos);
+}
 
 /* Escribe una cadena de texto a partir de la celda indicada */
 int k_write(const uint8_t *buf, int len, uint32_t cell)

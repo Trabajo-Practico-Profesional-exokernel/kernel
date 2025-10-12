@@ -27,5 +27,6 @@ typedef unsigned int uint32_t;
  *  @param data The data to send to the I/O port
  */
 void outb(unsigned short port, unsigned char data);
+unsigned short inb(unsigned short port);
 
 #endif /* INCLUDE_IO_H */
