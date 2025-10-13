@@ -12,11 +12,6 @@
 
 #define BLACK_ON_WHITE 0x0F
 
-typedef unsigned char uint8_t;
-typedef unsigned short uint16_t;
-typedef unsigned int uint32_t;
-
-
 #ifndef INCLUDE_IO_H
 #define INCLUDE_IO_H
 

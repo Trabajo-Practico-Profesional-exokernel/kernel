@@ -1,3 +1,5 @@
+#include "inc/types.h"
+#include "inc/stdio.h"
 #include "io.h"
 
 /* The I/O ports */
@@ -25,7 +27,7 @@ void fb_write(uint8_t c, uint32_t row, uint32_t col)
 }
 
 /* Limpia la pantalla */
-void fb_clear(void)
+void clear(void)
 {
     for (uint32_t i = 0; i < FB_NUM_ROWS; i++) {
         for (uint32_t j = 0; j < FB_NUM_COLS; j++) {
@@ -35,7 +37,7 @@ void fb_clear(void)
 }
 
 /* Mueve el cursor a la celda número `pos` */
-void fb_move_cursor(uint16_t pos)
+void move_cursor(uint16_t pos)
 {
     outb(FB_COMMAND_PORT, FB_HIGH_BYTE_COMMAND);
     outb(FB_DATA_PORT, (pos >> 8) & 0x00FF);
@@ -65,7 +67,7 @@ void putchar(char ch){
     uint32_t col = pos % FB_NUM_COLS;
     pos ++;
     fb_write(ch, row, col);
-    fb_move_cursor(pos);
+    move_cursor(pos);
 }
 
 /* Escribe una cadena de texto a partir de la celda indicada */
@@ -84,7 +86,7 @@ int k_write(const uint8_t *buf, int len, uint32_t cell)
         }
 
         fb_write((uint8_t)buf[i], row, col);
-        fb_move_cursor(current_cell++);
+        move_cursor(current_cell++);
         written++;
 
         col++;

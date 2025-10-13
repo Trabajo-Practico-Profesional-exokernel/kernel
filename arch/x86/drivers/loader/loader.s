@@ -20,8 +20,8 @@ section .text:                  ; start of the text (code) section
 loader:                         ; the loader label (defined as entry point in linker script)
     mov esp, kernel_stack + KERNEL_STACK_SIZE
     mov eax, 0xCAFEBABE         ; place the number 0xCAFEBABE in the register eax
-    push eax
-    push ebx
+    ;push eax                    ; SACAR ARGUMENTOS KMAIN
+    ;push ebx                    ; SACAR ARGUMENTOS KMAIN
     cli
     call kmain
 

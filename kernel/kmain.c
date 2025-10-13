@@ -1,14 +1,14 @@
-#include "../drivers/io.h"
-#include "../drivers/fb.h"
+#include "inc/stdio.h"
 
 #include "common.h"
 
-int kmain(void *mboot, unsigned int magic_number)
+// void *mboot, unsigned int magic_number
+// UNUSED_ARGUMENT(mboot);
+//     UNUSED_ARGUMENT(magic_number);
+    // return 0xDEADBEEF;
+int kmain()
 {
-    UNUSED_ARGUMENT(mboot);
-    UNUSED_ARGUMENT(magic_number);
-    fb_clear();
-    fb_move_cursor(0);
+    clear();
+    move_cursor(0);
     printf("HOLIS");
-    return 0xDEADBEEF;
 }
