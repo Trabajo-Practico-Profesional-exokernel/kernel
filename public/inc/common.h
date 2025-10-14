@@ -1,7 +1,7 @@
-#include "types.h"
+#include "inc/types.h"
 
-#ifndef COMMON_UTILS
-#define COMMON_UTILS
+#ifndef COMMON_FUNCS
+#define COMMON_FUNCS
 
 void *memset(void *buf, char c, size_t n);
 void *memcpy(void *dst, const void *src, size_t n);

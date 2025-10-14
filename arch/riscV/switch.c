@@ -1,0 +1,70 @@
+#include "arch/switch.h"
+
+//in riscv-5 ... *prev would be at register a0, *next at a1.
+// in riscv-5 .. when entering on switch context it saves on ra the returna address for that function.
+// So ra should for this simple sheduling where the process call switch work.
+__attribute__((naked)) 
+void switch_context(struct Proc* next) {
+    __asm__ __volatile__(       
+        // Restore registers for *next
+        "lw ra,  0  * 4(a0)\n"  // Remember a0 == *next, bla bla ra is pointed!
+        "lw s0,  1  * 4(a0)\n"
+        "lw s1,  2  * 4(a0)\n"
+        "lw s2,  3  * 4(a0)\n"
+        "lw s3,  4  * 4(a0)\n"
+        "lw s4,  5  * 4(a0)\n"
+        "lw s5,  6  * 4(a0)\n"
+        "lw s6,  7  * 4(a0)\n"
+        "lw s7,  8  * 4(a0)\n"
+        "lw s8,  9  * 4(a0)\n"
+        "lw s9,  10 * 4(a0)\n"
+        "lw s10, 11 * 4(a0)\n"
+        "lw s11, 12 * 4(a0)\n"
+        "lw sp, 13 * 4(a0)\n" // Switch stack pointer (sp) here
+        "csrw sepc, ra\n" // Set sepc, where the sret jumps back to... to ra no trampoline for now!
+        "sret\n"
+    );
+}
+
+void sleep(int delay) {
+    for (int i = 0; i < delay; i++)
+        __asm__ __volatile__("nop"); // do nothing
+}
+
+void init_trapframe(struct Proc * proc, uint32_t init_ins){
+    proc->tf.s11 = 0;
+    proc->tf.s10 = 0;
+    proc->tf.s9 = 0;
+    proc->tf.s8 = 0;
+    proc->tf.s7 = 0;
+    proc->tf.s6 = 0;
+    proc->tf.s5 = 0;
+    proc->tf.s4 = 0;
+    proc->tf.s3 = 0;
+    proc->tf.s2 = 0;
+    proc->tf.s1 = 0;
+    proc->tf.s0 = 0;
+
+    proc->tf.ra = init_ins;    
+}
+
+
+void update_trapframe(struct Proc *proc, struct FullTrapFrame *tf){
+    proc->tf.s11 = tf->s11;
+    proc->tf.s10 = tf->s10;
+    proc->tf.s9 = tf->s9;
+    proc->tf.s8 = tf->s8;
+    proc->tf.s7 = tf->s7;
+    proc->tf.s6 = tf->s6;
+    proc->tf.s5 = tf->s5;
+    proc->tf.s4 = tf->s4;
+    proc->tf.s3 = tf->s3;
+    proc->tf.s2 = tf->s2;
+    proc->tf.s1 = tf->s1;
+    proc->tf.s0 = tf->s0;
+    proc->tf.ra = tf->ra;    
+}
+
+
+
+

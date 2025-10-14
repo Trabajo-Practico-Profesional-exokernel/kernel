@@ -4,7 +4,7 @@
 
 ARCH        ?= x86                        # o riscv
 BUILD_DIR   = build/$(ARCH)
-INC_DIR     = inc
+INC_DIR     = public
 
 # ----------------------------
 # Compiladores por arquitectura
@@ -19,8 +19,11 @@ ifeq ($(ARCH),x86)
 	QEMU    = qemu-system-i386 -cdrom os.iso -boot d -m 64
 else ifeq ($(ARCH),riscv)
 	CC      = clang
-	CFLAGS  = -I$(INC_DIR) -std=c11 -O2 -g3 -Wall -Wextra --target=riscv32-unknown-elf \
+
+	# Se agrega como se observa... a arch/riscV para includes.
+	CFLAGS  = -I$(INC_DIR) -Iarch/riscV -std=c11 -O2 -g3 -Wall -Wextra --target=riscv32-unknown-elf \
 	           -fno-stack-protector -ffreestanding -nostdlib
+	
 	LDFLAGS = -T arch/riscV/linker/link.ld
 	QEMU    = qemu-system-riscv32 -machine virt -bios default -nographic -serial mon:stdio --no-reboot -kernel $(BUILD_DIR)/kernel.elf
 endif
@@ -32,7 +35,7 @@ endif
 ifeq ($(ARCH),x86)
 	SRC_DIRS = arch/x86/drivers/io arch/x86/drivers/loader kernel drivers
 else ifeq ($(ARCH),riscv)
-	SRC_DIRS = arch/riscV/drivers kernel drivers
+	SRC_DIRS = arch/riscV/drivers arch/riscV kernel drivers
 endif
 
 # Buscar fuentes (.c y .s)

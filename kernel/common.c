@@ -1,5 +1,5 @@
-#include "common.h"
-#include "stdio.h"
+#include "inc/common.h"
+#include "arch/stdio.h"
 
 static char digits[] = "0123456789ABCDEF";
 

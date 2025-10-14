@@ -1,13 +1,17 @@
-#include "opensbi.h"
-#include "stdio.h"
-#include "types.h"
-#include "../../../kernel/common.h"
 
+#include "arch_inc/stdio.h"
+#include "arch_inc/arch_init.h"
+#include "inc/types.h"
+#include "inc/common.h"
 
-
-int kmain();
+#include "drivers/opensbi.h"
 
 extern char __bss[], __bss_end[], __stack_top[];
+
+void init_arch(void){
+    // bss supposed to be 0s but just in case
+    memset(__bss, 0, (size_t) __bss_end - (size_t) __bss);    
+}
 
 struct sbiret sbi_call(long arg0, long arg1, long arg2, long arg3, long arg4,
                        long arg5, long fid, long eid) {
@@ -38,6 +42,9 @@ void clear(void){}
 void move_cursor(uint16_t pos){
   (void)pos;
 }
+
+
+int kmain();
 
 __attribute__((section(".text.boot")))
 __attribute__((naked))
