@@ -1,4 +1,4 @@
-#include "inc/types.h"
+#include "types.h"
 
 void putchar(char ch);
 

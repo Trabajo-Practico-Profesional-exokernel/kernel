@@ -1,11 +1,9 @@
-#include "inc/types.h"
+#include "types.h"
 
 
 // Escribe una unica letra en la fila row y columna col
 // Fila va de 0 a 79
 void fb_write(uint8_t c, uint32_t row, uint32_t col);
-
-
 
 //obtiene la posicion actual del cursor
 int get_cursor_position();

@@ -1,5 +1,5 @@
 #include "common.h"
-#include "inc/stdio.h"
+#include "stdio.h"
 
 static char digits[] = "0123456789ABCDEF";
 
@@ -39,18 +39,14 @@ int strcmp(const char *s1, const char *s2) {
 
 
 
-
-
-
-
 void putchar(char ch);
 
 static void
-printint(long long xx, int base, int sgn)
+printint(int32_t xx, int base, int sgn)
 {
   char buf[20];
   int i, neg;
-  unsigned long long x;
+  uint32_t x;
 
   neg = 0;
   if(sgn && xx < 0){
@@ -71,12 +67,12 @@ printint(long long xx, int base, int sgn)
 }
 
 static void
-printptr(uint64_t x) {
-  uint64_t i;
+printptr(uintptr_t x) {
+  uintptr_t i;
   putchar('0');
   putchar('x');
-  for (i = 0; i < (sizeof(uint64_t) * 2); i++, x <<= 4)
-    putchar(digits[x >> (sizeof(uint64_t) * 8 - 4)]);
+  for (i = 0; i < (sizeof(uintptr_t) * 2); i++, x <<= 4)
+    putchar(digits[x >> (sizeof(uintptr_t) * 8 - 4)]);
 }
 
 void

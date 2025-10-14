@@ -1,5 +1,13 @@
-#include "drivers/opensbi.h"
-#include "inc/stdio.h"
+#include "opensbi.h"
+#include "stdio.h"
+#include "types.h"
+#include "../../../kernel/common.h"
+
+
+
+int kmain();
+
+extern char __bss[], __bss_end[], __stack_top[];
 
 struct sbiret sbi_call(long arg0, long arg1, long arg2, long arg3, long arg4,
                        long arg5, long fid, long eid) {
@@ -26,6 +34,19 @@ void putchar(char ch) {
 
 void clear(void){}
 
+
 void move_cursor(uint16_t pos){
-  UNUSED_ARGUMENT(pos);
+  (void)pos;
 }
+
+__attribute__((section(".text.boot")))
+__attribute__((naked))
+void boot(void) {
+    __asm__ __volatile__(
+        "mv sp, %[stack_top]\n" // Set the stack pointer
+        "j kmain\n"       // Jump to the kernel main function
+        :
+        : [stack_top] "r" (__stack_top) // Pass the stack top address as %[stack_top]
+    );
+}
+

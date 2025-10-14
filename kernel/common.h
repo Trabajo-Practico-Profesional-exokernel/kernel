@@ -1,4 +1,4 @@
-#include "inc/types.h"
+#include "types.h"
 
 #ifndef COMMON_UTILS
 #define COMMON_UTILS

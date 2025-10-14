@@ -1,6 +1,6 @@
-#include "inc/types.h"
-#include "inc/stdio.h"
-#include "io.h"
+#include "types.h"
+#include "stdio.h"
+#include "../drivers/io.h"
 
 /* The I/O ports */
 #define FB_COMMAND_PORT 0x3D4
