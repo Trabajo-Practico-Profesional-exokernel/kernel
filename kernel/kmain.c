@@ -5,13 +5,14 @@
 // void *mboot, unsigned int magic_number
 // UNUSED_ARGUMENT(mboot);
 //     UNUSED_ARGUMENT(magic_number);
-    // return 0xDEADBEEF;
+// return 0xDEADBEEF;
 void kmain()
 {
     clear();
     move_cursor(0);
     printf("HOLIS");
-    for (;;) {
+    for (;;)
+    {
         // __asm__ __volatile__("wfi");
     }
 }
