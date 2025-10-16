@@ -12,7 +12,7 @@ INC_DIR     = public
 ifeq ($(ARCH),x86)
 	CC      = gcc
 	AS      = nasm
-	CFLAGS  = -I$(INC_DIR) -m32 -nostdlib -nostdinc -fno-builtin -fno-stack-protector \
+	CFLAGS  = -I$(INC_DIR) -Iarch/x86 -m32 -nostdlib -nostdinc -fno-builtin -fno-stack-protector \
 	           -nostartfiles -nodefaultlibs -Wall -Wextra -c
 	ASFLAGS = -f elf
 	LDFLAGS = -T arch/x86/drivers/linker/link.ld -melf_i386
@@ -77,9 +77,11 @@ endif
 
 $(BUILD_DIR)/%.o: %.c
 	mkdir -p $(dir $@)
+	echo "Sources.c: $< to $@"
 	$(CC) $(CFLAGS) -c $< -o $@
 
 $(BUILD_DIR)/%.o: %.s
+	echo "Sources.s: $< to $@"
 	mkdir -p $(dir $@)
 ifeq ($(ARCH),x86)
 	$(AS) $(ASFLAGS) $< -o $@
