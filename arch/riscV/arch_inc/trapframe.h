@@ -4,7 +4,7 @@
 #include "inc/types.h"
 
 // riscv5 specific full registers the ones for trap handling?
-struct FullTrapFrame {
+struct FullTrap {
     uint32_t ra;
     uint32_t gp;
     uint32_t tp;
@@ -38,6 +38,7 @@ struct FullTrapFrame {
     uint32_t sp;
 } __attribute__((packed));
 
+typedef struct FullTrap FullTrapFrame;
 
 // Process trap frame arguably the ones that would be needed for context switch, it seems the 1000 line os does use some registers for kernel
 struct TrapFrame {

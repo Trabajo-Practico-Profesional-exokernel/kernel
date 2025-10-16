@@ -7,7 +7,7 @@
 int handle_syscall(int sys_num, int pc);
 
 // For now hardcoded on trap.c on arch implementation. Might be cleaner to have it be
-//void handle_clock_interrupt(struct FullTrapFrame *f);
+//void handle_clock_interrupt(FullTrapFrame *f);
 
 
 #endif /* !*/

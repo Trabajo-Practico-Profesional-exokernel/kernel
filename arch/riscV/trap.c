@@ -9,7 +9,7 @@
 
 
 // Assume its defined somewhere
-void sched_yield(struct FullTrapFrame *tf);
+void sched_yield(FullTrapFrame *tf);
 
 
 /*
@@ -153,7 +153,7 @@ void trap_entry(void) {
 }
 
 
-void handle_trap(struct FullTrapFrame *tf) {
+void handle_trap(FullTrapFrame *tf) {
     uintptr_t scause = READ_CSR(scause); // This reads could come on the trapframe like xv6 does tbh
     uintptr_t stval = READ_CSR(stval);
     uintptr_t user_pc = READ_CSR(sepc);

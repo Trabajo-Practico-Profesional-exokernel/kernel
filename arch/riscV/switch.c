@@ -49,7 +49,7 @@ void init_trapframe(struct Proc * proc, uint32_t init_ins){
 }
 
 
-void update_trapframe(struct Proc *proc, struct FullTrapFrame *tf){
+void update_trapframe(struct Proc *proc, FullTrapFrame *tf){
     proc->tf.s11 = tf->s11;
     proc->tf.s10 = tf->s10;
     proc->tf.s9 = tf->s9;

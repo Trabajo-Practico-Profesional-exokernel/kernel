@@ -6,7 +6,7 @@ __attribute__((naked))
 __attribute__((aligned(4)))
 void trap_entry(void);
 
-void handle_trap(struct FullTrapFrame *f);
+void handle_trap(FullTrapFrame *f);
 
 
 #endif /* !*/

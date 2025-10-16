@@ -114,7 +114,7 @@ void init_sched(void) {
     PANIC("unreachable here!");
 }
 
-void sched_yield(struct FullTrapFrame *tf) {
+void sched_yield(FullTrapFrame *tf) {
     curr_slices+=1;
     if (curr_slices< MAX_TIME_SLICES){
         return;
