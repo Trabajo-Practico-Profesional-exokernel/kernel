@@ -12,18 +12,15 @@ INC_DIR     = public
 ifeq ($(ARCH),x86)
 	CC      = gcc
 	AS      = nasm
-	CFLAGS  = -I$(INC_DIR) -Iarch/x86 -m32 -nostdlib -nostdinc -fno-builtin -fno-stack-protector \
+	CFLAGS  = -I$(INC_DIR) -Iarch/x86 -Iarch/x86/drivers -m32 -nostdlib -nostdinc -fno-builtin -fno-stack-protector \
 	           -nostartfiles -nodefaultlibs -Wall -Wextra -c
 	ASFLAGS = -f elf
 	LDFLAGS = -T arch/x86/drivers/linker/link.ld -melf_i386
 	QEMU    = qemu-system-i386 -cdrom os.iso -boot d -m 64
 else ifeq ($(ARCH),riscv)
 	CC      = clang
-
-	# Se agrega como se observa... a arch/riscV para includes.
 	CFLAGS  = -I$(INC_DIR) -Iarch/riscV -std=c11 -O2 -g3 -Wall -Wextra --target=riscv32-unknown-elf \
 	           -fno-stack-protector -ffreestanding -nostdlib
-	
 	LDFLAGS = -T arch/riscV/linker/link.ld
 	QEMU    = qemu-system-riscv32 -machine virt -bios default -nographic -serial mon:stdio --no-reboot -kernel $(BUILD_DIR)/kernel.elf
 endif
@@ -33,9 +30,9 @@ endif
 # ============================
 
 ifeq ($(ARCH),x86)
-	SRC_DIRS = arch/x86/drivers/io arch/x86/drivers/loader kernel drivers
+	SRC_DIRS = arch/x86 arch/x86/drivers/io kernel
 else ifeq ($(ARCH),riscv)
-	SRC_DIRS = arch/riscV/drivers arch/riscV kernel drivers
+	SRC_DIRS = arch/riscV/drivers arch/riscV kernel
 endif
 
 # Buscar fuentes (.c y .s)
@@ -77,12 +74,12 @@ endif
 
 $(BUILD_DIR)/%.o: %.c
 	mkdir -p $(dir $@)
-	echo "Sources.c: $< to $@"
+	echo "Compilando C: $< -> $@"
 	$(CC) $(CFLAGS) -c $< -o $@
 
 $(BUILD_DIR)/%.o: %.s
-	echo "Sources.s: $< to $@"
 	mkdir -p $(dir $@)
+	echo "Ensamblando: $< -> $@"
 ifeq ($(ARCH),x86)
 	$(AS) $(ASFLAGS) $< -o $@
 else
