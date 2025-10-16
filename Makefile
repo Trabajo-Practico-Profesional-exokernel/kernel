@@ -30,7 +30,7 @@ endif
 # ============================
 
 ifeq ($(ARCH),x86)
-	SRC_DIRS = arch/x86 arch/x86/drivers/io kernel
+	SRC_DIRS = arch/x86 arch/x86/drivers/io arch/x86/drivers/loader kernel
 else ifeq ($(ARCH),riscv)
 	SRC_DIRS = arch/riscV/drivers arch/riscV kernel
 endif
