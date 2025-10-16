@@ -60,14 +60,41 @@ uint16_t get_cursor_position(){
     return position;
 }
 
-void putchar(char ch){
+void putchar(char ch) {
     uint16_t pos = get_cursor_position();
-
     uint32_t row = pos / FB_NUM_COLS;
     uint32_t col = pos % FB_NUM_COLS;
-    pos ++;
-    fb_write(ch, row, col);
-    move_cursor(pos);
+
+    if (ch == '\n') {
+        col = 0;
+        row++;
+    } else if (ch == '\r') {
+        col = 0;
+    } else {
+        fb_write(ch, row, col);
+        col++;
+        if (col >= FB_NUM_COLS) {
+            col = 0;
+            row++;
+        }
+    }
+
+    if (row >= FB_NUM_ROWS) {
+        for (uint32_t r = 1; r < FB_NUM_ROWS; r++) {
+            for (uint32_t c = 0; c < FB_NUM_COLS; c++) {
+                uint8_t *src = fb + 2 * (r * FB_NUM_COLS + c);
+                uint8_t *dst = fb + 2 * ((r - 1) * FB_NUM_COLS + c);
+                dst[0] = src[0];
+                dst[1] = src[1];
+            }
+        }
+        for (uint32_t c = 0; c < FB_NUM_COLS; c++) {
+            fb_write(' ', FB_NUM_ROWS - 1, c);
+        }
+        row = FB_NUM_ROWS - 1;
+    }
+
+    move_cursor(row * FB_NUM_COLS + col);
 }
 
 /* Escribe una cadena de texto a partir de la celda indicada */
