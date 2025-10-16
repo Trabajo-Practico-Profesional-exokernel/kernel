@@ -1,6 +1,6 @@
 
-#include "arch_inc/stdio.h"
-#include "arch_inc/arch_init.h"
+#include "arch/stdio.h"
+#include "arch/arch_init.h"
 #include "inc/types.h"
 #include "inc/common.h"
 
