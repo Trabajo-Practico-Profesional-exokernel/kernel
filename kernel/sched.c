@@ -93,6 +93,7 @@ void proc_b_entry(void) {
         sleep(SLEEP_TIME);
         //switch_proc(proc_b, proc_a);
         printf("B after sleep proc_b: \n");
+        printf("HOLAAAAAAAAAAAAAAA \n");
         //printProc(proc_b);
     }
 }
@@ -101,10 +102,10 @@ void init_sched(void) {
     curr = NULL;
     proc_a = create_process((uint32_t) proc_a_entry);
     proc_b = create_process((uint32_t) proc_b_entry);
-    printf("AT CREATE PROCESS A expected pc= %u, ", (uint32_t) proc_a_entry);
+    printf("AT CREATE PROCESS A expected pc= %u, \n", (uint32_t) proc_a_entry);
     printProc(proc_a);
     
-    printf("AT CREATE PROCESS B expected pc= %u, ", (uint32_t) proc_b_entry);
+    printf("AT CREATE PROCESS B expected pc= %u, \n", (uint32_t) proc_b_entry);
     printProc(proc_b);
     curr = proc_a;
 
@@ -114,28 +115,55 @@ void init_sched(void) {
     PANIC("unreachable here!");
 }
 
-void sched_yield(FullTrapFrame *tf) {
-    curr_slices+=1;
-    if (curr_slices< MAX_TIME_SLICES){
-        return;
-    }
+// void init_sched(void) {
+//     curr = NULL;
+//     proc_a = create_process((uint32_t) proc_a_entry);
+//     proc_b = create_process((uint32_t) proc_b_entry);
+
+//     curr = proc_a;
+
+//     // Primer cambio de contexto al primer proceso
+//     switch_proc(proc_a);
+
+//     // No deberíamos llegar acá nunca
+//     PANIC("unreachable here!");
+// }
+
+// void sched_yield(FullTrapFrame *tf) {
+//     curr_slices+=1;
+//     if (curr_slices< MAX_TIME_SLICES){
+//         return;
+//     }
+//     update_trapframe(curr, tf);
+//     curr->status = PROC_RUNNABLE;
+
+//     if (curr == proc_a){
+//         printf("Should switch to PROC B\n");
+//         //printProc(proc_b);
+//         curr_slices = 0;
+//         curr= proc_b;
+//         switch_proc(proc_b);
+//     } else{
+//         printf("Should switch to PROC A\n");
+//         //printProc(proc_a);
+//         curr_slices = 0;
+//         curr= proc_a;
+//         switch_proc(proc_a);
+//     }
+
+//     //curr_slices=0;
+//     //printf("Preemtptive sched!\n");
+// }
+
+
+void sched_yield(struct TrapFrame *tf) {
     update_trapframe(curr, tf);
-    curr->status = PROC_RUNNABLE;
 
-    if (curr == proc_a){
-        printf("Should switch to PROC B\n");
-        //printProc(proc_b);
-        curr_slices = 0;
-        curr= proc_b;
-        switch_proc(proc_b);
-    } else{
-        printf("Should switch to PROC A\n");
-        //printProc(proc_a);
-        curr_slices = 0;
-        curr= proc_a;
-        switch_proc(proc_a);
+    if (curr == proc_a) {
+        curr = proc_b;
+    } else {
+        curr = proc_a;
     }
 
-    //curr_slices=0;
-    //printf("Preemtptive sched!\n");
+    switch_context(&curr->tf);
 }

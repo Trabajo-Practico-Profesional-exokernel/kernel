@@ -1,4 +1,4 @@
-#include "stdint.h"
+#include "inc/types.h"
 #include "gdt.h"
 
 #define SEGMENT_BASE    0

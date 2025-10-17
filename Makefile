@@ -120,3 +120,6 @@ run: all
 
 clean:
 	rm -rf build *.iso
+
+debug: all
+	qemu-system-i386 -cdrom os.iso -boot d -gdb tcp::26000 -S
