@@ -5,7 +5,8 @@
 #include "arch_inc/trapframe.h"
 
 __attribute__((naked)) 
-void switch_context(struct Proc* next);
+// void switch_context(struct Proc* next);
+void switch_context(TrapFrame *next_tf, struct Proc* next);
 
 void sleep(int delay); // Just to able to sleep basically
 

@@ -9,6 +9,6 @@ void init_arch(void){
     disable_interrupts();
     gdt_init();
     //pic_init();
-    //idt_init();
+    idt_init();
     enable_interrupts();
 }

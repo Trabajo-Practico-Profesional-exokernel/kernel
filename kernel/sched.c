@@ -8,10 +8,12 @@
 #include "arch/mem.h" // Declares the methods switch page and so on.
 #include "arch/switch.h"// Declares the swtich context to new Proc and sleep method.
 
-void switch_proc(struct Proc* next) {
+void switch_proc(TrapFrame *next_tf, struct Proc* next) {
     next->status = PROC_RUNNING;    
     //switch_page_table(next->page_table, &next->stack[sizeof(next->stack)]);
-    switch_context(next);
+    
+    printf("[SWITCH PROC] Antes de swtich_context tf->int_no %p\n", next_tf->int_no);
+    switch_context(next_tf, next);
 }
 
 
@@ -39,7 +41,9 @@ struct Proc * create_process(uint32_t pc) { // pc == entry point == start instru
     init_trapframe(proc, (uint32_t) pc);
 
     // For now kernel stack of process... is on the proc struct itself! xv6 does it in a page a virtual memory.. for the future
-    proc->tf.sp = (uint32_t)(&proc->stack[SIZE_KERN_STACK]);
+    
+    // TODO: Es de RISCV, por ahora comentamos
+    // proc->tf.sp = (uint32_t)(&proc->stack[SIZE_KERN_STACK]);
 
 
     // Initialize memory/pagetables
@@ -79,8 +83,8 @@ void proc_a_entry(void) {
     //syscall(SYS_KALLOC, 1, 0, 0); //For when its on user space.
     //printf("called kalloc on A\n");
     while (1) {
-        sleep(SLEEP_TIME);
         printf("A after sleep\n");
+        sleep(SLEEP_TIME);
         //printProc(proc_a);
     }
 }
@@ -156,7 +160,8 @@ void init_sched(void) {
 // }
 
 
-void sched_yield(struct TrapFrame *tf) {
+void sched_yield(TrapFrame *tf) {
+    printf("[SCHED YIELD]");
     update_trapframe(curr, tf);
 
     if (curr == proc_a) {
@@ -165,5 +170,9 @@ void sched_yield(struct TrapFrame *tf) {
         curr = proc_a;
     }
 
-    switch_context(&curr->tf);
+    printf("[SCHED YIELD] Antes de swtich_context tf->int_no %d\n", tf->int_no);
+
+    switch_context(curr, &curr->tf);
+
+    printf("[SCHED YIELD] Antes de swtich_context tf->int_no %d\n", tf->int_no);
 }

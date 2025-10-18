@@ -16,7 +16,7 @@ ifeq ($(ARCH),x86)
 	           -nostartfiles -nodefaultlibs -Wall -Wextra -c
 	ASFLAGS = -f elf
 	LDFLAGS = -T arch/x86/drivers/linker/link.ld -melf_i386
-	QEMU    = qemu-system-i386 -cdrom os.iso -boot d -m 64
+	QEMU    = qemu-system-i386 -cdrom os.iso  -m 64 -no-reboot -no-shutdown
 else ifeq ($(ARCH),riscv)
 	CC      = clang
 	CFLAGS  = -I$(INC_DIR) -Iarch/riscV -std=c11 -O2 -g3 -Wall -Wextra --target=riscv32-unknown-elf \

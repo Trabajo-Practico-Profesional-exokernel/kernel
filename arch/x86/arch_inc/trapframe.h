@@ -25,29 +25,33 @@ Some typical fields in x86:
 #include "inc/types.h"
 
 typedef struct TrapFrame {
-    // Pushed by pusha
+    /* Segment registers pushed by your stub (push ds; push es; push fs; push gs) */
+    uint32_t gs;
+    uint32_t fs;
+    uint32_t es;
+    uint32_t ds;
+
+    /* Registers as left by pusha: edi, esi, ebp, esp_original, ebx, edx, ecx, eax */
     uint32_t edi;
     uint32_t esi;
     uint32_t ebp;
-    uint32_t esp_dummy; // esp value before pusha
+    uint32_t esp_original;
     uint32_t ebx;
     uint32_t edx;
     uint32_t ecx;
     uint32_t eax;
 
-    // Pushed manually or by CPU on interrupt
+    /* pushed by the stub just before calling handle_trap */
     uint32_t int_no;
     uint32_t err_code;
 
-    // Pushed automatically by CPU
+    /* pushed by CPU on interrupt entry (lower on stack) */
     uint32_t eip;
     uint32_t cs;
     uint32_t eflags;
+    /* optional if ring change: useresp and ss (can be 0 for kernel-only) */
     uint32_t useresp;
     uint32_t ss;
-
-    // TODO: Resolver esto para que sea agnostico a arquitctura
-    uint32_t sp;   // agregado para compatibilidad con RISC-V
 } __attribute__((packed)) TrapFrame;
 
 typedef TrapFrame FullTrapFrame;

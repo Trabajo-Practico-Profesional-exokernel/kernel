@@ -1,3 +1,5 @@
+; Manejador de TODO tipo de interrupciones
+
 ; Order in which pusha saves the registers
 ; pusha: 
 ;     push eax
@@ -16,17 +18,21 @@ extern handle_trap
 section .text
 trap_entry:
     cli
-    pusha           ; Guarda todos los registros generales
+    pusha
     push ds
     push es
     push fs
     push gs
 
-    mov ax, 0x10    ; selector del segmento de datos del kernel
+    mov ax, 0x10
     mov ds, ax
     mov es, ax
 
-    push esp        ; puntero al trapframe
+    ; En este punto, necesitamos saber qué interrupción fue
+    ; Pero no hay un número directo, así que vamos a hacerlo con stubs.
+
+    ; Cada stub empuja su int_no y salta acá (ver más abajo).
+    push esp
     call handle_trap
     add esp, 4
 

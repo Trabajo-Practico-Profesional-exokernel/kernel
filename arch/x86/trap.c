@@ -42,12 +42,16 @@ static void set_idt_gate(int n, uint32_t handler) {
     idt[n].base_high = (handler >> 16) & 0xFFFF;
 }
 
+extern void isr32(void);
+
 void init_trap(void) {
     printf("[TRAP] Initializing IDT and timer interrupt...\n");
 
-    // Configura la entrada para el timer (IRQ0 -> int 32)
-    extern void irq0_handler(void); // definida abajo
-    set_idt_gate(32, (uint32_t)irq0_handler);
+
+    // extern void trap_entry(void);
+    // set_idt_gate(32, (uint32_t)trap_entry);
+
+    set_idt_gate(32, (uint32_t)isr32);
 
     // Configura la IDT general
     idt_ptr.limit = sizeof(idt) - 1;
@@ -81,7 +85,13 @@ void init_trap(void) {
 */
 
 void handle_trap(struct TrapFrame *tf) {
+    printf("[HANDLE TRAP] Ref Trapframe %p\n", &tf);
+    printf("[HANDLE TRAP] Ref Trapframe int_no %p\n", &tf->int_no);
+    
     switch (tf->int_no) {
+        case 0:
+            printf("[TRAP] 0 %d\n", tf->int_no);
+            break;
         case 32: // IRQ0 - Timer interrupt
             outb(0x20, 0x20); // EOI al PIC master
             sched_yield(tf);  // Llama al scheduler
