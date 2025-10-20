@@ -47,7 +47,9 @@ struct Proc * create_process(uint32_t pc) { // pc == entry point == start instru
     uint32_t *page_table = (uint32_t *) alloc_pages(1);
 
     paddr_t start = get_paddr_page_ind(0); // physical address first page.
-    direct_map_all_pages(page_table,start, PAGE_R | PAGE_W| PAGE_X);
+    direct_map_all_pages(page_table,start, PAGE_R | PAGE_W| PAGE_X
+        //| PAGE_U // Allow user space to access everything for now.
+        );
 
     //direct_map_all_pages(page_table, start, PAGE_R | PAGE_W | PAGE_X);
     //paddr_t second = direct_map_n_pages(page_table,start, 2, PAGE_R| PAGE_X);
@@ -60,6 +62,32 @@ struct Proc * create_process(uint32_t pc) { // pc == entry point == start instru
     proc->status = PROC_RUNNABLE;
 
 
+
+    return proc;
+}
+
+extern char __user_space_start[];
+extern char __user_space_end[];
+struct Proc * create_process_user(uint32_t proc_entry) { //const void *image, size_t image_size // future!
+    uint32_t start = (uint32_t)__user_space_start;
+
+    struct Proc *proc= create_process(proc_entry);//((uint32_t) user_entry);
+
+    // Map user app instruction pages.. i.e load to memory the process
+    for (uint32_t off = start; off < (uint32_t)__user_space_end; off += PAGE_SIZE) {
+        map_page(proc->page_table, start, start, // Still direct map.
+                 PAGE_U | PAGE_R | PAGE_W | PAGE_X);
+        //If loading from somewhere.        
+        //paddr_t page = alloc_pages(1);
+        // Handle the case where the data to be copied is smaller than the
+        // page size.
+        //size_t remaining = image_size - off;
+        //size_t copy_size = PAGE_SIZE <= remaining ? PAGE_SIZE : remaining;
+        // Fill and map the page.
+        //memcpy((void *) page, image + off, copy_size); 
+        //map_page(proc->page_table, USER_BASE + off, page,
+        //         PAGE_U | PAGE_R | PAGE_W | PAGE_X);
+    }
 
     return proc;
 }
@@ -98,10 +126,15 @@ void proc_b_entry(void) {
     }
 }
 
+void main_app_a();
+void main_app_b();
+
 void init_sched(void) {
     curr = NULL;
-    proc_a = create_process((uint32_t) proc_a_entry);
-    proc_b = create_process((uint32_t) proc_b_entry);
+    //proc_a = create_process((uint32_t) proc_a_entry);
+    proc_a = create_process_user((uint32_t) main_app_a);
+    proc_b = create_process((uint32_t) main_app_b);
+    //proc_b = create_process((uint32_t) proc_b_entry);
     printf("AT CREATE PROCESS A expected pc= %u, ", (uint32_t) proc_a_entry);
     printProc(proc_a);
     

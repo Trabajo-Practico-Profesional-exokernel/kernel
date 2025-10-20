@@ -43,7 +43,7 @@ void switch_context(struct Proc* next) {
         "csrw sstatus, a0\n"
         "sret\n"
         :
-        : [sstatus] "i" (SSTATUS_KERNEL)
+        : [sstatus] "i" (SSTATUS_USER)
         : "a0"
     );
 }
