@@ -24,7 +24,7 @@ uintptr_t handle_syscall(FullTrapFrame *tf, uintptr_t pc){
             }            
             break;
         default:
-            printf("unexpected syscall a3=%x at pc: %x\n", tf->a3, pc);
+            printf("unexpected syscall a3=%x at pc: %x\n", SYSCALL_SYSNO(tf), pc);
             printTrapFull(tf);
     }
 
