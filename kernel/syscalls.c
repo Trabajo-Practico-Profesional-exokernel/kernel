@@ -16,9 +16,11 @@ uintptr_t handle_syscall(FullTrapFrame *tf, uintptr_t pc){
                 if (ch >= 0) {
                     tf->a0 = ch; // change a0 the restored value
                     break;
-                } else {
-                    printf("No char recv? %x \n", ch);
+                //} else {
+                    //printf("No char recv? %x \n", ch);
                 }
+
+                // yield or do something? do not stay doing nothing..
             }            
             break;
         default:
