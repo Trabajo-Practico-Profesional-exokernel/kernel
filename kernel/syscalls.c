@@ -6,15 +6,15 @@
 #include "arch/stdio.h"
 
 uintptr_t handle_syscall(FullTrapFrame *tf, uintptr_t pc){
-    switch (tf->a3) {
+    switch (SYSCALL_SYSNO(tf)) {
         case SYS_PUTCHAR:
-            putchar(tf->a0);
+            putchar(SYSCALL_ARG0(tf));
             break;
         case SYS_GETCHAR:
             while (1) {
                 long ch = getchar();
                 if (ch >= 0) {
-                    tf->a0 = ch; // change a0 the restored value
+                    SET_SYSCALL_RET0(tf, ch); // change sys ret vl
                     break;
                 //} else {
                     //printf("No char recv? %x \n", ch);
