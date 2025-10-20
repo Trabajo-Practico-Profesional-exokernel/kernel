@@ -133,7 +133,7 @@ void init_sched(void) {
     curr = NULL;
     //proc_a = create_process((uint32_t) proc_a_entry);
     proc_a = create_process_user((uint32_t) main_app_a);
-    proc_b = create_process((uint32_t) main_app_b);
+    proc_b = create_process_user((uint32_t) main_app_b);
     //proc_b = create_process((uint32_t) proc_b_entry);
     printf("AT CREATE PROCESS A expected pc= %u, ", (uint32_t) proc_a_entry);
     printProc(proc_a);
