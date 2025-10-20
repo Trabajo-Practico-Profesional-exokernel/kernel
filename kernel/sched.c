@@ -10,7 +10,8 @@
 
 void switch_proc(struct Proc* next) {
     next->status = PROC_RUNNING;    
-    //switch_page_table(next->page_table, &next->stack[sizeof(next->stack)]);
+    
+    switch_page_table(next->page_table, &next->stack[sizeof(next->stack)]);
     switch_context(next);
 }
 
@@ -46,12 +47,12 @@ struct Proc * create_process(uint32_t pc) { // pc == entry point == start instru
     uint32_t *page_table = (uint32_t *) alloc_pages(1);
 
     paddr_t start = get_paddr_page_ind(0); // physical address first page.
+    direct_map_all_pages(page_table,start, PAGE_R | PAGE_W| PAGE_X);
 
     //direct_map_all_pages(page_table, start, PAGE_R | PAGE_W | PAGE_X);
-    paddr_t second = direct_map_n_pages(page_table,start, 2, PAGE_R| PAGE_X);
-    second = offset_map_n_pages(page_table,start, second -start // Offset one page in vaddr
-                        , 2, PAGE_R);
-    direct_map_all_pages(page_table,second, PAGE_R | PAGE_W| PAGE_X);
+    //paddr_t second = direct_map_n_pages(page_table,start, 2, PAGE_R| PAGE_X);
+    //second = offset_map_n_pages(page_table,start, second -start // Offset one page in vaddr
+    //                    , 2, PAGE_R);
 
     proc->page_table = page_table;
 
@@ -107,7 +108,7 @@ void init_sched(void) {
     printf("AT CREATE PROCESS B expected pc= %u, ", (uint32_t) proc_b_entry);
     printProc(proc_b);
     curr = proc_a;
-    
+
     // Start proc_a!
     switch_proc(proc_a);
     PANIC("unreachable here!");
