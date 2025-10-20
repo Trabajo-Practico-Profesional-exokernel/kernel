@@ -19,8 +19,9 @@ SPIE (bit 5): Gets copied to SIE (enables supervisor interrupts after returning)
 //, [sepc_ins] "r" ()         
 
 //in riscv-5 ... *prev would be at register a0, *next at a1.
-// in riscv-5 .. when entering on switch context it saves on ra the returna address for that function.
-// So ra should for this simple sheduling where the process call switch work.
+// in riscv-5 .. when entering on switch context the proc curr pc is at proc->pc
+// proc->pc is right after proc->tf that is at the start so..
+// sepc should be setted to the vl right after the sp.
 __attribute__((naked)) 
 void switch_context(struct Proc* next) {
     __asm__ __volatile__(       
@@ -39,15 +40,17 @@ void switch_context(struct Proc* next) {
         "lw s10, 11 * 4(a0)\n"
         "lw s11, 12 * 4(a0)\n"
         "lw sp, 13 * 4(a0)\n" // Switch stack pointer (sp) here
-        "csrw sepc, ra\n" // Set sepc, where the sret jumps back to... to ra no trampoline for now!
+        "lw a1, 14 * 4(a0)\n" // Lets assume a1 is not being used or so. For now. And load the proc->pc there
+        "csrw sepc, a1\n" // Set sepc, where the sret jumps back to... for now to the proc->pc no trampoline
         "li a0, %[sstatus]\n" // Set a0 value to sttatus used, now next proc param is not used anymore
         "csrw sstatus, a0\n"
         "sret\n"
         :
         : [sstatus] "i" (SSTATUS_USER)//(SSTATUS_KERNEL)
-        : "a0"
+        : "a0", "a1"
     );
 }
+
 
 __attribute__((naked)) void user_entry(void) {
     __asm__ __volatile__(
@@ -67,7 +70,7 @@ void sleep(int delay) {
         __asm__ __volatile__("nop"); // do nothing
 }
 
-void init_trapframe(struct Proc * proc, uint32_t init_ins){
+void init_trapframe(struct Proc * proc){
     proc->tf.s11 = 0;
     proc->tf.s10 = 0;
     proc->tf.s9 = 0;
@@ -81,7 +84,7 @@ void init_trapframe(struct Proc * proc, uint32_t init_ins){
     proc->tf.s1 = 0;
     proc->tf.s0 = 0;
 
-    proc->tf.ra = init_ins;    
+    proc->tf.ra = proc->pc; // For now ra setted to proc initial pc?    
 }
 
 

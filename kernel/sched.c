@@ -20,7 +20,7 @@ uint32_t curr_slices = 0;
 void switch_proc(struct Proc* next) {
     next->status = PROC_RUNNING;    
     //printf("proc:\n");
-    //printProc(next);
+    printProc(next);
 
     switch_page_table(next->page_table, &next->stack[sizeof(next->stack)]);
     switch_context(next);
@@ -37,7 +37,6 @@ struct Proc * create_process(uint32_t pc) { // pc == entry point == start instru
     for (i = 0; i < PROCS_MAX; i++) {
         if (procs[i].status == PROC_FREE) {
             proc = &procs[i];
-            //memset(proc, 0, sizeof(struct Proc));  // just in case.. delete any garbage values
             break;
         }
     }
@@ -45,10 +44,12 @@ struct Proc * create_process(uint32_t pc) { // pc == entry point == start instru
     if (!proc)
         PANIC("no free process slots");
 
-
+    // Save initial pc on proc.
+    proc->pc = pc;
+    
     // Stack callee-saved registers. These register values will be restored in
     // the first context switch in switch_context. ... init registers basically?
-    init_trapframe(proc, (uint32_t) pc);
+    init_trapframe(proc);
 
     // For now kernel stack of process... is on the proc struct itself! xv6 does it in a page a virtual memory.. for the future
     proc->tf.sp = (uint32_t)(&proc->stack[SIZE_KERN_STACK]);
@@ -81,7 +82,7 @@ struct Proc * create_process(uint32_t pc) { // pc == entry point == start instru
     return proc;
 }
 
-void sched_yield(FullTrapFrame *tf) {
+void sched_yield(FullTrapFrame *tf, uintptr_t proc_pc) {
     curr_slices+=1;
     if (curr_slices< MAX_TIME_SLICES){
         return;
@@ -146,27 +147,6 @@ struct Proc * load_create_process_user(const void *image, size_t image_size) {
 
     return proc;
 }
-/*
-
-void init_sched(void) {
-    curr = NULL;
-    proc_a = create_process((uint32_t) proc_a_entry);
-    proc_b = create_process((uint32_t) proc_b_entry);
-    //proc_b = create_process_user(_binary_apps_build_shell_bin_start, (size_t) _binary_apps_build_shell_bin_size);
-    printf("AT CREATE PROCESS A expected pc= %u, ", (uint32_t) proc_a_entry);
-    printProc(proc_a);
-    
-    printf("AT CREATE PROCESS B expected pc= %u, ", (uint32_t) proc_b_entry);
-    printProc(proc_b);
-    curr = proc_b;
-
-    // Start proc_a!
-    switch_proc(proc_b);
-    //switch_proc(proc_a);
-    PANIC("unreachable here!");
-}
-
-*/
 
 void main_app_a();
 void main_app_b();

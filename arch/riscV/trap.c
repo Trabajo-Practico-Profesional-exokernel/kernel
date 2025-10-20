@@ -10,8 +10,7 @@
 #include "arch/trap_handling.h"
 
 // Assume its defined somewhere
-void sched_yield(FullTrapFrame *tf);
-
+void sched_yield(FullTrapFrame *tf, uintptr_t pc);
 
 /*
 Initing superviser mode/enable clock?! 
@@ -190,7 +189,7 @@ void handle_trap(FullTrapFrame *tf) {
         
         // printf("Clock interrupt ins scause=%x, stval=%x, sepc=%x\n", scause, stval, user_pc);
         SET_NEXT_INTERRUPT(DELAY_INTERRUPT);
-        sched_yield(tf);
+        sched_yield(tf, user_pc);
     } else {
         PANIC("unexpected trap scause=%u, stval=%x, sepc=%x\n", scause, stval, user_pc);
     }

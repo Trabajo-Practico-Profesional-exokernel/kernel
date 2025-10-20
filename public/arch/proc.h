@@ -21,11 +21,11 @@ enum { PROC_FREE = 0, PROC_DYING, PROC_RUNNABLE, PROC_RUNNING, PROC_NOT_RUNNABLE
 
 struct Proc {
     struct TrapFrame tf;
+    uintptr_t pc; // process current ins
+    //vaddr_t sp;          // Stack pointer
+    
     procid_t pid;             // Process ID
     int status;           // Process state: PROC_FREE or PROC_RUNNABLE,  PROC_DYING, PROC_RUNNABLE, PROC_RUNNING, PROC_NOT_RUNNABLE 
-    vaddr_t sp;          // Stack pointer
-
-
     uint32_t* page_table; // Place where the page table for this process is..
 
     int cpunum; // The CPU that the env is running on
