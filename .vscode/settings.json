@@ -6,6 +6,7 @@
         "opensbi.h": "c",
         "trap.h": "c",
         "riscv5_trap.h": "c",
-        "trapframe.h": "c"
+        "trapframe.h": "c",
+        "switch.h": "c"
     }
 }

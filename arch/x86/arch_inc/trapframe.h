@@ -17,6 +17,15 @@ Some typical fields in x86:
 | trapno     | Indicates the type of trap that occurred.                                   |
 | error code | An optional field that may contain an error code for specific exceptions.   |
 
+
+En tu FullTrapFrame ya tenés un campo oesp (el que empuja pusha), 
+que representa el ESP del proceso en el momento del trap, justo antes de hacer pusha.
+
+Pero también existe el stack pointer real que se usará al volver:
+- Si estás en kernel mode todo el tiempo, ese valor es el mismo que esp_original.
+- Si hay cambio de privilegio, entonces el useresp y ss del final de tu struct 
+    son los verdaderos que restaurará iret.
+
 */
 
 #ifndef TRAPFRAME_H
@@ -24,18 +33,19 @@ Some typical fields in x86:
 
 #include "inc/types.h"
 
-typedef struct TrapFrame {
+// For traps and interruptions
+typedef struct FullTrapFrame {
     /* Segment registers pushed by your stub (push ds; push es; push fs; push gs) */
     uint32_t gs;
     uint32_t fs;
     uint32_t es;
     uint32_t ds;
 
-    /* Registers as left by pusha: edi, esi, ebp, esp_original, ebx, edx, ecx, eax */
+    /* Registers as left by pusha: edi, esi, ebp, oesp, ebx, edx, ecx, eax */
     uint32_t edi;
     uint32_t esi;
     uint32_t ebp;
-    uint32_t esp_original;
+    uint32_t oesp; //ESP del proceso en el momento del trap
     uint32_t ebx;
     uint32_t edx;
     uint32_t ecx;
@@ -52,8 +62,34 @@ typedef struct TrapFrame {
     /* optional if ring change: useresp and ss (can be 0 for kernel-only) */
     uint32_t useresp;
     uint32_t ss;
+} __attribute__((packed)) FullTrapFrame;
+
+// For context switch between processes  
+typedef struct TrapFrame {
+    uint32_t edi;
+    uint32_t esi;
+    uint32_t ebp;
+    uint32_t oesp; // esp antes del cambio. esta para que ande pusha/popa
+    uint32_t ebx;
+    uint32_t edx;
+    uint32_t ecx;
+    uint32_t eax;
+    uint32_t eip;   // return address (instruction pointer)
+    uint32_t esp;   // stack pointer
 } __attribute__((packed)) TrapFrame;
 
-typedef TrapFrame FullTrapFrame;
-
 #endif
+
+
+// TP SISOP
+// struct PushRegs {
+// 	/* registers as pushed by pusha */
+// 	uint32_t reg_edi;
+// 	uint32_t reg_esi;
+// 	uint32_t reg_ebp;
+// 	uint32_t reg_oesp; /* Useless */
+// 	uint32_t reg_ebx;
+// 	uint32_t reg_edx;
+// 	uint32_t reg_ecx;
+// 	uint32_t reg_eax;
+// } __attribute__((packed));

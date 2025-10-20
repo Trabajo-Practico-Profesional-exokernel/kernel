@@ -20,7 +20,7 @@ typedef int32_t procid_t;
 enum { PROC_FREE = 0, PROC_DYING, PROC_RUNNABLE, PROC_RUNNING, PROC_NOT_RUNNABLE };
 
 struct Proc {
-    struct TrapFrame tf;
+    struct TrapFrame tf;      // no mover de lugar!! el switch context de x86 depende de que este sea el primer campo
     procid_t pid;             // Process ID
     int status;           // Process state: PROC_FREE or PROC_RUNNABLE,  PROC_DYING, PROC_RUNNABLE, PROC_RUNNING, PROC_NOT_RUNNABLE 
     vaddr_t sp;          // Stack pointer

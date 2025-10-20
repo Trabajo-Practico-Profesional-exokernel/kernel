@@ -84,19 +84,15 @@ void init_trap(void) {
 ==================================================
 */
 
-void handle_trap(struct TrapFrame *tf) {
+void handle_trap(struct FullTrapFrame *tf) {
     printf("[HANDLE TRAP] Ref Trapframe %p\n", &tf);
-    printf("[HANDLE TRAP] Ref Trapframe int_no %p\n", &tf->int_no);
     
     switch (tf->int_no) {
-        case 0:
-            printf("[TRAP] 0 %d\n", tf->int_no);
-            break;
         case 32: // IRQ0 - Timer interrupt
-            outb(0x20, 0x20); // EOI al PIC master
+            outb(0x20, 0x20); // EOI (end of interrupt) al PIC master
             sched_yield(tf);  // Llama al scheduler
+            printf("[TRAP] post sched_yield\n");
             break;
-
         default:
             printf("[TRAP] Unhandled interrupt: %d\n", tf->int_no);
             break;

@@ -1,7 +1,10 @@
+#ifndef IDT_H
+#define IDT_H
+
 #include "inc/types.h"
 
 #define IDT_NUM_ENTRIES 256
-#define SEGSEL_KERNEL_CS 0x08  // de tu GDT
+#define SEGSEL_KERNEL_CS 0x08  // de GDT
 #define IDT_INTERRUPT_GATE 0x0E
 
 struct idt_gate {
@@ -21,6 +24,6 @@ typedef struct idt_ptr idt_ptr_t;
 
 idt_gate_t idt[IDT_NUM_ENTRIES];
 
-static void create_idt_gate(uint8_t n, uint32_t handler);
-
 void idt_init();
+
+#endif IDT_H

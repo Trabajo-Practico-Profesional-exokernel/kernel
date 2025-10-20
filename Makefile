@@ -9,6 +9,8 @@ INC_DIR     = public
 # ----------------------------
 # Compiladores por arquitectura
 # ----------------------------
+# -no-reboot -no-shutdown
+
 ifeq ($(ARCH),x86)
 	CC      = gcc
 	AS      = nasm

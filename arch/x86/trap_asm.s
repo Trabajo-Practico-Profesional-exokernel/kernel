@@ -41,5 +41,6 @@ trap_entry:
     pop es
     pop ds
     popa
+    
     sti
     iret

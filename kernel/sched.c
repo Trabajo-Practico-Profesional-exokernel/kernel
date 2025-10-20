@@ -8,12 +8,12 @@
 #include "arch/mem.h" // Declares the methods switch page and so on.
 #include "arch/switch.h"// Declares the swtich context to new Proc and sleep method.
 
-void switch_proc(TrapFrame *next_tf, struct Proc* next) {
+void switch_proc(struct Proc* next) {
     next->status = PROC_RUNNING;    
     //switch_page_table(next->page_table, &next->stack[sizeof(next->stack)]);
     
-    printf("[SWITCH PROC] Antes de swtich_context tf->int_no %p\n", next_tf->int_no);
-    switch_context(next_tf, next);
+    // printf("[SWITCH PROC] Antes de swtich_context tf->int_no %p\n", next_tf->int_no);
+    switch_context(next);
 }
 
 
@@ -44,6 +44,7 @@ struct Proc * create_process(uint32_t pc) { // pc == entry point == start instru
     
     // TODO: Es de RISCV, por ahora comentamos
     // proc->tf.sp = (uint32_t)(&proc->stack[SIZE_KERN_STACK]);
+    proc->tf.oesp = (uint32_t)(&proc->stack[SIZE_KERN_STACK]);
 
 
     // Initialize memory/pagetables
@@ -119,60 +120,49 @@ void init_sched(void) {
     PANIC("unreachable here!");
 }
 
-// void init_sched(void) {
-//     curr = NULL;
-//     proc_a = create_process((uint32_t) proc_a_entry);
-//     proc_b = create_process((uint32_t) proc_b_entry);
-
-//     curr = proc_a;
-
-//     // Primer cambio de contexto al primer proceso
-//     switch_proc(proc_a);
-
-//     // No deberíamos llegar acá nunca
-//     PANIC("unreachable here!");
-// }
-
-// void sched_yield(FullTrapFrame *tf) {
-//     curr_slices+=1;
-//     if (curr_slices< MAX_TIME_SLICES){
-//         return;
-//     }
-//     update_trapframe(curr, tf);
-//     curr->status = PROC_RUNNABLE;
-
-//     if (curr == proc_a){
-//         printf("Should switch to PROC B\n");
-//         //printProc(proc_b);
-//         curr_slices = 0;
-//         curr= proc_b;
-//         switch_proc(proc_b);
-//     } else{
-//         printf("Should switch to PROC A\n");
-//         //printProc(proc_a);
-//         curr_slices = 0;
-//         curr= proc_a;
-//         switch_proc(proc_a);
-//     }
-
-//     //curr_slices=0;
-//     //printf("Preemtptive sched!\n");
-// }
-
-
-void sched_yield(TrapFrame *tf) {
-    printf("[SCHED YIELD]");
+void sched_yield(FullTrapFrame *tf) {
+    curr_slices+=1;
+    if (curr_slices< MAX_TIME_SLICES){
+        printf("en time slices\n");
+        return;
+    }
     update_trapframe(curr, tf);
+    curr->status = PROC_RUNNABLE;
 
-    if (curr == proc_a) {
-        curr = proc_b;
-    } else {
-        curr = proc_a;
+    if (curr == proc_a){
+        printf("Should switch to PROC B\n");
+        //printProc(proc_b);
+        curr_slices = 0;
+        curr= proc_b;
+        // switch_context(proc_a, &curr->tf);
+        switch_proc(proc_b);
+    } else{
+        printf("Should switch to PROC A\n");
+        //printProc(proc_a);
+        curr_slices = 0;
+        curr= proc_a;
+        // switch_context(proc_b, &curr->tf);
+        switch_proc(proc_a);
     }
 
-    printf("[SCHED YIELD] Antes de swtich_context tf->int_no %d\n", tf->int_no);
-
-    switch_context(curr, &curr->tf);
-
-    printf("[SCHED YIELD] Antes de swtich_context tf->int_no %d\n", tf->int_no);
+    curr_slices=0;
+    printf("Preemtptive sched!\n");
 }
+
+
+// void sched_yield(TrapFrame *tf) {
+//     printf("[SCHED YIELD]");
+//     update_trapframe(curr, tf);
+
+//     if (curr == proc_a) {
+//         curr = proc_b;
+//     } else {
+//         curr = proc_a;
+//     }
+
+//     printf("[SCHED YIELD] Antes de swtich_context tf->int_no %d\n", tf->int_no);
+
+//     switch_context(curr, &curr->tf);
+
+//     printf("[SCHED YIELD] Antes de swtich_context tf->int_no %d\n", tf->int_no);
+// }
