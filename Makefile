@@ -48,6 +48,13 @@ OBJECTS := $(patsubst %,$(BUILD_DIR)/%,$(SOURCES))
 OBJECTS := $(OBJECTS:.c=.o)
 OBJECTS := $(OBJECTS:.s=.o)
 
+#Empty
+USER_OBJECTS:=
+ifeq ($(ARCH),riscv)
+	USER_BUILD_FOLDER:=build/user
+	USER_OBJECTS := $(wildcard $(USER_BUILD_FOLDER)/*.o)
+endif
+
 # ============================
 # Reglas principales
 # ============================
@@ -68,7 +75,7 @@ $(BUILD_DIR)/kernel.elf: $(OBJECTS)
 ifeq ($(ARCH),x86)
 	ld $(LDFLAGS) $(OBJECTS) -o $@
 else ifeq ($(ARCH),riscv)
-	$(CC) $(CFLAGS) $(OBJECTS) -Wl,$(LDFLAGS) -o $@
+	$(CC) $(CFLAGS) $(OBJECTS) $(USER_OBJECTS) -Wl,$(LDFLAGS) -o $@
 endif
 
 # ============================
