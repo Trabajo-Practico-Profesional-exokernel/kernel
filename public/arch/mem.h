@@ -8,17 +8,23 @@
 paddr_t alloc_pages(uint32_t n);
 
 // Map a page vaddr to paddr
-void map_page(uint32_t *table1, uint32_t vaddr, paddr_t paddr, uint32_t flags);
+void map_page(uint32_t *table1, vaddr_t vaddr, paddr_t paddr, uint32_t flags);
 
 paddr_t get_paddr_page_ind(uint32_t ind);
+paddr_t get_paddr_last_page();
 
-void direct_map_all_pages(uint32_t *table1, paddr_t start, uint32_t flags);
-paddr_t direct_map_n_pages(uint32_t *table1, paddr_t start, uint32_t count, uint32_t flags);
 
-paddr_t offset_map_n_pages(uint32_t *table1,paddr_t start, paddr_t offset, uint32_t count, uint32_t flags);
+paddr_t get_paddr_kernel_start();
+paddr_t get_paddr_kernel_end();
+
 
 void switch_page_table(uint32_t *table_next, uint8_t * next_stack);
 
+paddr_t direct_map_range(uint32_t *table1, paddr_t range_start, paddr_t range_end, uint32_t flags);
+paddr_t offset_map_range(uint32_t *table1, paddr_t range_start, paddr_t range_end, 
+						vaddr_t mapped_vstart, uint32_t flags);
+
+//void direct_map_all_pages(uint32_t *table1, paddr_t start, uint32_t flags);
 
 
 

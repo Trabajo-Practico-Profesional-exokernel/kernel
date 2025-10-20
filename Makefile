@@ -35,7 +35,7 @@ endif
 ifeq ($(ARCH),x86)
 	SRC_DIRS = arch/x86/drivers/io arch/x86/drivers/loader kernel drivers
 else ifeq ($(ARCH),riscv)
-	SRC_DIRS = arch/riscV/drivers arch/riscV kernel drivers
+	SRC_DIRS = arch/riscV/drivers arch/riscV kernel drivers user
 endif
 
 # Buscar fuentes (.c y .s)

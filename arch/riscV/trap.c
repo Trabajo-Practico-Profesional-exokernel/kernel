@@ -7,6 +7,7 @@
 
 #include "inc/common.h"
 
+#include "arch/trap_handling.h"
 
 // Assume its defined somewhere
 void sched_yield(FullTrapFrame *tf);
@@ -170,12 +171,12 @@ void handle_trap(FullTrapFrame *tf) {
     if (scause == 8) {
         // Syscall from user mode
         // Example: dispatch to syscall handler
-        printf("log trap from userspace scause=%x, stval=%x, sepc=%x\n", scause, stval, user_pc);
+        //printf("log trap from userspace scause=%x, stval=%x, sepc=%x\n", scause, stval, user_pc);
         
         //uintptr_t new_pc = syscall_dispatch(sp);  // dispatch syscall?
         //WRITE_CSR(user_pc, new_pc); // Redirect execution
-
-        user_pc += 4;  // Skip ins
+        user_pc = handle_syscall(tf, user_pc);
+        //user_pc += 4;  // Skip ins
         WRITE_CSR(sepc, user_pc);        
     } else if(scause == 2) {
         // Just for testing purpose? skip this instruction

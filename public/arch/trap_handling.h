@@ -1,10 +1,11 @@
 #ifndef INC_TRAP_HANDLING
 #define INC_TRAP_HANDLING
 
-//#include "arch_inc/trapframe.h"
+#include "inc/types.h"
+#include "arch_inc/trapframe.h"
 
 // Receives sys num and current pc... returns which ins to go back
-int handle_syscall(int sys_num, int pc);
+uintptr_t handle_syscall(FullTrapFrame *tf, uintptr_t pc);
 
 // For now hardcoded on trap.c on arch implementation. Might be cleaner to have it be
 //void handle_clock_interrupt(FullTrapFrame *f);

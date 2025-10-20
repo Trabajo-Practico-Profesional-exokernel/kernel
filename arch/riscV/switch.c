@@ -1,4 +1,5 @@
 #include "arch/switch.h"
+#include "arch/mem_layout.h"
 
 /*
 sret inspects two bits in sstatus:
@@ -48,17 +49,13 @@ void switch_context(struct Proc* next) {
     );
 }
 
-// The base virtual address of an application/user proc image. This needs to match the
-// starting address defined in `user.ld`.
-#define USER_BASE 0x1000000
-
 __attribute__((naked)) void user_entry(void) {
     __asm__ __volatile__(
         "csrw sepc, %[sepc]\n"
         "csrw sstatus, %[sstatus]\n"
         "sret\n"
         :
-        : [sepc] "r" (USER_BASE),
+        : [sepc] "r" (VADDR_USER_BASE),
           [sstatus] "r" (SSTATUS_USER)
     );
 }
