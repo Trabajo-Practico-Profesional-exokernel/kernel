@@ -1,2 +1,2 @@
-#define SYS_PUTCHAR 1
-#define SYS_GETCHAR 2
+#define SYS_PUTCHAR 0
+#define SYS_GETCHAR 1
