@@ -1,5 +1,22 @@
 #include "arch/switch.h"
 
+/*
+sret inspects two bits in sstatus:
+SPP (bit 8): Determines which mode to return to
+SPIE (bit 5): Gets copied to SIE (enables supervisor interrupts after returning)
+*/
+// sstatus flags for use with sret
+#define SSTATUS_SPP_KERNEL   (1 << 8) // SPP = 1: return to Supervisor Mode
+#define SSTATUS_SPP_USER     (0 << 8) // SPP = 0: return to User Mode (just for clarity)
+#define SSTATUS_SPIE         (1 << 5) // SPIE = 1: enable interrupts after sret
+
+#define SSTATUS_KERNEL       (SSTATUS_SPP_KERNEL | SSTATUS_SPIE)
+#define SSTATUS_USER         (SSTATUS_SPP_USER | SSTATUS_SPIE)
+
+
+//[next_tf] "r" (next)
+//, [sepc_ins] "r" ()         
+
 //in riscv-5 ... *prev would be at register a0, *next at a1.
 // in riscv-5 .. when entering on switch context it saves on ra the returna address for that function.
 // So ra should for this simple sheduling where the process call switch work.
@@ -22,7 +39,12 @@ void switch_context(struct Proc* next) {
         "lw s11, 12 * 4(a0)\n"
         "lw sp, 13 * 4(a0)\n" // Switch stack pointer (sp) here
         "csrw sepc, ra\n" // Set sepc, where the sret jumps back to... to ra no trampoline for now!
+        "li a0, %[sstatus]\n" // Set a0 value to sttatus used, now next proc param is not used anymore
+        "csrw sstatus, a0\n"
         "sret\n"
+        :
+        : [sstatus] "i" (SSTATUS_KERNEL)
+        : "a0"
     );
 }
 

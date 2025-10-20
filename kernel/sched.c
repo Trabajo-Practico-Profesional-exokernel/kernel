@@ -107,10 +107,9 @@ void init_sched(void) {
     printf("AT CREATE PROCESS B expected pc= %u, ", (uint32_t) proc_b_entry);
     printProc(proc_b);
     curr = proc_a;
-
-    //switch_page_table(curr->page_table, &curr->stack[sizeof(curr->stack)]);
-    proc_a_entry();
-
+    
+    // Start proc_a!
+    switch_proc(proc_a);
     PANIC("unreachable here!");
 }
 

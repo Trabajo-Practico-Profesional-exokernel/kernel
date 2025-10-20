@@ -44,8 +44,8 @@ void init_trap(){
     WRITE_CSR(stvec, (uint32_t) trap_entry); // riscv5 , set in case of interruption trap entry to be exec 
 
     printf("Initing superviser mode/enable clock?! \n");
-    uint32_t mcount = READ_CSR(mideleg);
-    printf("mideleg vl %u \n", mcount);
+    //uint32_t mcount = READ_CSR(mideleg);
+    //printf("mideleg vl %u \n", mcount);
 
     WRITE_CSR(sie, READ_CSR(sie) | SIE_STIE);
     WRITE_CSR(sstatus, READ_CSR(sstatus) | (1 << 1)); // SSTATUS_SIE
