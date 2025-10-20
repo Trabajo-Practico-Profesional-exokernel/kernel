@@ -51,7 +51,7 @@ OBJECTS := $(OBJECTS:.s=.o)
 #Empty
 USER_OBJECTS:=
 ifeq ($(ARCH),riscv)
-	USER_BUILD_FOLDER:=build/user
+	USER_BUILD_FOLDER:=apps/build
 	USER_OBJECTS := $(wildcard $(USER_BUILD_FOLDER)/*.o)
 endif
 

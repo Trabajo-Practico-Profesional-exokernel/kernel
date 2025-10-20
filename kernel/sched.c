@@ -101,9 +101,9 @@ void sched_yield(FullTrapFrame *tf) {
 extern char __user_space_start[], __user_space_end[];
 
 // This is created on the shell.bin.o by the llvm copy thing or so. 
-// _binary_ prefix is always there build_user_shell_bin is the path to the binary basically
+// _binary_ prefix is always there apps_build_shell_bin is the path to the binary basically
 // Essentially is where and how big is the niary of the shell app.
-//extern char _binary_build_user_shell_bin_start[], _binary_build_user_shell_bin_size[];
+extern char _binary_apps_build_shell_bin_start[], _binary_apps_build_shell_bin_size[];
 
 
 struct Proc * create_process_user(uint32_t proc_entry) { //const void *image, size_t image_size // future!
@@ -145,7 +145,7 @@ void init_sched(void) {
     curr = NULL;
     proc_a = create_process((uint32_t) proc_a_entry);
     proc_b = create_process((uint32_t) proc_b_entry);
-    //proc_b = create_process_user(_binary_build_user_shell_bin_start, (size_t) _binary_build_user_shell_bin_size);
+    //proc_b = create_process_user(_binary_apps_build_shell_bin_start, (size_t) _binary_apps_build_shell_bin_size);
     printf("AT CREATE PROCESS A expected pc= %u, ", (uint32_t) proc_a_entry);
     printProc(proc_a);
     
@@ -168,7 +168,10 @@ void init_sched(void) {
     curr = NULL;
     //proc_a = create_process((uint32_t) proc_a_entry);
     proc_a = create_process_user((uint32_t) main_app_a);
-    proc_b = create_process_user((uint32_t) main_app_b);
+    
+    proc_b = load_create_process_user(_binary_apps_build_shell_bin_start, (size_t) _binary_apps_build_shell_bin_size);
+    
+    //proc_b = create_process_user((uint32_t) main_app_b);
     //proc_b = create_process((uint32_t) proc_b_entry);
     printf("AT CREATE PROCESS A expected pc= %x, ", (uint32_t) main_app_a);
     printProc(proc_a);
