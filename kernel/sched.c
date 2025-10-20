@@ -47,7 +47,9 @@ struct Proc * create_process(uint32_t pc) { // pc == entry point == start instru
     uint32_t *page_table = (uint32_t *) alloc_pages(1);
 
     paddr_t start = get_paddr_page_ind(0); // physical address first page.
-    direct_map_all_pages(page_table,start, PAGE_R | PAGE_W| PAGE_X);
+    direct_map_all_pages(page_table,start, PAGE_R | PAGE_W| PAGE_X 
+        | PAGE_U //Let user space access all for now? 
+        );
 
     //direct_map_all_pages(page_table, start, PAGE_R | PAGE_W | PAGE_X);
     //paddr_t second = direct_map_n_pages(page_table,start, 2, PAGE_R| PAGE_X);
@@ -126,18 +128,14 @@ void sched_yield(FullTrapFrame *tf) {
 
 
 
-
-
-void user_entry(void) {
-    PANIC("not yet implemented");
-}
 // The base virtual address of an application/user proc image. This needs to match the
 // starting address defined in `user.ld`.
 #define USER_BASE 0x1000000
 
 // USER Process create? uses user_entry as initial PC!
+// This does not work yet... it does copy things fine to vaddr but fails page fault.
 struct Proc * create_process_user(const void *image, size_t image_size) {
-    struct Proc *proc= create_process((uint32_t) user_entry);
+    struct Proc *proc= create_process(USER_BASE);//((uint32_t) user_entry);
 
     // Map user app instruction pages.. i.e load to memory the process
     for (uint32_t off = 0; off < image_size; off += PAGE_SIZE) {
@@ -165,16 +163,17 @@ extern char _binary_build_user_shell_bin_start[], _binary_build_user_shell_bin_s
 void init_sched(void) {
     curr = NULL;
     proc_a = create_process((uint32_t) proc_a_entry);
-    //proc_b = create_process((uint32_t) proc_b_entry);
-    proc_b = create_process_user(_binary_build_user_shell_bin_start, (size_t) _binary_build_user_shell_bin_size);
+    proc_b = create_process((uint32_t) proc_b_entry);
+    //proc_b = create_process_user(_binary_build_user_shell_bin_start, (size_t) _binary_build_user_shell_bin_size);
     printf("AT CREATE PROCESS A expected pc= %u, ", (uint32_t) proc_a_entry);
     printProc(proc_a);
     
     printf("AT CREATE PROCESS B expected pc= %u, ", (uint32_t) proc_b_entry);
     printProc(proc_b);
-    curr = proc_a;
+    curr = proc_b;
 
     // Start proc_a!
-    switch_proc(proc_a);
+    switch_proc(proc_b);
+    //switch_proc(proc_a);
     PANIC("unreachable here!");
 }
