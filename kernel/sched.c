@@ -14,16 +14,17 @@ struct Proc *proc_a;
 struct Proc *proc_b;
 struct Proc *curr;
 uint32_t curr_slices = 0;
-#define MAX_TIME_SLICES 15
+#define MAX_TIME_SLICES 45
 
 
 void switch_proc(struct Proc* next) {
-    next->status = PROC_RUNNING;    
-    //printf("proc:\n");
-    printProc(next);
+    curr = next;
+    
+    curr->status = PROC_RUNNING;    
+    //printProc(curr);
 
-    switch_page_table(next->page_table, &next->stack[sizeof(next->stack)]);
-    switch_context(next);
+    switch_page_table(curr->page_table, &curr->stack[sizeof(curr->stack)]);
+    switch_context(curr);
 }
 
 
@@ -88,21 +89,25 @@ void sched_yield(FullTrapFrame *tf, uintptr_t proc_pc) {
         return;
     }
     update_trapframe(curr, tf);
+    printf("Should preemptive sched! But for now just update curr proc\n");
+    printProc(curr);
+    curr_slices = 0;
+
+    /*
     curr->status = PROC_RUNNABLE;
 
     if (curr == proc_a){
-        printf("Should switch to PROC B\n");
+        printf("Should switch to PROC SHELL\n");
         //printProc(proc_b);
         curr_slices = 0;
-        curr= proc_b;
         switch_proc(proc_b);
     } else{
         printf("Should switch to PROC A\n");
         //printProc(proc_a);
         curr_slices = 0;
-        curr= proc_a;
         switch_proc(proc_a);
     }
+    */
 }
 
 
@@ -149,8 +154,6 @@ struct Proc * load_create_process_user(const void *image, size_t image_size) {
 }
 
 void main_app_a();
-void main_app_b();
-
 void init_sched(void) {
     curr = NULL;
     //proc_a = create_process((uint32_t) proc_a_entry);
@@ -163,11 +166,9 @@ void init_sched(void) {
     printf("AT CREATE PROCESS A expected pc= %x, ", (uint32_t) main_app_a);
     printProc(proc_a);
     
-    printf("AT CREATE PROCESS B expected pc= %x, ", (uint32_t) main_app_b);
+    printf("AT CREATE PROCESS SHELL expected pc= %x, ", (uint32_t)VADDR_USER_BASE);
     printProc(proc_b);
-    curr = proc_a;
-
     // Start proc_a!
-    switch_proc(proc_a);
+    switch_proc(proc_b);
     PANIC("unreachable here!");
 }
