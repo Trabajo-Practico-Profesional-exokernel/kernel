@@ -79,7 +79,9 @@ __attribute__((naked))
 __attribute__((aligned(4)))
 void trap_entry(void) {
     __asm__ __volatile__(
-        "csrw sscratch, sp\n"
+        // We assume that on sscratch is the kernel stack pointer for the curr proc
+        // and that the curr sp is the sp from userspace
+        "csrrw sp, sscratch, sp\n"   // Swap user sp into sscratch, use kernel sp is on sscratch.. now in sp
         "addi sp, sp, -4 * 31\n"
         "sw ra,  4 * 0(sp)\n"
         "sw gp,  4 * 1(sp)\n"
@@ -148,7 +150,8 @@ void trap_entry(void) {
         "lw s9,  4 * 27(sp)\n"
         "lw s10, 4 * 28(sp)\n"
         "lw s11, 4 * 29(sp)\n"
-        "lw sp,  4 * 30(sp)\n"
+        "addi sp, sp, 4 * 31\n" // removed already used kernel stack space.
+        "csrrw sp, sscratch, sp\n"// put on sscratch the kernel stack once again, and the user stack on sp
         "sret\n"
     );
 }

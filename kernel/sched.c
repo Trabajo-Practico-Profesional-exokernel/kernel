@@ -19,7 +19,9 @@ uint32_t curr_slices = 0;
 
 void switch_proc(struct Proc* next) {
     next->status = PROC_RUNNING;    
-    
+    //printf("proc:\n");
+    //printProc(next);
+
     switch_page_table(next->page_table, &next->stack[sizeof(next->stack)]);
     switch_context(next);
 }
@@ -53,13 +55,18 @@ struct Proc * create_process(uint32_t pc) { // pc == entry point == start instru
 
 
     // Initialize memory/pagetables
-    uint32_t *page_table = (uint32_t *) alloc_pages(1);
+    paddr_t page_table_addr = alloc_pages(1);
+    uint32_t *page_table = (uint32_t *) page_table_addr;
+    
+    // First map page for page table as direct map
+    map_page(page_table,page_table_addr, page_table_addr,  PAGE_R | PAGE_W| PAGE_X);
 
-    // Map base kernel code pages
+
+    // Map base kernel code pages, does not include any allocated pages, like the page_table_addr
     direct_map_range(page_table, 
             get_paddr_kernel_start(),
             get_paddr_kernel_end(),
-             PAGE_R | PAGE_W| PAGE_X
+            PAGE_R | PAGE_W| PAGE_X
             //| PAGE_U // Allow user space to access everything for now. 
             // No.. it does not allow kernel to access U pages.
     );
