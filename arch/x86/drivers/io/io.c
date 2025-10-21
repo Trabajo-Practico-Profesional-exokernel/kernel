@@ -5,9 +5,11 @@
 #include "../../idt.h"
 #include "../../gdt.h"
 #include "../../interrupt.h"
+#include "drivers/io/serial_handler.h"
 
 void init_arch(void){
     disable_interrupts();
+    serial_init();
     gdt_init();
     //pic_init();
     idt_init();
