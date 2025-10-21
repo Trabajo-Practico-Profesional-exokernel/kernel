@@ -9,11 +9,14 @@
 #include "arch/switch.h"// Declares the swtich context to new Proc and sleep method.
 
 void switch_proc(struct Proc* next) {
+    printf("[SWITCH PROC] proc: \n");
     next->status = PROC_RUNNING;    
     //switch_page_table(next->page_table, &next->stack[sizeof(next->stack)]);
     
     // printf("[SWITCH PROC] Antes de swtich_context tf->int_no %p\n", next_tf->int_no);
     switch_context(next);
+    printf("[SWITCH PROC] after switch_context\n");
+
 }
 
 

@@ -16,8 +16,12 @@ global trap_entry
 extern handle_trap
 
 section .text
+
+; ------------------------------
+; Common trap entry point
+; ------------------------------
 trap_entry:
-pusha               ; push eax, ecx, edx, ebx, esp, ebp, esi, edi
+    pusha               ; push eax, ecx, edx, ebx, esp, ebp, esi, edi
     push ds
     push es
     push fs
