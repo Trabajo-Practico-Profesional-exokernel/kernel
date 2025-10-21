@@ -2,6 +2,7 @@
 #include "arch/arch_init.h"
 #include "inc/types.h"
 #include "inc/common.h"
+#include "../../idt.h"
 #include "../../gdt.h"
 #include "../../interrupt.h"
 

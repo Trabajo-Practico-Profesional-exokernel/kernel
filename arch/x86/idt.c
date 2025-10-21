@@ -4,28 +4,29 @@ que maneja 15 líneas IRQ físicas (IRQ0–IRQ15).
 */
 
 
-#include "inc/types.h"isr32
 #include "idt.h"
 #include "trap.h"
 
-static void create_idt_gate(uint8_t n, uint32_t handler) {
-    idt[n].handler_low = handler & 0xFFFF;
+idt_gate_t idt[IDT_NUM_ENTRIES];
+
+void create_idt_gate(uint8_t n, uint32_t handler) {
+    idt[n].handler_low  = handler & 0xFFFF;
     idt[n].handler_high = (handler >> 16) & 0xFFFF;
     idt[n].segsel = SEGSEL_KERNEL_CS;
     idt[n].zero = 0;
-    idt[n].config = (1 << 7) | (0 << 5) | (0 << 3) | IDT_INTERRUPT_GATE; //por ahora privilege=0
+    idt[n].config = (1 << 7) | (0 << 5) | (0 << 3) | IDT_INTERRUPT_GATE;
 }
 
-extern void idt_load_and_set(uint32_t);
-extern void isr32(void);
+extern void idt_load_and_set(uint32_t idt_ptr);
 
-void idt_init() {
+extern void isr32(void); // timer handler ASM
+
+void idt_init(void) {
     idt_ptr_t idt_ptr;
     idt_ptr.limit = sizeof(idt_gate_t) * IDT_NUM_ENTRIES - 1;
-    idt_ptr.base = (uint32_t)&idt;
+    idt_ptr.base  = (uint32_t)&idt;
 
-    // por ahora, solo un timer / prueba
-    create_idt_gate(0x20, (uint32_t)&isr32);
+    create_idt_gate(0x20, (uint32_t)isr32); // IRQ0 - timer
 
     idt_load_and_set((uint32_t)&idt_ptr);
 }
