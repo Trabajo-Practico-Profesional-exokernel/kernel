@@ -1,7 +1,9 @@
 global isr32
 extern trap_entry
 
-; INTERRUPT 32
+; ------------------------------
+; IRQ0 - Timer interrupt
+; ------------------------------
 section .text
 isr32:
     push 0          ; error code (0 si no lo da la CPU)

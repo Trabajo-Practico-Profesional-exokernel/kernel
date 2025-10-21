@@ -46,6 +46,7 @@ void init_trap(void) {
 ==================================================
 */
 
+//No toca sti (eso se hace en el stub después del iret)
 void handle_trap(struct FullTrapFrame *tf) {
     switch (tf->int_no) {
         case 32: // Timer IRQ

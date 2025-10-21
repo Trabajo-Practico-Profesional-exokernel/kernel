@@ -17,30 +17,25 @@ extern handle_trap
 
 section .text
 trap_entry:
-    cli
-    pusha
+pusha               ; push eax, ecx, edx, ebx, esp, ebp, esi, edi
     push ds
     push es
     push fs
     push gs
 
-    mov ax, 0x10
+    mov ax, 0x10        ; kernel data segment
     mov ds, ax
     mov es, ax
 
-    ; En este punto, necesitamos saber qué interrupción fue
-    ; Pero no hay un número directo, así que vamos a hacerlo con stubs.
-
-    ; Cada stub empuja su int_no y salta acá (ver más abajo).
-    push esp
+    push esp            ; pointer to FullTrapFrame
     call handle_trap
-    add esp, 4
+    add esp, 4          ; remove argument
 
     pop gs
     pop fs
     pop es
     pop ds
     popa
-    
+    add esp, 8          ; pop int_no + err_code
     sti
     iret
