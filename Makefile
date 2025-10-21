@@ -15,10 +15,10 @@ ifeq ($(ARCH),x86)
 	CC      = gcc
 	AS      = nasm
 	CFLAGS  = -I$(INC_DIR) -Iarch/x86 -Iarch/x86/drivers -m32 -nostdlib -nostdinc -fno-builtin -fno-stack-protector \
-	           -nostartfiles -nodefaultlibs -Wall -Wextra -c
+	           -nostartfiles -nodefaultlibs -Wall -Wextra -c -g
 	ASFLAGS = -f elf
 	LDFLAGS = -T arch/x86/drivers/linker/link.ld -melf_i386
-	QEMU    = qemu-system-i386 -cdrom os.iso  -m 64 -no-reboot -no-shutdown
+	QEMU    = qemu-system-i386 -cdrom os.iso  -m 64
 else ifeq ($(ARCH),riscv)
 	CC      = clang
 	CFLAGS  = -I$(INC_DIR) -Iarch/riscV -std=c11 -O2 -g3 -Wall -Wextra --target=riscv32-unknown-elf \

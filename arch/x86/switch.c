@@ -3,29 +3,53 @@
 #include "arch/proc.h"
 #include "inc/common.h"
 
+
+// cuando tengamos espacio de usuario, cambiar por iret que restaura eip y esp
 __attribute__((naked))
 void switch_context(struct Proc *next) {
     __asm__ __volatile__ (
+        // // a0 (RISC-V) ≈ first arg in x86 -> [esp + 4]
+        // "mov 4(%esp), %esp\n"      
+        
+        // "pop\n"
+
+        // "pop %eip\n"
+        // "pop %esp\n"
+
+        // // Saltar a la instrucción de inicio del proceso
+        // "jmp *0x20(%eax)\n"           // eip = tf->eip
+    
         // a0 (RISC-V) ≈ first arg in x86 -> [esp + 4]
-        "mov 4(%esp), %eax\n"         // eax = next (struct Proc*)
-        "mov (%eax), %eax\n"          // eax = next->tf (tf es el primer campo de proc)
+        "mov 4(%esp), %esp\n"         // eax = next (struct Proc*
 
         // Restaurar registros del TrapFrame
-        "mov 0x00(%eax), %edi\n"      // edi
-        "mov 0x04(%eax), %esi\n"      // esi
-        "mov 0x08(%eax), %ebp\n"      // ebp
-        "mov 0x10(%eax), %ebx\n"      // ebx (saltamos oesp)
-        "mov 0x14(%eax), %edx\n"      // edx
-        "mov 0x18(%eax), %ecx\n"      // ecx
-        "mov 0x1C(%eax), %eax\n"      // eax
+        "pop %edi\n"      // edi
+        "pop %esi\n"      // esi
+        "pop %ebp\n"      // ebp
+        "pop %ebx\n"      // ebx (saltamos oesp)
+        "pop %ebx\n"      // ebx 
+        "pop %edx\n"      // edx
+        "pop %ecx\n"      // ecx
+        "pop %eax\n"      // eax
 
         // Cambiar el stack pointer al del proceso nuevo
-        "mov 0x24(%eax), %esp\n"      // esp = tf->esp
 
         // Saltar a la instrucción de inicio del proceso
-        "jmp *0x20(%eax)\n"           // eip = tf->eip
+        "ret\n"           // eip = tf->eip
     );
 }
+
+
+//     uint32_t edi;
+//     uint32_t esi;
+//     uint32_t ebp;
+//     uint32_t oesp; // esp antes del cambio. esta para que ande pusha/popa
+//     uint32_t ebx;
+//     uint32_t edx;
+//     uint32_t ecx;
+//     uint32_t eax;
+//     uint32_t eip;   // return address (instruction pointer)
+//     uint32_t esp;
 
 /*
  * En x86, 'sleep' es igual de simple: hace busy-wait.

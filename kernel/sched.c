@@ -9,14 +9,13 @@
 #include "arch/switch.h"// Declares the swtich context to new Proc and sleep method.
 
 void switch_proc(struct Proc* next) {
-    printf("[SWITCH PROC] proc: \n");
+    printf("[SWITCH PROC]\n");
+    printProc(next);
     next->status = PROC_RUNNING;    
     //switch_page_table(next->page_table, &next->stack[sizeof(next->stack)]);
     
     // printf("[SWITCH PROC] Antes de swtich_context tf->int_no %p\n", next_tf->int_no);
     switch_context(next);
-    printf("[SWITCH PROC] after switch_context\n");
-
 }
 
 
@@ -99,10 +98,7 @@ void proc_b_entry(void) {
         sleep(SLEEP_TIME);
         printf("Inbetween next iter on proc_b!\n");
         sleep(SLEEP_TIME);
-        //switch_proc(proc_b, proc_a);
         printf("B after sleep proc_b: \n");
-        printf("HOLAAAAAAAAAAAAAAA \n");
-        //printProc(proc_b);
     }
 }
 
@@ -124,7 +120,7 @@ void init_sched(void) {
 }
 
 void sched_yield(FullTrapFrame *tf) {
-    curr_slices+=1;
+    curr_slices++;
     if (curr_slices< MAX_TIME_SLICES){
         printf("en time slices\n");
         return;
@@ -134,38 +130,16 @@ void sched_yield(FullTrapFrame *tf) {
 
     if (curr == proc_a){
         printf("Should switch to PROC B\n");
-        //printProc(proc_b);
         curr_slices = 0;
         curr= proc_b;
-        // switch_context(proc_a, &curr->tf);
         switch_proc(proc_b);
     } else{
         printf("Should switch to PROC A\n");
-        //printProc(proc_a);
         curr_slices = 0;
         curr= proc_a;
-        // switch_context(proc_b, &curr->tf);
         switch_proc(proc_a);
     }
 
     curr_slices=0;
     printf("Preemtptive sched!\n");
 }
-
-
-// void sched_yield(TrapFrame *tf) {
-//     printf("[SCHED YIELD]");
-//     update_trapframe(curr, tf);
-
-//     if (curr == proc_a) {
-//         curr = proc_b;
-//     } else {
-//         curr = proc_a;
-//     }
-
-//     printf("[SCHED YIELD] Antes de swtich_context tf->int_no %d\n", tf->int_no);
-
-//     switch_context(curr, &curr->tf);
-
-//     printf("[SCHED YIELD] Antes de swtich_context tf->int_no %d\n", tf->int_no);
-// }
