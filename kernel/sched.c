@@ -96,8 +96,6 @@ void proc_b_entry(void) {
     printf("starting process B\n");
     while (1) {
         sleep(SLEEP_TIME);
-        printf("Inbetween next iter on proc_b!\n");
-        sleep(SLEEP_TIME);
         printf("B after sleep proc_b: \n");
     }
 }
@@ -122,7 +120,7 @@ void init_sched(void) {
 void sched_yield(FullTrapFrame *tf) {
     curr_slices++;
     if (curr_slices< MAX_TIME_SLICES){
-        printf("en time slices\n");
+        // printf("en time slices\n");
         return;
     }
     update_trapframe(curr, tf);

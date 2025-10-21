@@ -8,18 +8,12 @@
 __attribute__((naked))
 void switch_context(struct Proc *next) {
     __asm__ __volatile__ (
-        // // a0 (RISC-V) ≈ first arg in x86 -> [esp + 4]
-        // "mov 4(%esp), %esp\n"      
+        // vaciar registros FullTrapFrame
+        // "pop gs\n"
+        // "pop fs\n"
+        // "pop es\n"
+        // "pop ds\n"
         
-        // "pop\n"
-
-        // "pop %eip\n"
-        // "pop %esp\n"
-
-        // // Saltar a la instrucción de inicio del proceso
-        // "jmp *0x20(%eax)\n"           // eip = tf->eip
-    
-        // a0 (RISC-V) ≈ first arg in x86 -> [esp + 4]
         "mov 4(%esp), %esp\n"         // eax = next (struct Proc*
 
         // Restaurar registros del TrapFrame
@@ -32,24 +26,10 @@ void switch_context(struct Proc *next) {
         "pop %ecx\n"      // ecx
         "pop %eax\n"      // eax
 
-        // Cambiar el stack pointer al del proceso nuevo
-
-        // Saltar a la instrucción de inicio del proceso
+        "sti\n"
         "ret\n"           // eip = tf->eip
     );
 }
-
-
-//     uint32_t edi;
-//     uint32_t esi;
-//     uint32_t ebp;
-//     uint32_t oesp; // esp antes del cambio. esta para que ande pusha/popa
-//     uint32_t ebx;
-//     uint32_t edx;
-//     uint32_t ecx;
-//     uint32_t eax;
-//     uint32_t eip;   // return address (instruction pointer)
-//     uint32_t esp;
 
 /*
  * En x86, 'sleep' es igual de simple: hace busy-wait.
