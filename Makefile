@@ -121,6 +121,8 @@ endif
 
 run: all
 	$(QEMU)
+debug: all
+	$(QEMU) -boot d -gdb tcp::26000 -S
 
 # ============================
 # Limpieza

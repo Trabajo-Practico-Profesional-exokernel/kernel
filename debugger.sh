@@ -9,8 +9,13 @@ setup_file="${2:-gdb_setup}" # mas setup especifico en un archivo
 #  1) connect to the remote,
 #  2) load symbols/file,
 #  3) then run any user-provided setup file (so 'c' will continue after connect).
-cmd=(gdb -q)
 
+if [[ "$trg" == "riscv" ]]; then
+  cmd=(gdb-multiarch -q)
+  cmd+=("-ex" "set architecture riscv:rv32")
+else
+  cmd=(gdb -q)  
+fi
 cmd+=("-ex" "target remote :26000")
 cmd+=("-ex" "symbol-file build/${trg}/kernel.elf")
 

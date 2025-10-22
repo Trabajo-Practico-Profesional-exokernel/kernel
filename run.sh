@@ -4,12 +4,14 @@
 clean_build=0
 clean_user_apps=0
 verbose=0
+debug=0
 trg=riscv
 
 while [[ $# -gt 0 ]]; do
 	case "$1" in
 	        -c) clean_build=1; shift ;;
 	        -v) verbose=1; shift ;;
+	        -d) debug=1; shift ;;
 	        -uc) clean_user_apps=1; shift ;;
 	        #-*) echo "Got flag $1 after - :${1#-}" ; shift;;  	
 	*) trg=$1 ; shift ;;
@@ -55,5 +57,11 @@ if [[ $verbose -eq 0 ]]; then
 fi
 
 echo "trg: $trg"
-echo "-->Running make ARCH=$trg run"
-make ARCH=$trg run
+
+if [[ $debug -eq 1 ]]; then
+	echo "-->Running make ARCH=$trg debug"
+	make ARCH=$trg debug
+else
+	echo "-->Running make ARCH=$trg run"
+	make ARCH=$trg run	
+fi

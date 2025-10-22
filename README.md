@@ -27,10 +27,24 @@ se puede usar run.sh para correr/hacer cleanups
 ```
 compila el trg, ultimo parametro que no sea un flag. Como flags estan el
 -c para hacer make clean antes, -uc para recompilar los programas de usuario.
+se puede usar -d para correr make debug y posteriormente correr el debugger.sh para conectar con gdb y empezar el debugeo.
+
+El uso del debugger es
+
+```bash
+./debugger.sh [trg: riscv] [setup_file:gdb_setup]
+```
+Por default asume el target es riscv y el setup file, comandos setup de breakpoints, etc. de gdb como gdb_setup. Este programa corre gdb basicamente para poder debugear el kernel. Que inicializo con el run.sh -d .. o con el make debug
+
+Para el debugger para riscv se necesita gdb-multiarch
+```bash
+sudo apt install gdb-multiarch
+```
 
 ```bash
 ./dump.sh [trg: riscv]
 ```
 
 hace dump el trg .elf... se puede pasar el flag -u para hacer el dump de un programa de usuario.. en tal caso de tener el -u el default trg es shell.
+
 
