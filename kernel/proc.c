@@ -25,6 +25,7 @@ void create_process(struct Proc * proc, uint32_t pc) { // pc == entry point == s
     // After proc->kernel_sp and proc->pc setted up so that they can be included on trapframe if needed
     init_trapframe(proc);
 
+    #ifdef IS_RISC
     // Initialize memory/pagetables
     paddr_t page_table_addr = alloc_pages(1);
     uint32_t *page_table = (uint32_t *) page_table_addr;
@@ -47,6 +48,8 @@ void create_process(struct Proc * proc, uint32_t pc) { // pc == entry point == s
     );
 
     proc->page_table = page_table;
+    #endif
+
     proc->status = PROC_RUNNABLE;
 }
 
