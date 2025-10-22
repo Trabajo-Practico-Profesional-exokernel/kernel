@@ -9,20 +9,22 @@ INC_DIR     = public
 # ----------------------------
 # Compiladores por arquitectura
 # ----------------------------
+# -no-reboot -no-shutdown
+
 ifeq ($(ARCH),x86)
 	CC      = gcc
 	AS      = nasm
-	CFLAGS  = -I$(INC_DIR) -m32 -nostdlib -nostdinc -fno-builtin -fno-stack-protector \
-	           -nostartfiles -nodefaultlibs -Wall -Wextra -c
+	CFLAGS  = -I$(INC_DIR) -Iarch/x86 -Iarch/x86/drivers -m32 -nostdlib -nostdinc -fno-builtin -fno-stack-protector \
+	           -nostartfiles -nodefaultlibs -Wall -Wextra -c -g
 	ASFLAGS = -f elf
 	LDFLAGS = -T arch/x86/drivers/linker/link.ld -melf_i386
-	QEMU    = qemu-system-i386 -cdrom os.iso -boot d -m 64
+	QEMU    = qemu-system-i386 -cdrom os.iso  -m 64 -no-reboot -no-shutdown -nographic -serial mon:stdio
 else ifeq ($(ARCH),riscv)
 	CC      = clang
-
-	# Se agrega como se observa... a arch/riscV para includes.
 	CFLAGS  = -I$(INC_DIR) -Iarch/riscV -std=c11 -O2 -g3 -Wall -Wextra --target=riscv32-unknown-elf \
-	           -fno-stack-protector -ffreestanding -nostdlib
+	           -fno-stack-protector -ffreestanding -nostdlib -DIS_RISC
+
+	# If riscv then add -DIS_RISC that deifines the constant IS_RISC for conditional compiling
 	
 	LDFLAGS = -T arch/riscV/linker/link.ld
 	QEMU    = qemu-system-riscv32 -machine virt -bios default -nographic -serial mon:stdio --no-reboot -kernel $(BUILD_DIR)/kernel.elf
@@ -33,9 +35,9 @@ endif
 # ============================
 
 ifeq ($(ARCH),x86)
-	SRC_DIRS = arch/x86/drivers/io arch/x86/drivers/loader kernel drivers
+	SRC_DIRS = arch/x86 arch/x86/drivers/io arch/x86/drivers/loader kernel
 else ifeq ($(ARCH),riscv)
-	SRC_DIRS = arch/riscV/drivers arch/riscV kernel drivers user
+	SRC_DIRS = arch/riscV/drivers arch/riscV kernel user
 endif
 
 # Buscar fuentes (.c y .s)
@@ -84,10 +86,12 @@ endif
 
 $(BUILD_DIR)/%.o: %.c
 	mkdir -p $(dir $@)
+	echo "Compilando C: $< -> $@"
 	$(CC) $(CFLAGS) -c $< -o $@
 
 $(BUILD_DIR)/%.o: %.s
 	mkdir -p $(dir $@)
+	echo "Ensamblando: $< -> $@"
 ifeq ($(ARCH),x86)
 	$(AS) $(ASFLAGS) $< -o $@
 else
@@ -130,3 +134,6 @@ debug: all
 
 clean:
 	rm -rf build *.iso
+
+#debug: all
+#	qemu-system-i386 -cdrom os.iso -boot d -gdb tcp::26000 -S

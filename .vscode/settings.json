@@ -3,6 +3,10 @@
         "cstdint": "c",
         "stdio.h": "c",
         "types.h": "c",
-        "opensbi.h": "c"
+        "opensbi.h": "c",
+        "trap.h": "c",
+        "riscv5_trap.h": "c",
+        "trapframe.h": "c",
+        "switch.h": "c"
     }
 }

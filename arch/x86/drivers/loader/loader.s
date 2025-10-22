@@ -22,7 +22,7 @@ loader:                         ; the loader label (defined as entry point in li
     mov eax, 0xCAFEBABE         ; place the number 0xCAFEBABE in the register eax
     ;push eax                    ; SACAR ARGUMENTOS KMAIN
     ;push ebx                    ; SACAR ARGUMENTOS KMAIN
-    cli
+    ;cli
     call kmain
 
     .loop:

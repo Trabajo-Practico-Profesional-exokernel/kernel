@@ -69,6 +69,7 @@ void init_trap(){
     */
 
 }
+
 /*
 * TRAP handling entry
 * Essentially it saves the stack pointer on sscratch and after restores it on a0? and calls handle trap
