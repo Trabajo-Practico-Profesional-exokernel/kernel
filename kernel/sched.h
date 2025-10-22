@@ -17,5 +17,8 @@ void init_sched(void);
 void set_proc_a(struct Proc * proc);
 void set_proc_b(struct Proc * proc);
 
+// Tampoco deberia usarse!
+void set_curr(struct Proc * proc);
+
 
 #endif

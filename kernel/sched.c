@@ -25,8 +25,13 @@ void set_proc_b(struct Proc * proc){
 }
 
 
-struct Proc procs[PROCS_MAX]; // All process control structures.
 struct Proc *curr;
+
+void set_curr(struct Proc * proc){
+    curr = proc;    
+}
+
+
 struct Proc procs[PROCS_MAX]; // All process control structures.
 
 #define NUM_CPUS 4

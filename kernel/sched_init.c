@@ -71,16 +71,24 @@ void proc_b_entry(void) {
 }
 
 void init_sched(void) {
-    curr = NULL;
-    proc_a = create_process((uint32_t) proc_a_entry);
-    proc_b = create_process((uint32_t) proc_b_entry);
+    struct Proc * proc_a = get_first_free_proc();
+    struct Proc * proc_b = get_first_free_proc();
+    set_proc_a(proc_a);
+    set_proc_b(proc_b);
+    
+    create_process(proc_a, (uint32_t) proc_a_entry);
+    create_process(proc_b,(uint32_t) proc_b_entry);
     printf("AT CREATE PROCESS A expected pc= %u, \n", (uint32_t) proc_a_entry);
     printProc(proc_a);
     
     printf("AT CREATE PROCESS B expected pc= %u, \n", (uint32_t) proc_b_entry);
     printProc(proc_b);
-    curr = proc_a;
 
+    printf("START!\n");
+    // DEBERIA LLAMAR SOLO A SWITCH PROC.. no setear a mano curr 
+    //switch_proc(proc_a);
+
+    set_curr(proc_a);
     //switch_page_table(curr->page_table, &curr->stack[sizeof(curr->stack)]);
     proc_a_entry();
 

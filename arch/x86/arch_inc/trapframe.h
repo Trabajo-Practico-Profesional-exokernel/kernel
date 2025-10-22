@@ -93,3 +93,15 @@ typedef struct TrapFrame {
 // 	uint32_t reg_ecx;
 // 	uint32_t reg_eax;
 // } __attribute__((packed));
+
+
+
+
+// CAMBIAR PARA HACERLO CON x86
+// Macros for syscalls For syscalls param and return handling
+#define SYSCALL_ARG0(tf) tf->eax
+#define SYSCALL_ARG1(tf) tf->eax
+#define SYSCALL_ARG2(tf) tf->eax
+#define SYSCALL_SYSNO(tf) tf->eax
+
+#define SET_SYSCALL_RET0(tf, vl) tf->eax=vl;

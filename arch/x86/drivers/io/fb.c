@@ -65,6 +65,11 @@ uint16_t get_cursor_position(){
     return position;
 }
 
+// TODO
+long getchar(void){
+    return 0;
+}
+
 void putchar(char ch) {
     serial_putchar(ch);
     uint16_t pos = get_cursor_position();
