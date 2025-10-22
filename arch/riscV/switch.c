@@ -64,7 +64,6 @@ __attribute__((naked)) void user_entry(void) {
 }
 
 
-
 void sleep(int delay) {
     for (int i = 0; i < delay; i++)
         __asm__ __volatile__("nop"); // do nothing
@@ -83,6 +82,8 @@ void init_trapframe(struct Proc * proc){
     proc->tf.s2 = 0;
     proc->tf.s1 = 0;
     proc->tf.s0 = 0;
+
+    proc->tf.sp = proc->kernel_sp; 
 
     proc->tf.ra = proc->pc; // For now ra setted to proc initial pc?    
 }

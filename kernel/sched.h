@@ -8,6 +8,8 @@ struct Proc * get_first_free_proc();
 void sched_yield(FullTrapFrame *tf, uintptr_t pc);
 void switch_proc(struct Proc * proc);
 
+void init_cpu(int cpunum);
+
 void init_sched(void);
 
 

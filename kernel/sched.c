@@ -27,6 +27,11 @@ void set_proc_b(struct Proc * proc){
 
 struct Proc procs[PROCS_MAX]; // All process control structures.
 struct Proc *curr;
+struct Proc procs[PROCS_MAX]; // All process control structures.
+
+#define NUM_CPUS 4
+#define TRAMPOLINE_STACK_SIZE 4096 // 1 page essentially?
+uint8_t trampoline_stacks[NUM_CPUS][TRAMPOLINE_STACK_SIZE]; // All process control structures.
 
 
 struct Proc * get_first_free_proc(){
@@ -34,7 +39,7 @@ struct Proc * get_first_free_proc(){
     for (i = 0; i < PROCS_MAX; i++) {
         if (procs[i].status == PROC_FREE) {
             procs[i].pid = i; // Set pid Now just in case.
-            
+
             // Set as not runnable so that next get first doesnt get this one
             procs[i].status = PROC_NOT_RUNNABLE; 
             return &procs[i];
@@ -49,11 +54,17 @@ struct Proc * get_first_free_proc(){
 void switch_proc(struct Proc* next) {
     curr = next;
     
-    curr->status = PROC_RUNNING;    
+    curr->status = PROC_RUNNING;
+
+
     printf("[SWITCH PROC]\n");
     printProc(next);
 
-    switch_page_table(curr->page_table, &curr->stack[sizeof(curr->stack)]);
+    #ifdef IS_RISC
+    SWITCH_TO_STACK(&trampoline_stacks[curr->cpunum][TRAMPOLINE_STACK_SIZE])
+    
+    switch_page_table(curr->page_table, (uint8_t *) curr->kernel_sp);
+    #endif
 
     switch_context(curr);
 }
@@ -79,8 +90,6 @@ void sched_yield(FullTrapFrame *tf, uintptr_t proc_pc) {
         printf("Should switch to PROC A\n");
         switch_proc(proc_a);
     }
-    /*
-    */
     #else // IS X86
     
     curr->status = PROC_RUNNABLE;

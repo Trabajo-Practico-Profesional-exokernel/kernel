@@ -9,35 +9,41 @@
 
 //#include "arch/logging.h"
 
+#define KERNEL_PERMISSIONS_ALL PAGE_R | PAGE_W| PAGE_X
 
 
 void create_process(struct Proc * proc, uint32_t pc) { // pc == entry point == start instruction
     // Save initial pc on proc.
     proc->pc = pc;
     
+    // For now kernel stack of process... is on the proc struct itself! xv6 does it in a page a virtual memory.. for the future
+    vaddr_t sp_base = alloc_pages(KERN_STACK_PAGES);
+    proc->kernel_sp =  sp_base + KERN_STACK_PAGES * PAGE_SIZE;
+
     // Stack callee-saved registers. These register values will be restored in
     // the first context switch in switch_context. ... init registers basically?
+    // After proc->kernel_sp and proc->pc setted up so that they can be included on trapframe if needed
     init_trapframe(proc);
-
-    // For now kernel stack of process... is on the proc struct itself! xv6 does it in a page a virtual memory.. for the future
-    proc->tf.sp = (uint32_t)(&proc->stack[SIZE_KERN_STACK]);
-
 
     // Initialize memory/pagetables
     paddr_t page_table_addr = alloc_pages(1);
     uint32_t *page_table = (uint32_t *) page_table_addr;
     
+    printf("FOR PROC %u MAP PAGETABLE %x\n", proc->pid, page_table_addr);
     // First map page for page table as direct map
-    map_page(page_table,page_table_addr, page_table_addr,  PAGE_R | PAGE_W| PAGE_X);
+    map_page(page_table,page_table_addr, page_table_addr, KERNEL_PERMISSIONS_ALL);
 
+    printf("FOR PROC %u MAP KERNEL STACK %x to %x\n", proc->pid, sp_base, proc->kernel_sp);
+    // Also map kernel stack
+    direct_map_range(page_table, 
+            sp_base, proc->kernel_sp, KERNEL_PERMISSIONS_ALL);
 
+    printf("FOR PROC %u MAP KERNEL CODE %x to %x\n", proc->pid, get_paddr_kernel_start(), get_paddr_kernel_end());
     // Map base kernel code pages, does not include any allocated pages, like the page_table_addr
     direct_map_range(page_table, 
             get_paddr_kernel_start(),
             get_paddr_kernel_end(),
-            PAGE_R | PAGE_W| PAGE_X
-            //| PAGE_U // Allow user space to access everything for now. 
-            // No.. it does not allow kernel to access U pages.
+            KERNEL_PERMISSIONS_ALL
     );
 
     proc->page_table = page_table;

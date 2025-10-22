@@ -42,8 +42,9 @@ void sleep(int delay) {
 /*
  * Inicializa el TrapFrame de un nuevo proceso para que, al hacer 'switch_context',
  * comience en la instrucción 'init_ins' (función de entrada del proceso).
+ *  uint32_t entry_point is in proc->pc
  */
-void init_trapframe(struct Proc *proc, uint32_t entry_point) {
+void init_trapframe(struct Proc *proc) {
     TrapFrame *tf = &proc->tf;
     printf("[INIT TRAPFRAME] Dir memoria trapframe: %p\n", &tf);
 
@@ -57,9 +58,10 @@ void init_trapframe(struct Proc *proc, uint32_t entry_point) {
     tf->eax = 0;
 
     // Configura punto de inicio (eip)
-    tf->eip = entry_point;
+    tf->eip = proc->pc;
 
-    tf->esp = (uint32_t)&proc->stack[sizeof(proc->stack)];
+    tf->esp = proc->kernel_sp; 
+    // For now? not good? lol at least it should not be 0 or so.. should be virtual addr
 
     printf("[INIT TRAPFRAME] entry_point = 0x%x, esp = 0x%x\n",tf->eip, tf->esp);
 }

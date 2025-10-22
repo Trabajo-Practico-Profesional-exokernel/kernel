@@ -40,10 +40,10 @@ paddr_t get_paddr_kernel_end(){
 
 void switch_page_table(uint32_t *table_next, uint8_t* next_stack){
     __asm__ __volatile__(
+        "csrw sscratch, %[sscratch]\n" // save the kernel stack pointer just
         "sfence.vma\n" // sfence.vma clears TLB cache, just in case?
         "csrw satp, %[satp]\n" // Write the index of physical page | constant for SATP
         "sfence.vma\n"  // sfence.vma clears TLB cache , to ensure no remaining map is old
-        "csrw sscratch, %[sscratch]\n" // save the stack pointer just in case? who knows why 
         :
         : [satp] "r" (SATP_SV32 | ((uint32_t) table_next / PAGE_SIZE)),
           [sscratch] "r" ((uint32_t) next_stack)
