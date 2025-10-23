@@ -59,4 +59,17 @@ struct TrapFrame {
 } __attribute__((packed));
 
 
+
+// Macros for stack pointer/switching
+#define SWITCH_TO_STACK(stack_top) \
+    __asm__ volatile("mv sp, %0" :: "r"(stack_top) :);
+
+// Macros for syscalls For syscalls param and return handling
+#define SYSCALL_ARG0(tf) tf->a0
+#define SYSCALL_ARG1(tf) tf->a1
+#define SYSCALL_ARG2(tf) tf->a2
+#define SYSCALL_SYSNO(tf) tf->a3
+
+#define SET_SYSCALL_RET0(tf, vl) tf->a0=vl;
+
 #endif /* !*/

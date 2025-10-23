@@ -2,7 +2,7 @@
 #include "arch_inc/mem_constants.h"
 #include "arch/mem.h"
 
-extern char __free_ram[], __free_ram_end[], __kernel_base[];
+extern char __free_ram[], __free_ram_end[], __kernel_base[], __kernel_base_end[];
 
 paddr_t alloc_pages(uint32_t n) {
     // next_paddr === last allocated mem end
@@ -18,16 +18,32 @@ paddr_t alloc_pages(uint32_t n) {
 }
 
 
+paddr_t get_paddr_page_ind(uint32_t ind){
+    return ((paddr_t) __free_ram) + (PAGE_SIZE * ind);
+}
+paddr_t get_paddr_last_page(){
+    return (paddr_t) __free_ram_end;
+}
+
+paddr_t get_paddr_kernel_start(){
+    return (paddr_t) __kernel_base;
+}
+
+paddr_t get_paddr_kernel_end(){
+    return (paddr_t) __kernel_base_end;
+}
+
+
 
 
 
 
 void switch_page_table(uint32_t *table_next, uint8_t* next_stack){
     __asm__ __volatile__(
+        "csrw sscratch, %[sscratch]\n" // save the kernel stack pointer just
         "sfence.vma\n" // sfence.vma clears TLB cache, just in case?
         "csrw satp, %[satp]\n" // Write the index of physical page | constant for SATP
         "sfence.vma\n"  // sfence.vma clears TLB cache , to ensure no remaining map is old
-        "csrw sscratch, %[sscratch]\n" // save the stack pointer just in case? who knows why 
         :
         : [satp] "r" (SATP_SV32 | ((uint32_t) table_next / PAGE_SIZE)),
           [sscratch] "r" ((uint32_t) next_stack)
@@ -35,8 +51,7 @@ void switch_page_table(uint32_t *table_next, uint8_t* next_stack){
 
 }
 
-
-void map_page(uint32_t *table1, uint32_t vaddr, paddr_t paddr, uint32_t flags) {
+void map_page(uint32_t *table1, vaddr_t vaddr, paddr_t paddr, uint32_t flags) {
     if (!is_aligned(vaddr, PAGE_SIZE))
         PANIC("unaligned vaddr %x", vaddr);
 
@@ -56,41 +71,26 @@ void map_page(uint32_t *table1, uint32_t vaddr, paddr_t paddr, uint32_t flags) {
     table0[vpn0] = ((paddr / PAGE_SIZE) << 10) | flags | PAGE_V;
 }
 
-void direct_map_all_pages(uint32_t *table1, paddr_t start, uint32_t flags){
-    for (paddr_t paddr = start;
-        paddr < (paddr_t) __free_ram_end; paddr += PAGE_SIZE){
-
-        //printf("MAPPED all page direct now at %x\n", paddr);
-        map_page(table1, paddr, paddr, flags);
-    }
-}
-
-
-paddr_t get_paddr_page_ind(uint32_t ind){
-    return ((paddr_t) __kernel_base) + (PAGE_SIZE * ind);
-}
-
-paddr_t direct_map_n_pages(uint32_t *table1,paddr_t start, uint32_t count, uint32_t flags){
-    paddr_t paddr = start;
-    uint32_t ind = 0;
-    while (paddr < (paddr_t) __free_ram_end && ind < count){
-        map_page(table1, paddr, paddr, flags);        
-        //printf("MAPPED %u page direct at %x\n", ind, paddr);
+paddr_t direct_map_range(uint32_t *table1, paddr_t range_start, paddr_t range_end, uint32_t flags){
+    paddr_t paddr = range_start;
+    while (paddr < range_end){
+        map_page(table1, paddr, paddr, flags); // Direct map        
         paddr += PAGE_SIZE;
-        ind+=1;
     }
-
+    
     return paddr;
 }
 
-paddr_t offset_map_n_pages(uint32_t *table1,paddr_t start, paddr_t offset, uint32_t count, uint32_t flags){
-    paddr_t paddr = start;
-    uint32_t ind = 0;
-    while (paddr < (paddr_t) __free_ram_end && ind < count){
-        map_page(table1, offset+paddr, paddr, flags);        
-        paddr += PAGE_SIZE;
-        ind+=1;
-    }
+paddr_t offset_map_range(uint32_t *table1, paddr_t range_start, paddr_t range_end, 
+                        vaddr_t mapped_vstart, uint32_t flags){
+    paddr_t paddr = range_start;
+    paddr_t vaddr = mapped_vstart;
 
+    while (paddr < range_end){
+        map_page(table1, vaddr, paddr, flags); // Map offseted to there        
+        paddr += PAGE_SIZE;
+        vaddr += PAGE_SIZE;
+    }
+    
     return paddr;
 }

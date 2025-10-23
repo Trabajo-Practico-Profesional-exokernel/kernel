@@ -13,6 +13,8 @@ void init_arch(void){
     memset(__bss, 0, (size_t) __bss_end - (size_t) __bss);    
 }
 
+#define SBI_PUTCHAR 1
+#define SBI_GETCHAR 2
 struct sbiret sbi_call(long arg0, long arg1, long arg2, long arg3, long arg4,
                        long arg5, long fid, long eid) {
     register long a0 __asm__("a0") = arg0;
@@ -33,8 +35,15 @@ struct sbiret sbi_call(long arg0, long arg1, long arg2, long arg3, long arg4,
 }
 
 void putchar(char ch) {
-    sbi_call(ch, 0, 0, 0, 0, 0, 0, 1 /* Console Putchar */);
+    sbi_call(ch, 0, 0, 0, 0, 0, 0, SBI_PUTCHAR);
 }
+
+long getchar(void) {
+    struct sbiret ret = sbi_call(0, 0, 0, 0, 0, 0, 0, SBI_GETCHAR);
+    return ret.error;
+}
+
+
 
 void clear(void){}
 

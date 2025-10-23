@@ -7,10 +7,10 @@
 
 #include "inc/common.h"
 
+#include "arch/trap_handling.h"
 
 // Assume its defined somewhere
-void sched_yield(FullTrapFrame *tf);
-
+void sched_yield(FullTrapFrame *tf, uintptr_t pc);
 
 /*
 Initing superviser mode/enable clock?! 
@@ -44,8 +44,8 @@ void init_trap(){
     WRITE_CSR(stvec, (uint32_t) trap_entry); // riscv5 , set in case of interruption trap entry to be exec 
 
     printf("Initing superviser mode/enable clock?! \n");
-    uint32_t mcount = READ_CSR(mideleg);
-    printf("mideleg vl %u \n", mcount);
+    //uint32_t mcount = READ_CSR(mideleg);
+    //printf("mideleg vl %u \n", mcount);
 
     WRITE_CSR(sie, READ_CSR(sie) | SIE_STIE);
     WRITE_CSR(sstatus, READ_CSR(sstatus) | (1 << 1)); // SSTATUS_SIE
@@ -69,6 +69,7 @@ void init_trap(){
     */
 
 }
+
 /*
 * TRAP handling entry
 * Essentially it saves the stack pointer on sscratch and after restores it on a0? and calls handle trap
@@ -78,7 +79,9 @@ __attribute__((naked))
 __attribute__((aligned(4)))
 void trap_entry(void) {
     __asm__ __volatile__(
-        "csrw sscratch, sp\n"
+        // We assume that on sscratch is the kernel stack pointer for the curr proc
+        // and that the curr sp is the sp from userspace
+        "csrrw sp, sscratch, sp\n"   // Swap user sp into sscratch, use kernel sp is on sscratch.. now in sp
         "addi sp, sp, -4 * 31\n"
         "sw ra,  4 * 0(sp)\n"
         "sw gp,  4 * 1(sp)\n"
@@ -147,7 +150,8 @@ void trap_entry(void) {
         "lw s9,  4 * 27(sp)\n"
         "lw s10, 4 * 28(sp)\n"
         "lw s11, 4 * 29(sp)\n"
-        "lw sp,  4 * 30(sp)\n"
+        "addi sp, sp, 4 * 31\n" // removed already used kernel stack space.
+        "csrrw sp, sscratch, sp\n"// put on sscratch the kernel stack once again, and the user stack on sp
         "sret\n"
     );
 }
@@ -170,12 +174,12 @@ void handle_trap(FullTrapFrame *tf) {
     if (scause == 8) {
         // Syscall from user mode
         // Example: dispatch to syscall handler
-        printf("log trap from userspace scause=%x, stval=%x, sepc=%x\n", scause, stval, user_pc);
+        //printf("log trap from userspace scause=%x, stval=%x, sepc=%x\n", scause, stval, user_pc);
         
         //uintptr_t new_pc = syscall_dispatch(sp);  // dispatch syscall?
         //WRITE_CSR(user_pc, new_pc); // Redirect execution
-
-        user_pc += 4;  // Skip ins
+        user_pc = handle_syscall(tf, user_pc);
+        //user_pc += 4;  // Skip ins
         WRITE_CSR(sepc, user_pc);        
     } else if(scause == 2) {
         // Just for testing purpose? skip this instruction
@@ -186,7 +190,7 @@ void handle_trap(FullTrapFrame *tf) {
         
         // printf("Clock interrupt ins scause=%x, stval=%x, sepc=%x\n", scause, stval, user_pc);
         SET_NEXT_INTERRUPT(DELAY_INTERRUPT);
-        sched_yield(tf);
+        sched_yield(tf, user_pc);
     } else {
         PANIC("unexpected trap scause=%u, stval=%x, sepc=%x\n", scause, stval, user_pc);
     }

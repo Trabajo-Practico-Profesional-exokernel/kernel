@@ -1,6 +1,7 @@
 #include "inc/types.h"
 #include "arch/stdio.h"
 #include "drivers/io.h"
+#include "drivers/io/serial_handler.h"
 
 /* The I/O ports */
 #define FB_COMMAND_PORT 0x3D4
@@ -15,6 +16,10 @@
 #define FB_NUM_COLS    80
 #define FB_NUM_ROWS    25
 #define BLACK_ON_WHITE 0x0F  // atributo de color: texto negro, fondo blanco
+#define SERIAL_PORT 0x3F8   // COM1
+
+
+
 
 static uint8_t *fb = (uint8_t *) FB_MEMORY;
 
@@ -60,7 +65,13 @@ uint16_t get_cursor_position(){
     return position;
 }
 
+// TODO
+long getchar(void){
+    return 0;
+}
+
 void putchar(char ch) {
+    serial_putchar(ch);
     uint16_t pos = get_cursor_position();
     uint32_t row = pos / FB_NUM_COLS;
     uint32_t col = pos % FB_NUM_COLS;
