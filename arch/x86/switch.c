@@ -3,28 +3,45 @@
 #include "arch/proc.h"
 #include "inc/common.h"
 
+/*
+        |    ...    |  mas cosas de antes.
+        |  *next    |   
+        |  ret addr |   <- esp 
 
+        tras pop ecx
+        |    ...    |  mas cosas de antes.
+        |  *next    |  <- esp 
+
+        tras pop eax
+        |    ...    |  mas cosas de antes. <- esp 
+
+        tras push
+        |    ...    |  mas cosas de antes.
+        | next->eip |  <- esp ... == return address cuando se haga ret.
+
+*/
 // cuando tengamos espacio de usuario, cambiar por iret que restaura eip y esp
 __attribute__((naked))
 void switch_context(struct Proc *next) {
-    __asm__ __volatile__ (
-        // vaciar registros FullTrapFrame
-        // "pop gs\n"
-        // "pop fs\n"
-        // "pop es\n"
-        // "pop ds\n"
+    __asm__ __volatile__ (        
+        "pop %ecx\n" // Pop current return address to ecx, ignore it.
         
-        "mov 4(%esp), %esp\n"         // eax = next (struct Proc*
+        "pop %eax\n" // Pop to eax the addr struct Proc* next 
 
-        // Restaurar registros del TrapFrame
-        "pop %edi\n"      // edi
-        "pop %esi\n"      // esi
-        "pop %ebp\n"      // ebp
-        "pop %ebx\n"      // ebx (saltamos oesp)
-        "pop %ebx\n"      // ebx 
-        "pop %edx\n"      // edx
-        "pop %ecx\n"      // ecx
-        "pop %eax\n"      // eax
+        "mov 32(%eax),%ecx\n"      // load next eip on ecx
+        "push %ecx\n"// push next eip as return address
+
+        // Restaurar registros del TrapFrame, apartir del eax.. no esp por que 
+        // No deberiamos tocar esp.
+        "mov 0(%eax),%edi\n"      // edi
+        "mov 4(%eax),%esi\n"      // esi
+        //"mov 8(%eax),%ebp\n"      // ebp ... pero no tenemos espacio de usuario no deberia cambiarlo
+        "mov 8(%eax),%ebx\n"      // ebx (saltamos ebp)
+        "mov 12(%eax),%ebx\n"      // ebx (saltamos oesp)
+        "mov 16(%eax),%ebx\n"      // ebx 
+        "mov 20(%eax),%edx\n"      // edx
+        "mov 24(%eax),%ecx\n"      // ecx
+        "mov 28(%eax),%eax\n"      // eax
 
         "sti\n"
         "ret\n"           // eip = tf->eip
