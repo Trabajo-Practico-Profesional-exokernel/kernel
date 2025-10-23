@@ -28,6 +28,10 @@ void switch_context(struct Proc *next) {
         
         "pop %eax\n" // Pop to eax the addr struct Proc* next 
 
+        // Update esp from kernel esp from tf?
+        "mov 36(%eax), %esp\n"
+        "mov 8(%eax),%ebp\n" // Restore ebp from user?
+
         "mov 32(%eax),%ecx\n"      // load next eip on ecx
         "push %ecx\n"// push next eip as return address
 
@@ -35,8 +39,6 @@ void switch_context(struct Proc *next) {
         // No deberiamos tocar esp.
         "mov 0(%eax),%edi\n"      // edi
         "mov 4(%eax),%esi\n"      // esi
-        //"mov 8(%eax),%ebp\n"      // ebp ... pero no tenemos espacio de usuario no deberia cambiarlo
-        "mov 8(%eax),%ebx\n"      // ebx (saltamos ebp)
         "mov 12(%eax),%ebx\n"      // ebx (saltamos oesp)
         "mov 16(%eax),%ebx\n"      // ebx 
         "mov 20(%eax),%edx\n"      // edx
@@ -67,7 +69,6 @@ void init_trapframe(struct Proc *proc) {
 
     tf->edi = 0;
     tf->esi = 0;
-    tf->ebp = 0;
     tf->oesp = 0; 
     tf->ebx = 0;
     tf->edx = 0;
@@ -78,15 +79,20 @@ void init_trapframe(struct Proc *proc) {
     tf->eip = proc->pc;
 
     tf->esp = proc->kernel_sp; 
+    tf->ebp = proc->kernel_sp; // == esp inicialmente? dsps el esp crece hacia abajo
     // For now? not good? lol at least it should not be 0 or so.. should be virtual addr
 
     printf("[INIT TRAPFRAME] entry_point = 0x%x, esp = 0x%x\n",tf->eip, tf->esp);
 }
 
+#include "arch/logging.h"
 /*
  * Actualiza el trapframe de un proceso con el contexto actual (por ejemplo, desde un trap).
  */
 void update_trapframe(struct Proc *proc, FullTrapFrame *tf) {
+    // printf("[REPLACE FULL TRAPFRAME]\n");
+    // printTrapFull(tf);
+
     proc->tf.eax = tf->eax;
     proc->tf.ebx = tf->ebx;
     proc->tf.ecx = tf->ecx;

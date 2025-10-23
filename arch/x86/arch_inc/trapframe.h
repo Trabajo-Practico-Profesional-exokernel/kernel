@@ -105,3 +105,15 @@ typedef struct TrapFrame {
 #define SYSCALL_SYSNO(tf) tf->eax
 
 #define SET_SYSCALL_RET0(tf, vl) tf->eax=vl;
+
+// Macro to define how to change stack base/top
+#define SWITCH_TO_STACK(stack_base, stack_top)               \
+        __asm__ volatile (                                   \
+            "movl %0, %%esp\n"                               \
+            "movl %1, %%ebp\n"                               \
+            :                                                \
+            : "r"(stack_top), "r"(stack_base)                \
+            : "memory");                                     
+
+
+

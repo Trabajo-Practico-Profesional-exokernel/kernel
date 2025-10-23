@@ -48,7 +48,7 @@ void init_sched(void) {
 #else // IS X86
 #include "arch/switch.h"
 
-#define SLEEP_TIME 300000000
+#define SLEEP_TIME 150000000
 
 
 void proc_a_entry(void) {
@@ -65,12 +65,22 @@ void proc_a_entry(void) {
 void proc_b_entry(void) {
     printf("starting process B\n");
     while (1) {
-        sleep(SLEEP_TIME);
         printf("B after sleep proc_b: \n");
+        sleep(SLEEP_TIME);
     }
 }
 
+// #include "arch/mem.h" //defines perms like PAGE_R and so on.
+//#include "arch_inc/trapframe.h"
+//extern char __free_ram[], __free_ram_end[];
+
 void init_sched(void) {
+    // paddr_t new_stk_base = alloc_pages(2);
+    // paddr_t new_stk_top = new_stk_base+2*PAGE_SIZE;
+
+    // printf("SOME LOG? %x to %x\n" ,new_stk_base, new_stk_top);
+    // SWITCH_TO_STACK(new_stk_base, new_stk_top);
+
     struct Proc * proc_a = get_first_free_proc();
     struct Proc * proc_b = get_first_free_proc();
     set_proc_a(proc_a);
@@ -86,11 +96,11 @@ void init_sched(void) {
 
     printf("START!\n");
     // DEBERIA LLAMAR SOLO A SWITCH PROC.. no setear a mano curr 
-    //switch_proc(proc_a);
+    switch_proc(proc_a);
 
-    set_curr(proc_a);
+    //set_curr(proc_a);
     //switch_page_table(curr->page_table, &curr->stack[sizeof(curr->stack)]);
-    proc_a_entry();
+    //proc_a_entry();
 
     PANIC("unreachable here!");
 }
