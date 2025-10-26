@@ -12,7 +12,7 @@
 // UNUSED_ARGUMENT(mboot);
 //     UNUSED_ARGUMENT(magic_number);
 // return 0xDEADBEEF;
-void kmain()
+void kmain(void *mboot, unsigned int magic_number)
 {
 
     init_arch();

@@ -27,6 +27,8 @@ void create_process(struct Proc * proc, uint32_t pc) { // pc == entry point == s
 
     #ifdef IS_RISC
     // Initialize memory/pagetables
+
+    // TODO: poner en una funcion create_page_table o algo
     paddr_t page_table_addr = alloc_pages(1);
     uint32_t *page_table = (uint32_t *) page_table_addr;
     
@@ -48,6 +50,17 @@ void create_process(struct Proc * proc, uint32_t pc) { // pc == entry point == s
     );
 
     proc->page_table = page_table;
+    #endif
+
+    #ifdef IS_X86
+
+    // crear tabla PDE de proceso
+        // buscar espacio de memoria para nueva PDE
+        // crear PTEs dentro
+        // devolver puntero a PDE
+    // que proceso se guarde su PDE
+
+
     #endif
 
     proc->status = PROC_RUNNABLE;
