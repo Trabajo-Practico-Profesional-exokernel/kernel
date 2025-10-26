@@ -1,10 +1,7 @@
 #include "paging.h"
-#include "string.h"
-#include "stdint.h"
-#include "stdio.h"
-#include "common.h"
-#include "mem.h"
-#include "mem_constants.h"
+#include "inc/types.h"
+#include "inc/common.h"
+#include "arch_inc/mem_constants.h"
 
 #define NUM_ENTRIES 1024
 #define PDT_SIZE NUM_ENTRIES * sizeof(pde_t)

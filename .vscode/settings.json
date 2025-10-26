@@ -7,6 +7,8 @@
         "trap.h": "c",
         "riscv5_trap.h": "c",
         "trapframe.h": "c",
-        "switch.h": "c"
-    }
+        "switch.h": "c",
+        "string.h": "c"
+    },
+    "C_Cpp.errorSquiggles": "disabled"
 }
