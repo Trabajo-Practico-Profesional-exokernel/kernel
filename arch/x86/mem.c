@@ -1,7 +1,7 @@
 #include "inc/common.h"
 #include "arch_inc/mem_constants.h"
 #include "arch/mem.h"
-
+#include "paging.h"
 
 // EN TEORIA ES LO MISMO QUE EN RISCV
 extern char __free_ram[], __free_ram_end[], __kernel_base[], __kernel_base_end[];
@@ -65,6 +65,45 @@ void switch_page_table(uint32_t *table_next, uint8_t* next_stack){
 
 }
 
+
+/**
+ * Función para "empaquetar" una dirección y permisos en una struct pte_t.
+ * Es una función de ayuda para no repetir código.
+ */
+static void set_pte_entry(pte_t *pte, paddr_t paddr, uint32_t perms) {
+    // 1. Construir el valor completo de 32 bits
+    uint32_t entry = (paddr & PAGE_ADDR_MASK) | perms | PAGE_P_PRESENT;
+
+    // 2. "Empaquetar" ese valor en los campos de la struct
+    pte->config = (entry & 0xFF);           // Byte 0 (bits 0-7)
+    pte->middle = (entry >> 8) & 0xFF;    // Byte 1 (bits 8-15)
+    pte->high_addr = (entry >> 16) & 0xFFFF;  // Bytes 2 y 3 (bits 16-31)
+}
+
+/**
+ * Función para "empaquetar" una dirección y permisos en una struct pde_t.
+ */
+static void set_pde_entry(pde_t *pde, paddr_t pt_addr, uint32_t perms) {
+    // 1. Construir el valor completo de 32 bits
+    uint32_t entry = (pt_addr & PAGE_ADDR_MASK) | perms;
+
+    // 2. "Empaquetar" ese valor en los campos de la struct
+    pde->config = (entry & 0xFF);           // Byte 0
+    pde->low_addr = (entry >> 8) & 0xFF;    // Byte 1
+    pde->high_addr = (entry >> 16) & 0xFFFF;  // Bytes 2 y 3
+}
+
+/**
+ * Función para "desempaquetar" la dirección física de una pde_t.
+ */
+static paddr_t get_pde_addr(pde_t *pde) {
+    // Reconstruir el valor de 32 bits desde los campos de la struct
+    uint32_t entry = pde->config | (pde->low_addr << 8) | (pde->high_addr << 16);
+    
+    // Devolver solo la parte de la dirección
+    return (entry & PAGE_ADDR_MASK);
+}
+
 void map_page(uint32_t *page_dir, vaddr_t vaddr, paddr_t paddr, uint32_t perms) {
     
     // 1. Calcular el índice del Page Directory (PDI)
@@ -72,11 +111,11 @@ void map_page(uint32_t *page_dir, vaddr_t vaddr, paddr_t paddr, uint32_t perms) 
     uint32_t pdi = vaddr >> 22;
 
     // 2. Obtener la Page Directory Entry (PDE)
-    uint32_t *pde_ptr = &page_dir[pdi];
+    pde_t *pde_ptr = &page_dir[pdi];
 
     // 3. Verificar si la Page Table (el "cajón") existe
     // Si el bit "Present" (P) de la PDE es 0, necesitamos crear una Page Table nueva.
-    if (!(*pde_ptr & PAGE_P_PRESENT)) {
+    if (!(pde_ptr->config & PAGE_P_PRESENT)) {
         // No existe, pedir una página física vacía para usarla como Page Table
         paddr_t new_pt_addr = alloc_pages(1);
         if (new_pt_addr == 0) {
@@ -88,21 +127,25 @@ void map_page(uint32_t *page_dir, vaddr_t vaddr, paddr_t paddr, uint32_t perms) 
 
         // Actualizar la PDE para que apunte a nuestra nueva Page Table
         // La marcamos como Presente, Escribible y accesible por el Usuario.
-        *pde_ptr = new_pt_addr | PAGE_P_PRESENT | PAGE_P_READ_WRITE | PAGE_P_USER;
-    }
+        pde_ptr->config = new_pt_addr | PAGE_P_PRESENT | PAGE_P_READ_WRITE | PAGE_P_USER;
 
+        uint32_t pde_perms = PAGE_P_PRESENT | PAGE_P_READ_WRITE | PAGE_P_USER;
+        set_pde_entry(pde_ptr, new_pt_addr, pde_perms);
+    
+    }
+    paddr_t pt_addr = get_pde_addr(pde_ptr);
     // 4. Obtener la Page Table (PT)
     // La dirección de la PT está en los 20 bits superiores de la PDE
-    uint32_t *page_table = (uint32_t *)(*pde_ptr & PAGE_ADDR_MASK);
+    pte_t *page_table = (pte_t *)pt_addr;
 
     // 5. Calcular el índice de la Page Table (PTI)
     // Usamos los 10 bits del medio de la vaddr (bits 21-12)
     uint32_t pti = (vaddr >> 12) & 0x3FF; // 0x3FF es una máscara para 10 bits
 
     // 6. Obtener la Page Table Entry (PTE) y configurarla
-    uint32_t *pte_ptr = &page_table[pti];
+    pte_t *pte_ptr = &page_table[pti];
     
     // Mapeamos la dirección física (paddr) con los permisos dados
     // y la marcamos como Presente.
-    *pte_ptr = (paddr & PAGE_ADDR_MASK) | perms | PAGE_P_PRESENT;
+    set_pde_entry(pde_ptr, paddr, perms);
 }
