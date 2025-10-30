@@ -41,29 +41,21 @@ while the lower bits may be used for process-context identifiers if the PCIDE bi
 */
 extern void pdt_set(uint32_t pdt_addr); // TODO: para cr3
 
+// Reserva espacio estático para estructuras gen_pt_t simples
+static gen_pt_t pt_pool[32];
+static int pt_index = 0;
 
 gen_pt_t* get_gen_table(void) {
-    
-    // Alloc memory for Generic table struct
-    gen_pt_t *pt = (gen_pt_t*) alloc_pages(1);
-    if (!pt) {
-        PANIC("out of memory (gen_pt_t)");
-        // return NULL; // O PANIC
-    }
+    gen_pt_t *pt = &pt_pool[pt_index++];
+    memset(pt, 0, sizeof(*pt));
 
-    // Alloc memory for PDE struct
-    paddr_t page_dir_addr = alloc_pages(1); 
-    if (!page_dir_addr) {
-        // TODO: Liberar pt si falla
-        PANIC("out of memory (page_dir)");
-    }
-    
-    pde_t *page_dir = (pde_t *) page_dir_addr;
-    
-    memset(page_dir, 0, PAGE_SIZE);
-    
-    pt->root = page_dir;
-    pt->paddr = page_dir_addr;
-    
+    // Allocate the actual physical page directory
+    paddr_t pde_paddr = alloc_pages(1);
+    if (!pde_paddr) PANIC("out of memory (page_dir)");
+    memset((void*)pde_paddr, 0, PAGE_SIZE);
+
+    pt->paddr = pde_paddr;
+    pt->root  = (void*)pde_paddr; // identity map today
+
     return pt;
 }

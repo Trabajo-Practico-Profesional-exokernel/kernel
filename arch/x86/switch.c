@@ -25,9 +25,15 @@ static inline void load_cr3(uint32_t paddr) {
     __asm__ volatile("mov %0, %%cr3" :: "r"(paddr) : "memory");
 }
 
+void switch_to_page_table(struct Proc *p) {
+    if (!p || !p->page_table) return;
+    uint32_t cr3 = (uint32_t)(p->page_table->paddr & 0xFFFFF000);
+    load_cr3(cr3);
+}
 
 
 // cuando tengamos espacio de usuario, cambiar por iret que restaura eip y esp
+// TODO: add switching of CR3
 __attribute__((naked))
 void switch_context(struct Proc *next) {
     __asm__ __volatile__ (        

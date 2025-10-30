@@ -28,6 +28,7 @@ void create_process(struct Proc * proc, uint32_t pc) { // pc == entry point == s
 
     #ifdef IS_RISC
     // Initialize memory/pagetables
+    printf("NO DEBERIA ENTRAR ACA X86!!!!\n");
 
     // TODO: poner en una funcion create_page_table o algo
     paddr_t page_table_addr = alloc_pages(1);
@@ -63,7 +64,8 @@ void create_process(struct Proc * proc, uint32_t pc) { // pc == entry point == s
     #ifdef IS_X86
 
     gen_pt_t *gen_pt = get_gen_table();
-    printf("[CREATED PROC %u] TABLE:%p CR3: %p\n", proc->pid, gen_pt->root ,gen_pt->paddr);
+    // printf("[CREATED PROC %u] TABLE:%p CR3: %p\n", proc->pid, gen_pt->root ,gen_pt->paddr);
+    printf("[CREATED PROC %d] TABLE:%p paddr:%x\n", proc->pid, gen_pt, (unsigned)gen_pt->paddr);
 
     // Mapear el stack del kernel
     printf("FOR PROC %u MAP KERNEL STACK %x to %x\n", proc->pid, sp_base, proc->kernel_sp);
@@ -74,6 +76,10 @@ void create_process(struct Proc * proc, uint32_t pc) { // pc == entry point == s
     direct_map_range(gen_pt, get_paddr_kernel_start(), get_paddr_kernel_end(), KERNEL_PERMISSIONS_ALL);
 
     proc->page_table = gen_pt;
+    printf("[DBG] DESPUES `proc->page_table`:  gen_pt=%x &gen_pt=%x paddr=%x\n",
+       (uint32_t)gen_pt,
+       (uint32_t)&gen_pt,
+       (uint32_t)gen_pt->paddr);
 
     #endif
 
