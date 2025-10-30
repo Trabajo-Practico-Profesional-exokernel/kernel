@@ -6,7 +6,7 @@
 #include "inc/types.h"
 
 typedef struct GenericPageTable {
-    void *root;     // Virtual address of page directory root
+    void *root;     // Virtual address of page directory root (pde for x86)
     paddr_t paddr;  // Physical address of that root (for satp or cr3)
 } gen_pt_t;
 

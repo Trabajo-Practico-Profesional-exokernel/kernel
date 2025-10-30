@@ -20,19 +20,19 @@
         | next->eip |  <- esp ... == return address cuando se haga ret.
 
 */
+
+static inline void load_cr3(uint32_t paddr) {
+    __asm__ volatile("mov %0, %%cr3" :: "r"(paddr) : "memory");
+}
+
+
+
 // cuando tengamos espacio de usuario, cambiar por iret que restaura eip y esp
 __attribute__((naked))
 void switch_context(struct Proc *next) {
     __asm__ __volatile__ (        
         "pop %ecx\n"        // return address (ignore)
         "pop %eax\n"        // eax = struct Proc* next 
-
-        // TODO: EXTRAER ESTO A INLINE ASSEMBLY
-        // CHEQUEAR QUE FUNCIONE EL CAMBIO
-        // === Cargar nuevo CR3 (Page Directory fisico) ===
-        "mov 24(%eax), %edx\n"     "\n"  // edx = next->page_table
-        "mov 4(%edx), %edx\n"      "\n"  // edx = next->page_table->paddr
-        "mov %edx, %cr3\n"         "\n"  // cargar nueva tabla de páginas
 
         // === Cambiar stack ===
         "mov 36(%eax), %esp\n"
@@ -72,7 +72,7 @@ void sleep(int delay) {
  */
 void init_trapframe(struct Proc *proc) {
     TrapFrame *tf = &proc->tf;
-    printf("[INIT TRAPFRAME] Dir memoria trapframe: %p\n", &tf);
+    printf("[INIT TRAPFRAME] Dir memoria trapframe: %p\n", tf);
 
     tf->edi = 0;
     tf->esi = 0;

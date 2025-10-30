@@ -31,19 +31,39 @@ Address translation involves dividing the virtual address into three parts:
     - the least significant 12 bits (bits 0-11) specify the page offset
 */
 
+
+/*
+Purpose: CR3 serves as the Page Directory Base Register (PDBR).
+Usage: It holds the physical address of the first page directory for the current task.
+
+Physical Addressing: The upper 20 bits of CR3 are used for the physical address, 
+while the lower bits may be used for process-context identifiers if the PCIDE bit in CR4 is set.
+*/
 extern void pdt_set(uint32_t pdt_addr); // TODO: para cr3
 
-gen_pt_t get_gen_table(void) {
-    paddr_t page_dir_addr = alloc_pages(1);
+
+gen_pt_t* get_gen_table(void) {
+    
+    // Alloc memory for Generic table struct
+    gen_pt_t *pt = (gen_pt_t*) alloc_pages(1);
+    if (!pt) {
+        PANIC("out of memory (gen_pt_t)");
+        // return NULL; // O PANIC
+    }
+
+    // Alloc memory for PDE struct
+    paddr_t page_dir_addr = alloc_pages(1); 
+    if (!page_dir_addr) {
+        // TODO: Liberar pt si falla
+        PANIC("out of memory (page_dir)");
+    }
+    
     pde_t *page_dir = (pde_t *) page_dir_addr;
     
-    // Clean trash and set as Not-Present
     memset(page_dir, 0, PAGE_SIZE);
-
-    gen_pt_t pt = {
-        .root = page_dir, //pde
-        .paddr = page_dir_addr, // dir a pde (cr3)
-    };
-
+    
+    pt->root = page_dir;
+    pt->paddr = page_dir_addr;
+    
     return pt;
 }

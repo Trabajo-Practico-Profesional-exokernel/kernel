@@ -28,7 +28,7 @@ struct pte {
     } __attribute__((packed));
 typedef struct pte pte_t;
 
-gen_pt_t get_gen_table();
+gen_pt_t* get_gen_table();
 
 //void paging_init(uint32_t boot_page_directory);
 

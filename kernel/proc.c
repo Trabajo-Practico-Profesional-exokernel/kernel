@@ -63,6 +63,7 @@ void create_process(struct Proc * proc, uint32_t pc) { // pc == entry point == s
     #ifdef IS_X86
 
     gen_pt_t *gen_pt = get_gen_table();
+    printf("[CREATED PROC %u] TABLE:%p CR3: %p\n", proc->pid, gen_pt->root ,gen_pt->paddr);
 
     // Mapear el stack del kernel
     printf("FOR PROC %u MAP KERNEL STACK %x to %x\n", proc->pid, sp_base, proc->kernel_sp);
