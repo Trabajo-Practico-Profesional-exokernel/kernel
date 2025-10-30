@@ -15,7 +15,7 @@
 #define IS_ENTRY_PRESENT(e) ((e)->config && 0x01)
 
 
-extern char __kernel_base[], __kernel_base_end[], __free_ram[], __free_ram_end[], __stack_top[];
+// extern char __kernel_base[], __kernel_base_end[], __free_ram[], __free_ram_end[], __stack_top[];
 
 /*
 In the page directory, each entry points to a page table. 
@@ -31,4 +31,19 @@ Address translation involves dividing the virtual address into three parts:
     - the least significant 12 bits (bits 0-11) specify the page offset
 */
 
+extern void pdt_set(uint32_t pdt_addr); // TODO: para cr3
 
+gen_pt_t get_gen_table(void) {
+    paddr_t page_dir_addr = alloc_pages(1);
+    pde_t *page_dir = (pde_t *) page_dir_addr;
+    
+    // Clean trash and set as Not-Present
+    memset(page_dir, 0, PAGE_SIZE);
+
+    gen_pt_t pt = {
+        .root = page_dir, //pde
+        .paddr = page_dir_addr, // dir a pde (cr3)
+    };
+
+    return pt;
+}

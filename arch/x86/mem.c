@@ -36,7 +36,7 @@ paddr_t get_paddr_kernel_end(){
 }
 
 
-paddr_t direct_map_range(uint32_t *table1, paddr_t range_start, paddr_t range_end, uint32_t flags){
+paddr_t direct_map_range(gen_pt_t *table1, paddr_t range_start, paddr_t range_end, uint32_t flags){
     paddr_t paddr = range_start;
     while (paddr < range_end){
         map_page(table1, paddr, paddr, flags); // Direct map        
@@ -46,7 +46,7 @@ paddr_t direct_map_range(uint32_t *table1, paddr_t range_start, paddr_t range_en
     return paddr;
 }
 
-paddr_t offset_map_range(uint32_t *table1, paddr_t range_start, paddr_t range_end, 
+paddr_t offset_map_range(gen_pt_t *table1, paddr_t range_start, paddr_t range_end, 
                         vaddr_t mapped_vstart, uint32_t flags){
     paddr_t paddr = range_start;
     paddr_t vaddr = mapped_vstart;
@@ -104,48 +104,32 @@ static paddr_t get_pde_addr(pde_t *pde) {
     return (entry & PAGE_ADDR_MASK);
 }
 
-void map_page(uint32_t *page_dir, vaddr_t vaddr, paddr_t paddr, uint32_t perms) {
-    
-    // 1. Calcular el índice del Page Directory (PDI)
-    // Usamos los 10 bits superiores de la vaddr (bits 31-22)
-    uint32_t pdi = vaddr >> 22;
+void map_page(gen_pt_t *gen_pt, vaddr_t vaddr, paddr_t paddr, uint32_t perms) {
+    pde_t *page_dir = (pde_t *) gen_pt->root;
+   
+    // 1. Índice del Page Directory
+    uint32_t pdi = (vaddr >> 22) & 0x3FF;
 
-    // 2. Obtener la Page Directory Entry (PDE)
+    // 2. Entrada del Page Directory
     pde_t *pde_ptr = &page_dir[pdi];
 
-    // 3. Verificar si la Page Table (el "cajón") existe
-    // Si el bit "Present" (P) de la PDE es 0, necesitamos crear una Page Table nueva.
+    // 3. Crear Page Table si no existe
     if (!(pde_ptr->config & PAGE_P_PRESENT)) {
-        // No existe, pedir una página física vacía para usarla como Page Table
         paddr_t new_pt_addr = alloc_pages(1);
-        if (new_pt_addr == 0) {
-            PANIC("map_page: ¡No hay memoria para una nueva Page Table!");
-        }
-        
-        // Limpiarla (importante, para que todas las PTEs empiecen como "no presentes")
         memset((void *)new_pt_addr, 0, PAGE_SIZE);
-
-        // Actualizar la PDE para que apunte a nuestra nueva Page Table
-        // La marcamos como Presente, Escribible y accesible por el Usuario.
-        pde_ptr->config = new_pt_addr | PAGE_P_PRESENT | PAGE_P_READ_WRITE | PAGE_P_USER;
 
         uint32_t pde_perms = PAGE_P_PRESENT | PAGE_P_READ_WRITE | PAGE_P_USER;
         set_pde_entry(pde_ptr, new_pt_addr, pde_perms);
-    
     }
+
+    // 4. Obtener la dirección física de la PT
     paddr_t pt_addr = get_pde_addr(pde_ptr);
-    // 4. Obtener la Page Table (PT)
-    // La dirección de la PT está en los 20 bits superiores de la PDE
     pte_t *page_table = (pte_t *)pt_addr;
 
-    // 5. Calcular el índice de la Page Table (PTI)
-    // Usamos los 10 bits del medio de la vaddr (bits 21-12)
-    uint32_t pti = (vaddr >> 12) & 0x3FF; // 0x3FF es una máscara para 10 bits
+    // 5. Índice del Page Table
+    uint32_t pti = (vaddr >> 12) & 0x3FF;
 
-    // 6. Obtener la Page Table Entry (PTE) y configurarla
+    // 6. Configurar la entrada PTE
     pte_t *pte_ptr = &page_table[pti];
-    
-    // Mapeamos la dirección física (paddr) con los permisos dados
-    // y la marcamos como Presente.
-    set_pde_entry(pde_ptr, paddr, perms);
+    set_pte_entry(pte_ptr, paddr, perms);
 }

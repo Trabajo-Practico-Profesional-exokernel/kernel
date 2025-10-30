@@ -5,6 +5,7 @@
 #include "arch/switch.h"// Declares the swtich context to new Proc and sleep method.
 
 #include "arch/mem_layout.h"
+#include "arch/mem.h"
 #include "inc/common.h"
 
 //#include "arch/logging.h"
@@ -31,64 +32,47 @@ void create_process(struct Proc * proc, uint32_t pc) { // pc == entry point == s
     // TODO: poner en una funcion create_page_table o algo
     paddr_t page_table_addr = alloc_pages(1);
     uint32_t *page_table = (uint32_t *) page_table_addr;
+
+    gen_pt_t pt = {
+        .root = page_table,
+        .paddr = page_table_addr, //para satp!
+    };
     
     printf("FOR PROC %u MAP PAGETABLE %x\n", proc->pid, page_table_addr);
     // First map page for page table as direct map
-    map_page(page_table,page_table_addr, page_table_addr, KERNEL_PERMISSIONS_ALL);
+    map_page(*pt,page_table_addr, page_table_addr, KERNEL_PERMISSIONS_ALL);
 
     printf("FOR PROC %u MAP KERNEL STACK %x to %x\n", proc->pid, sp_base, proc->kernel_sp);
     // Also map kernel stack
-    direct_map_range(page_table, 
+    direct_map_range(*pt, 
             sp_base, proc->kernel_sp, KERNEL_PERMISSIONS_ALL);
 
     printf("FOR PROC %u MAP KERNEL CODE %x to %x\n", proc->pid, get_paddr_kernel_start(), get_paddr_kernel_end());
     // Map base kernel code pages, does not include any allocated pages, like the page_table_addr
-    direct_map_range(page_table, 
+    direct_map_range(*pt, 
             get_paddr_kernel_start(),
             get_paddr_kernel_end(),
             KERNEL_PERMISSIONS_ALL
     );
 
-    proc->page_table = page_table;
+    
+ 
+    proc->page_table = pt;  // TODO: esto va a romper en mil lados... corregirlo en otra rama
     #endif
 
     #ifdef IS_X86
 
+    gen_pt_t *gen_pt = get_gen_table();
 
-    // 1. Reservar una página para el Page Directory (PD)
-    paddr_t page_dir_addr = alloc_pages(1);
-    uint32_t *page_dir = (uint32_t *) page_dir_addr;
-    
-    // 2. ¡MUY IMPORTANTE! Limpiar el Page Directory.
-    // Todas las PDEs deben empezar como "no presentes".
-    memset(page_dir, 0, PAGE_SIZE);
-
-    proc->page_table = page_dir; // Guardamos el PD en el proceso
-
-    // 3. Mapear el stack del kernel (igual que antes)
-    // (map_page creará las Page Tables necesarias automáticamente)
+    // Mapear el stack del kernel
     printf("FOR PROC %u MAP KERNEL STACK %x to %x\n", proc->pid, sp_base, proc->kernel_sp);
-    direct_map_range(proc->page_table, 
-            sp_base, proc->kernel_sp, KERNEL_PERMISSIONS_ALL);
+    direct_map_range(gen_pt, sp_base, proc->kernel_sp, KERNEL_PERMISSIONS_ALL);
 
-    // 4. Mapear el código/datos del kernel (igual que antes)
+    // Mapear los code/data segments del kernel 
     printf("FOR PROC %u MAP KERNEL CODE %x to %x\n", proc->pid, get_paddr_kernel_start(), get_paddr_kernel_end());
-    direct_map_range(proc->page_table, 
-            get_paddr_kernel_start(),
-            get_paddr_kernel_end(),
-            KERNEL_PERMISSIONS_ALL
-    );
+    direct_map_range(gen_pt, get_paddr_kernel_start(), get_paddr_kernel_end(), KERNEL_PERMISSIONS_ALL);
 
-    // NOTA: El mapeo de la *propia* page table que hacías en RISC-V
-    // no es estrictamente necesario aquí, ya que el kernel se accede
-    // a través del mapa de kernel, que ya incluye todo (incluyendo el page_dir).
-
-    // crear tabla PDE de proceso
-        // buscar espacio de memoria para nueva PDE
-        // crear PTEs dentro
-        // devolver puntero a PDE
-    // que proceso se guarde su PDE
-
+    proc->page_table = gen_pt;
 
     #endif
 

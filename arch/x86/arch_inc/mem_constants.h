@@ -8,7 +8,7 @@
 */
 
 
-#define SATP_SV32 (1u << 31)
+// #define SATP_SV32 (1u << 31)
 #define PAGE_V    (1 << 0)   // "Valid" bit (entry is enabled)
 #define PAGE_R    (1 << 1)   // Readable
 #define PAGE_W    (1 << 2)   // Writable

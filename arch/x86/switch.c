@@ -24,21 +24,28 @@
 __attribute__((naked))
 void switch_context(struct Proc *next) {
     __asm__ __volatile__ (        
-        "pop %ecx\n" // Pop current return address to ecx, ignore it.
-        
-        "pop %eax\n" // Pop to eax the addr struct Proc* next 
+        "pop %ecx\n"        // return address (ignore)
+        "pop %eax\n"        // eax = struct Proc* next 
 
-        // Update esp from kernel esp from tf?
+        // TODO: EXTRAER ESTO A INLINE ASSEMBLY
+        // CHEQUEAR QUE FUNCIONE EL CAMBIO
+        // === Cargar nuevo CR3 (Page Directory fisico) ===
+        "mov 24(%eax), %edx\n"     "\n"  // edx = next->page_table
+        "mov 4(%edx), %edx\n"      "\n"  // edx = next->page_table->paddr
+        "mov %edx, %cr3\n"         "\n"  // cargar nueva tabla de páginas
+
+        // === Cambiar stack ===
         "mov 36(%eax), %esp\n"
         "mov 8(%eax),%ebp\n" // Restore ebp from user?
 
+        // === Restaurar eip y registros ===
         "mov 32(%eax),%ecx\n"      // load next eip on ecx
         "push %ecx\n"// push next eip as return address
 
         // Restaurar registros del TrapFrame, apartir del eax.. no esp por que 
         // No deberiamos tocar esp.
-        "mov 0(%eax),%edi\n"      // edi
-        "mov 4(%eax),%esi\n"      // esi
+        "mov 0(%eax),%edi\n"       // edi
+        "mov 4(%eax),%esi\n"       // esi
         "mov 12(%eax),%ebx\n"      // ebx (saltamos oesp)
         "mov 16(%eax),%ebx\n"      // ebx 
         "mov 20(%eax),%edx\n"      // edx
@@ -90,9 +97,6 @@ void init_trapframe(struct Proc *proc) {
  * Actualiza el trapframe de un proceso con el contexto actual (por ejemplo, desde un trap).
  */
 void update_trapframe(struct Proc *proc, FullTrapFrame *tf) {
-    // printf("[REPLACE FULL TRAPFRAME]\n");
-    // printTrapFull(tf);
-
     proc->tf.eax = tf->eax;
     proc->tf.ebx = tf->ebx;
     proc->tf.ecx = tf->ecx;
