@@ -46,6 +46,7 @@ static gen_pt_t pt_pool[32];
 static int pt_index = 0;
 
 gen_pt_t* get_gen_table(void) {
+    // Virtual memory for the generic table
     gen_pt_t *pt = &pt_pool[pt_index++];
     memset(pt, 0, sizeof(*pt));
 

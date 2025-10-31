@@ -62,7 +62,7 @@ void switch_proc(struct Proc* next) {
     curr->status = PROC_RUNNING;
 
 
-    printf("[SWITCH PROC]\n");
+    printf("[SWITCH PROC] ");
     printProc(next);
 
     #ifdef IS_RISC

@@ -88,10 +88,12 @@ void init_sched(void) {
     
     create_process(proc_a, (uint32_t) proc_a_entry);
     create_process(proc_b,(uint32_t) proc_b_entry);
-    printf("AT CREATE PROCESS A expected pc= %u, \n", (uint32_t) proc_a_entry);
+    printf("[INIT SCHED] AT CREATE PROCESS A expected pc= %u, \n", (uint32_t) proc_a_entry);
+    printf("[INIT SCHED] ");
     printProc(proc_a);
     
-    printf("AT CREATE PROCESS B expected pc= %u, \n", (uint32_t) proc_b_entry);
+    printf("[INIT SCHED] AT CREATE PROCESS B expected pc= %u, \n", (uint32_t) proc_b_entry);
+    printf("[INIT SCHED] ");
     printProc(proc_b);
 
     printf("START!\n");
