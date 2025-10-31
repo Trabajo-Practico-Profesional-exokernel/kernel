@@ -62,8 +62,9 @@ void switch_proc(struct Proc* next) {
     curr->status = PROC_RUNNING;
 
 
-    printf("[SWITCH PROC] ");
+    printf("[NEXT PROC BEFORE SWITCH_CONTEXT] ");
     printProc(next);
+    printf("\n\n");
 
     #ifdef IS_RISC
     SWITCH_TO_STACK(&trampoline_stacks[curr->cpunum][TRAMPOLINE_STACK_SIZE])
@@ -99,6 +100,9 @@ void sched_yield(FullTrapFrame *tf, uintptr_t proc_pc) {
     
     curr->status = PROC_RUNNABLE;
     curr_slices = 0;
+
+    printf("[PROC RUNNING] ");
+    printProc(curr);
 
     if (curr == proc_a){
         printf("Should switch to PROC B\n");
