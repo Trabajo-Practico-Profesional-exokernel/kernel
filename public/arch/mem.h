@@ -11,6 +11,8 @@ typedef struct GenericPageTable {
 } gen_pt_t;
 
 
+void mem_init(void);
+
 paddr_t alloc_pages(uint32_t n);
 
 // Map a page vaddr to paddr

@@ -6,6 +6,55 @@
 // EN TEORIA ES LO MISMO QUE EN RISCV
 extern char __free_ram[], __free_ram_end[], __kernel_base[], __kernel_base_end[];
 
+struct page_info* free_pages;
+struct page_manager main_page_table;
+
+
+paddr_t next_p_page(){
+    static paddr_t next_paddr = (paddr_t) __free_ram;
+    paddr_t paddr = next_paddr;
+    next_paddr += PAGE_SIZE;
+
+    if (next_paddr > (paddr_t) __free_ram_end)
+        return 0;
+
+    memset((void *) paddr, 0, PAGE_SIZE);
+    return paddr;
+}
+
+void mem_init(void) {
+    paddr_t low_free_dir = (paddr_t)__free_ram;
+    paddr_t high_free_dir = (paddr_t)__free_ram_end;
+
+    uint32_t total_free_pages = (high_free_dir - low_free_dir) / PAGE_SIZE;
+    uint32_t map_size = total_free_pages * sizeof(struct page_info);
+
+    // reservo el array de paginas al inicio de la memoria ram libre
+    main_page_table.pages_array = (struct page_info*) low_free_dir;
+
+    memset((void *) main_page_table.pages_array, 0, map_size);
+
+    // las paginas fisicas utilizables comienzan despues de la tabla de paginas
+    paddr_t pool_start = (paddr_t) ROUNDUP(low_free_dir + map_size, PAGE_SIZE);
+
+    main_page_table.free_page_list = NULL;
+    main_page_table.free_pages = 0;
+
+    for (paddr_t pa = pool_start; pa < high_free_dir; pa += PAGE_SIZE) {
+        
+        uint32_t index = (pa - low_free_dir) / PAGE_SIZE;
+
+        // obtengo el puntero al a la pagina (que ya existe en el array)
+        struct page_info* descriptor = &main_page_table.pages_array[index];
+
+        // Anexar la pagina a la lista libre (insertar al frente)
+        descriptor->next_free_page = main_page_table.free_page_list;
+        main_page_table.free_page_list = descriptor;
+
+        main_page_table.free_pages++;
+    }
+}
+
 paddr_t alloc_pages(uint32_t n) {
     // next_paddr === last allocated mem end
 

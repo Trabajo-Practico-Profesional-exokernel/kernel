@@ -4,6 +4,22 @@
 #include "inc/types.h"
 #include "arch/mem.h"
 
+
+struct page_info {
+    uint8_t index;
+    uint8_t ref;
+    struct page_info* next_free_page;
+};
+
+struct page_manager {
+    struct page_info* free_page_list;
+    struct page_info* pages_array;
+    uint32_t free_pages;
+};
+
+extern struct page_manager main_page_table;
+
+
 /*
 Bits  | Field
 ------+----------------------------------------
