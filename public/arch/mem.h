@@ -12,7 +12,7 @@ typedef struct GenericPageTable {
 
 
 void mem_init(void);
-
+paddr_t get_next_free_page();
 paddr_t alloc_pages(uint32_t n);
 
 // Map a page vaddr to paddr

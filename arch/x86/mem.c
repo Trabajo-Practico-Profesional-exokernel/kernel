@@ -9,17 +9,28 @@ extern char __free_ram[], __free_ram_end[], __kernel_base[], __kernel_base_end[]
 struct page_info* free_pages;
 struct page_manager main_page_table;
 
+static paddr_t page_info_to_pa(struct page_info *page){
+    paddr_t pa = (paddr_t)__free_ram + (page->index * PAGE_SIZE);
+    return pa;
+}
 
-paddr_t next_p_page(){
-    static paddr_t next_paddr = (paddr_t) __free_ram;
-    paddr_t paddr = next_paddr;
-    next_paddr += PAGE_SIZE;
-
-    if (next_paddr > (paddr_t) __free_ram_end)
+paddr_t get_next_free_page(){
+    if (main_page_table.free_pages == 0){
         return 0;
+    }
+    struct page_info *next_page_addr = main_page_table.free_page_list;
+    
+    main_page_table.free_page_list = next_page_addr->next_free_page;
+    main_page_table.free_pages --;
 
-    memset((void *) paddr, 0, PAGE_SIZE);
-    return paddr;
+    next_page_addr->ref +=1;
+    next_page_addr->next_free_page = NULL;
+
+    paddr_t pa = page_info_to_pa(next_page_addr);
+
+    memset((void*)pa, 0, PAGE_SIZE);
+
+    return pa;
 }
 
 void mem_init(void) {
@@ -57,16 +68,18 @@ void mem_init(void) {
 
 paddr_t alloc_pages(uint32_t n) {
     // next_paddr === last allocated mem end
-
-    static paddr_t next_paddr = (paddr_t) __free_ram;
-    paddr_t paddr = next_paddr;
-    next_paddr += n * PAGE_SIZE;
-
-    if (next_paddr > (paddr_t) __free_ram_end)
-        PANIC("out of memory");
-
-    memset((void *) paddr, 0, n * PAGE_SIZE);
-    return paddr;
+    paddr_t pa = 0;
+    while (n > 0){
+        paddr_t next_paddr = get_next_free_page();
+        if (pa == 0){
+            pa = next_paddr;
+        }
+        if (next_paddr == 0)
+            // hay que liberar las paginas ya pedidas
+            PANIC("out of memory");
+        n --;
+    }
+    return pa;
 }
 
 
