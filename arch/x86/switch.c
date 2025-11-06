@@ -32,6 +32,9 @@ void switch_to_page_table(struct Proc *p) {
 }
 
 
+// HAY UN POSIBLE ERROR EN SWITCH CONTEXT (EL VALOR DE EBP SE CORROMPE)
+
+
 // cuando tengamos espacio de usuario, cambiar por iret que restaura eip y esp
 // TODO: add switching of CR3
 __attribute__((naked))

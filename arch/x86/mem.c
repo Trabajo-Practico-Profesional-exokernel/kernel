@@ -71,23 +71,63 @@ void mem_init(void) {
     }
 }
 
+#define MAX_ROLLBACK_ALLOC 16
+
+//corregir las paginas que fueron tomadas pero no referenciadas (hay un leek de memoria para n mayor a 1)
 paddr_t alloc_pages(uint32_t n) {
-    // next_paddr === last allocated mem end
-    paddr_t pa = 0;
-    while (n > 0){
-        paddr_t next_paddr = get_next_free_page();
-        if (pa == 0){
-            pa = next_paddr;
-            printf("PAGE ALLOC %x\n", pa);
-        }
-        if (next_paddr == 0)
-            // hay que liberar las paginas ya pedidas
-            PANIC("out of memory");
-        n --;
+    if (n == 0) return 0;
+    
+    // Lista para el rollback
+    paddr_t allocated_list[MAX_ROLLBACK_ALLOC];
+    if (n > MAX_ROLLBACK_ALLOC) {
+        PANIC("alloc_pages: n excede MAX_ROLLBACK_ALLOC");
     }
+
+    uint32_t num_allocated = 0;
+    paddr_t pa = 0;
+
+    while (num_allocated < n) {
+        paddr_t next_paddr = get_next_free_page(); // Llama a [cite: 137-139]
+
+        if (next_paddr == 0) {
+            for (uint32_t i = 0; i < num_allocated; i++) {
+                struct page_info *page_to_free = page_info_to_pa(allocated_list[i]);
+                page_free(page_to_free);
+            }
+            PANIC("out of memory");
+        }
+
+        allocated_list[num_allocated] = next_paddr;
+        if (num_allocated == 0) {
+            pa = next_paddr;
+        }
+        num_allocated++;
+    }
+
     return pa;
 }
 
+void page_free(struct page_info *page) {
+    if (page == NULL) {
+        PANIC("free page: page is NULL");
+    }
+
+    if (page->ref > 0) {
+        page->ref--;
+    }
+
+    if (page->ref != 0) {
+        return; // La página sigue referenciada, no liberar
+    }
+
+    if (page->next_free_page != NULL) {
+        PANIC("free page: next free page no es NULL (double free?)");
+    }
+
+    page->next_free_page = main_page_table.free_page_list;
+    main_page_table.free_page_list = page;
+    main_page_table.free_pages++;
+}
 
 paddr_t get_paddr_page_ind(uint32_t ind){
     return ((paddr_t) __free_ram) + (PAGE_SIZE * ind);
