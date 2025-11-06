@@ -26,7 +26,7 @@ paddr_t get_next_free_page(){
     next_page_addr->ref +=1;
     next_page_addr->next_free_page = NULL;
 
-    paddr_t pa = page_info_to_pa(next_page_addr);
+    paddr_t pa = next_page_addr->pa;
 
     memset((void*)pa, 0, PAGE_SIZE);
 
@@ -36,7 +36,7 @@ paddr_t get_next_free_page(){
 void mem_init(void) {
     paddr_t low_free_dir = (paddr_t)__free_ram;
     paddr_t high_free_dir = (paddr_t)__free_ram_end;
-
+    printf("FREE RAM IS %x\n", low_free_dir);
     uint32_t total_free_pages = (high_free_dir - low_free_dir) / PAGE_SIZE;
     uint32_t map_size = total_free_pages * sizeof(struct page_info);
 
@@ -50,19 +50,24 @@ void mem_init(void) {
 
     main_page_table.free_page_list = NULL;
     main_page_table.free_pages = 0;
+    uint32_t index = 0;
 
     for (paddr_t pa = pool_start; pa < high_free_dir; pa += PAGE_SIZE) {
         
-        uint32_t index = (pa - low_free_dir) / PAGE_SIZE;
-
         // obtengo el puntero al a la pagina (que ya existe en el array)
         struct page_info* descriptor = &main_page_table.pages_array[index];
+        if (pa + PAGE_SIZE < high_free_dir){
+            descriptor->next_free_page = &main_page_table.pages_array[index+1];
+        } else {
+            descriptor->next_free_page = NULL;
+        }
 
-        // Anexar la pagina a la lista libre (insertar al frente)
-        descriptor->next_free_page = main_page_table.free_page_list;
-        main_page_table.free_page_list = descriptor;
-
+        descriptor->pa = pa;
+        index ++;
         main_page_table.free_pages++;
+        if (main_page_table.free_page_list == NULL){
+            main_page_table.free_page_list = descriptor;
+        }
     }
 }
 
@@ -73,6 +78,7 @@ paddr_t alloc_pages(uint32_t n) {
         paddr_t next_paddr = get_next_free_page();
         if (pa == 0){
             pa = next_paddr;
+            printf("PAGE ALLOC %x\n", pa);
         }
         if (next_paddr == 0)
             // hay que liberar las paginas ya pedidas

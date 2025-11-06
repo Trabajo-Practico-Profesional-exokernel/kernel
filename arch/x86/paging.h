@@ -8,6 +8,7 @@
 struct page_info {
     uint8_t index;
     uint8_t ref;
+    paddr_t pa;
     struct page_info* next_free_page;
 };
 

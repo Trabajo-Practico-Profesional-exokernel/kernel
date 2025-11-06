@@ -15,10 +15,12 @@
 
 void create_process(struct Proc * proc, uint32_t pc) { // pc == entry point == start instruction
     // Save initial pc on proc.
+    printf("#####################################\n"); 
     proc->pc = pc;
     
     // For now kernel stack of process... is on the proc struct itself! xv6 does it in a page a virtual memory.. for the future
     vaddr_t sp_base = alloc_pages(KERN_STACK_PAGES);
+    printf("FOR PROC %u SP_BASE IS %x \n", proc->pid, sp_base);
     proc->kernel_sp =  sp_base + KERN_STACK_PAGES * PAGE_SIZE;
 
     // Stack callee-saved registers. These register values will be restored in
@@ -82,6 +84,7 @@ void create_process(struct Proc * proc, uint32_t pc) { // pc == entry point == s
     #endif
 
     proc->status = PROC_RUNNABLE;
+    printf("##################################### PROCESO LISTO\n"); 
 }
 
 void create_process_user(struct Proc * proc, uint32_t proc_entry,
