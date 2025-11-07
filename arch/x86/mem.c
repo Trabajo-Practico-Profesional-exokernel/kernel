@@ -48,7 +48,7 @@ void pde_init(){
     printf("Direccion Fisica: [%x]\n", p_pde );
     printf("Puntero (Virtual): [%x]\n", kernel_pd_addr );
     
-    #define RECURSIVE_PDE_INDEX PAGE_SIZE-1
+    #define RECURSIVE_PDE_INDEX 1023
     uint32_t perms = PAGE_P_PRESENT | PAGE_P_USER | PAGE_P_READ_WRITE;
 
     pde_t *entry_ptr = &kernel_pd_addr[RECURSIVE_PDE_INDEX];
