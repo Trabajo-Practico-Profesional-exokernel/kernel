@@ -9,7 +9,7 @@
 
 void init_arch(void){
     mem_init();
-    
+    pde_init();
     disable_interrupts();
     serial_init();
     gdt_init();

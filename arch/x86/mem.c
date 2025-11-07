@@ -9,6 +9,8 @@ extern char __free_ram[], __free_ram_end[], __kernel_base[], __kernel_base_end[]
 struct page_info* free_pages;
 struct page_manager main_page_table;
 
+static pde_t *kernel_pd_addr;
+
 static paddr_t page_info_to_pa(struct page_info *page){
     paddr_t pa = (paddr_t)__free_ram + (page->index * PAGE_SIZE);
     return pa;
@@ -32,6 +34,39 @@ paddr_t get_next_free_page(){
 
     return pa;
 }
+
+static inline void load_cr3(uint32_t pde_paddr) {
+    __asm__ volatile("mov %0, %%cr3" :: "r"(pde_paddr) : "memory");
+}
+
+void pde_init(){
+    paddr_t p_pde = alloc_pages(1);
+    load_cr3(p_pde);
+    printf("---------ALOC PDE-----------\n");
+    kernel_pd_addr = (pde_t*) p_pde;
+
+    printf("Direccion Fisica: [%x]\n", p_pde );
+    printf("Puntero (Virtual): [%x]\n", kernel_pd_addr );
+    
+    #define RECURSIVE_PDE_INDEX PAGE_SIZE-1
+    uint32_t perms = PAGE_P_PRESENT | PAGE_P_USER | PAGE_P_READ_WRITE;
+
+    pde_t *entry_ptr = &kernel_pd_addr[RECURSIVE_PDE_INDEX];
+
+    set_pde_entry(entry_ptr, p_pde, perms);
+
+    printf("Valor PDE[4095] (debug): config=[%x] high_addr=[%x] low_addr=[%x]\n", 
+        kernel_pd_addr[RECURSIVE_PDE_INDEX].config, 
+        kernel_pd_addr[RECURSIVE_PDE_INDEX].high_addr, 
+        kernel_pd_addr[RECURSIVE_PDE_INDEX].low_addr);
+
+    /* * NOTA: Esta función 'pde_init' aún está incompleta.
+     * Ahora debe usar 'direct_map_range' [cite: 167-170] para mapear 
+     * el código del kernel, la RAM física (__free_ram) y el 
+     * framebuffer (0xB8000) antes de activar CR3.
+     */
+}
+
 
 void mem_init(void) {
     paddr_t low_free_dir = (paddr_t)__free_ram;
@@ -192,7 +227,7 @@ static void set_pte_entry(pte_t *pte, paddr_t paddr, uint32_t perms) {
 /**
  * Función para "empaquetar" una dirección y permisos en una struct pde_t.
  */
-static void set_pde_entry(pde_t *pde, paddr_t pt_addr, uint32_t perms) {
+void set_pde_entry(pde_t *pde, paddr_t pt_addr, uint32_t perms) {
     // 1. Construir el valor completo de 32 bits
     uint32_t entry = (pt_addr & PAGE_ADDR_MASK) | perms;
 

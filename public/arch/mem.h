@@ -10,7 +10,7 @@ typedef struct GenericPageTable {
     paddr_t paddr;  // Physical address of that root (for satp or cr3)
 } gen_pt_t;
 
-
+void pde_init();
 void mem_init(void);
 paddr_t get_next_free_page();
 paddr_t alloc_pages(uint32_t n);
