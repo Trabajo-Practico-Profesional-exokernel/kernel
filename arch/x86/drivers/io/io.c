@@ -8,12 +8,13 @@
 #include "drivers/io/serial_handler.h"
 
 void init_arch(void){
-    mem_init();
-    pde_init();
     disable_interrupts();
     serial_init();
     gdt_init();
-    //pic_init();
+    
+    mem_init();
+    //pde_init();
+    vmmngr_initialize();
     idt_init();
     enable_interrupts();
 }

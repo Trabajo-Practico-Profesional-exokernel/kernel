@@ -32,4 +32,6 @@ paddr_t offset_map_range(gen_pt_t *table1, paddr_t range_start, paddr_t range_en
 
 //void direct_map_all_pages(uint32_t *table1, paddr_t start, uint32_t flags);
 
+void load_cr3(uint32_t pde_paddr);
+
 #endif /* !*/

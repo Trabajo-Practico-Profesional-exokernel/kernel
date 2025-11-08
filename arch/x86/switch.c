@@ -21,9 +21,6 @@
 
 */
 
-static inline void load_cr3(uint32_t paddr) {
-    __asm__ volatile("mov %0, %%cr3" :: "r"(paddr) : "memory");
-}
 
 void switch_to_page_table(struct Proc *p) {
     if (!p || !p->page_table) return;
