@@ -5,15 +5,7 @@
 
 #define NUM_ENTRIES 1024
 
-// #define VIRTUAL_TO_PDT_IDX(a) ((a >> 20) & 0x3FF)
-
-// #define PS_4KB 0x00
-// #define PS_4MB 0x01
-
-// #define IS_ENTRY_PRESENT(e) ((e)->config && 0x01)
-
 extern char __free_ram[], __free_ram_end[];
-
 
 // global vars
 static struct pdirectory* _cur_directory=0;
@@ -167,6 +159,11 @@ inline void pd_entry_enable_global (pd_entry e) {
     //TODO:
 }
 
+
+// El mapeo de identidad (identity mapping) es una configuración de paginación
+// donde las direcciones virtuales se mapean a las mismas direcciones físicas.
+// Cuando tu kernel habilita la paginación (al setear el bit PG en CR0), 
+// la CPU está ejecutando código que reside en direcciones físicas bajas.
 
 void vmmngr_initialize () {
 

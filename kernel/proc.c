@@ -73,8 +73,12 @@ void create_process(struct Proc * proc, uint32_t pc) { // pc == entry point == s
     struct pdirectory *new_dir = (struct pdirectory*) pde_paddr; 
     struct pdirectory *kernel_dir = vm_manager_get_directory(); // Obtiene el PD actual (del kernel)
 
-    // 3. Copiar los mapeos del kernel (entradas > 768) al nuevo PD
+    // 3. Copiar los mapeos del kernel
     if (kernel_dir) { 
+
+        // Copiar el mapeo de identidad (0x0-0x400000)
+        new_dir->m_entries[PAGE_DIRECTORY_INDEX(0x00000000)] = kernel_dir->m_entries[PAGE_DIRECTORY_INDEX(0x00000000)];
+
         for (int i = PAGE_DIRECTORY_INDEX(0xC0000000); i < 1024; i++) {
             new_dir->m_entries[i] = kernel_dir->m_entries[i];
         }
