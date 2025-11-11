@@ -8,6 +8,7 @@ extern char __free_ram[], __free_ram_end[], __kernel_base[], __kernel_base_end[]
 
 struct page_info* free_pages;
 struct page_manager main_page_table;
+void page_free(struct page_info *page);
 
 static paddr_t page_info_to_pa(struct page_info *page){
     paddr_t pa = (paddr_t)__free_ram + (page->index * PAGE_SIZE);
