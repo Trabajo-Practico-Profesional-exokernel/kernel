@@ -9,10 +9,100 @@
 #define PL0 0x0
 #define PL3 0x3
 
-#define SEG16(type, base, lim, dpl) (struct Segdesc)			\
-{ (lim) & 0xffff, (base) & 0xffff, ((base) >> 16) & 0xff,		\
-    type, 1, dpl, 1, (unsigned) (lim) >> 16, 0, 0, 1, 0,		\
-    (unsigned) (base) >> 24 }
+/*
+    segment descriptor is 8 byte (64 bit) long:
+    
+    31                   16 15                    0
+    /---------------------------------------------/
+    |      base (0:15)     |     limit (0:15)     |
+    /---------------------------------------------/
+
+    63    56 55   52 51   48 47      40 39       32
+    /---------------------------------------------/
+    | base  | flags | limit |  access  |   base   |
+    |(24:31)|       |(16:19)|   byte   | (16:23)  |
+    /---------------------------------------------/
+
+    base: segment linear address
+
+    limit: the maximum addressable unit
+
+                   7   6   5   4   3    2    1   0
+    access byte: | P |  DPL  | S | E | DC | RW | A |
+        * P   [1bit]:   present bit 
+        * DPL [2bit]:   descriptor privilege level
+        * S   [1bit]:   (0) system segment; (1) code/data segment 
+        * E   [1bit]:   exec bit; (0) data segment; (1) code segment
+        * DC  [1bit]:   direction/conforming bit;
+                            data -> (0) grows up; 
+                                    (1) grows down;
+                            code -> (0) can be executed only from the ring set in DPL;
+                                    (1) can be executed from an equal or lower privilege level (0 highest; 3 lowest) 
+        * R/W [1bit]:   read/write bit: readable for code; writeable for data (read is always allowed for data);                          
+        * A   [1bit]:   accesed bit: CPU will set it when the segment is accessed unless set to 1 in advance
+
+    flags: 
+          3    2   1       0
+        | G | DB | L | reserved | 
+          |   |    *-> long-mode code: if 1 defines 64bit code segment (DB=0).
+          |   *-> size: if 0 defines 16bit protected mode segment, else 32bit protected mode segment.
+          *-> granularity: if 0 limit is in bytes, else limit is in 4KB blocks (pages).
+
+
+*/
+
+/*  Segment descriptor as described above */
+struct segdesc {
+    unsigned int limit_low              : 16;
+    unsigned int base_low               : 24;
+    unsigned int type                   :  4; // STS_ constants
+    unsigned int s                      :  1; // 0 = system; 1 = code/data 
+    unsigned int dpl                    :  2; // privilege level
+    unsigned int p                      :  1; // present
+    unsigned int limit_high             :  4;
+    unsigned int rsv                    :  1; // reserved 
+    unsigned int l                      :  1; // long-mode code
+    unsigned int db                     :  1; // size 
+    unsigned int g                      :  1; // granularity 
+    unsigned int base_high              :  8; 
+};  
+
+
+#define STS_T32A    0x9     // Available 32-bit TSS  (A=1;RW=0;DC=0;E=1) 
+#define STS_IG32    0xE     // 32-bit Interrupt Gate (A=0;RW=1;DC=1;E=0)
+#define STS_TG32    0xF     // 32-bit Trap Gate      (A=1;RW=1;DC=1;E=1)
+
+#define SEG_NULL (struct segdesc) {0}
+
+#define SEG(type, base, lim, dpl) (struct segdesc)		    	\
+    { (lim) & 0xffff,                                           \
+      (base) & 0xffffff,                                        \
+      type,                                                     \
+      1,                                                        \
+      dpl,                                                      \
+      1,                                                        \
+      (unsigned) (lim) >> 16,                                   \
+      0,                                                        \
+      0,                                                        \
+      1,                                                        \
+      1,		                                                \
+      (unsigned) (base) >> 24 }                                   
+
+#define SEG16(type, base, lim, dpl) (struct segdesc)			\
+    { (lim) & 0xffff,                                           \
+      (base) & 0xffffff,                                        \
+      type,                                                     \
+      1,                                                        \
+      dpl,                                                      \
+      1,                                                        \
+      (unsigned) (lim) >> 16,                                   \
+      0,                                                        \
+      0,                                                        \
+      1,                                                        \
+      0,		                                                \
+      (unsigned) (base) >> 24 }                                   
+
+
 
 void gdt_init();
 

@@ -9,36 +9,6 @@
 
 #define GDT_NUM_ENTRIES 5
 
-typedef struct gdt_entry {
-	unsigned int limit_low              : 16;
-	unsigned int base_low               : 24;
-    
-	unsigned int accessed               :  1;
-	unsigned int read_write             :  1; // readable for code, writable for data
-	unsigned int conforming_expand_down :  1; // conforming for code, expand down for data
-	unsigned int code                   :  1; // 1 for code, 0 for data
-	unsigned int code_data_segment      :  1; // should be 1 for everything but TSS and LDT
-	unsigned int DPL                    :  2; // privilege level
-	unsigned int present                :  1;
-
-	unsigned int limit_high             :  4;
-	unsigned int available              :  1; // only used in software; has no effect on hardware
-	unsigned int long_mode              :  1;
-	unsigned int big                    :  1; // 32-bit opcodes for code, uint32_t stack for data
-	unsigned int gran                   :  1; // 1 to use 4k page addressing, 0 for byte addressing
-	
-    unsigned int base_high              :  8;
-} gdt_entry gdt_entry_t __attribute__((packed));  /* It needs to be packed like this, 64 bits */
-
-// struct gdt_entry {
-//     uint16_t limit_low;     /* The lower 16 bits of the limit */
-//     uint16_t base_low;      /* The lower 16 bits of the base */
-//     uint8_t  base_mid;      /* The next 8 bits of the base */
-//     uint8_t  access;        /* Contains access flags */
-//     uint8_t  granularity;   /* Specify granularity, and 4 bits of limit */
-//     uint8_t  base_high;     /* The last 8 bits of the base; */
-// } __attribute__((packed));  /* It needs to be packed like this, 64 bits */
-// typedef struct gdt_entry gdt_entry_t;
 
 struct gdt_ptr {
     uint16_t limit;          /* Size of gdt table in bytes*/
@@ -46,7 +16,7 @@ struct gdt_ptr {
 } __attribute__((packed));
 typedef struct gdt_ptr gdt_ptr_t;
 
-gdt_entry_t gdt_entries[GDT_NUM_ENTRIES];
+struct segdesc gdt[GDT_NUM_ENTRIES];
 
 /* external assembly function to set the gdt */
 void gdt_load_and_set(uint32_t);
@@ -59,6 +29,7 @@ void gdt_init()
     gdt_ptr.base    = (uint32_t)&gdt_entries;
 
     /* the null entry */
+	gdt[0] = SEG_NULL;
     gdt_create_entry(0, 0, 0);
     /* kernel mode code segment */
     gdt_create_entry(&gdt_entries[1], PL0, CODE_RX_TYPE);
