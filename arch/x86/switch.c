@@ -21,14 +21,6 @@
 
 */
 
-
-void switch_to_page_table(struct Proc *p) {
-    if (!p || !p->page_table) return;
-    uint32_t cr3 = (uint32_t)(p->page_table->paddr & 0xFFFFF000);
-    load_cr3(cr3);
-}
-
-
 // HAY UN POSIBLE ERROR EN SWITCH CONTEXT (EL VALOR DE EBP SE CORROMPE)
 
 
@@ -41,9 +33,8 @@ void switch_context(struct Proc *next) {
         "pop %eax\n"        // eax = struct Proc* next -> tf
 
         // === Cambiar CR3 ===
-        // "mov 56(%eax), %edx\n"  // edx = next->page_table
-        // "mov 4(%edx), %edx\n"   // edx = (next->page_table)->paddr
-        // "mov %edx, %cr3\n"      // Cargar el nuevo CR3
+        "mov 56(%eax), %edx\n"  // edx = next->pde_paddr
+        "mov %edx, %cr3\n"      // Cargar el nuevo CR3
 
         // === Cambiar stack ===
         "mov 36(%eax), %esp\n"
@@ -57,7 +48,7 @@ void switch_context(struct Proc *next) {
         // No deberiamos tocar esp.
         "mov 0(%eax),%edi\n"       // edi
         "mov 4(%eax),%esi\n"       // esi
-        "mov 12(%eax),%ebx\n"      // ebx (saltamos oesp)
+        // "mov 12(%eax),%ebx\n"      // ebx (saltamos oesp)
         "mov 16(%eax),%ebx\n"      // ebx 
         "mov 20(%eax),%edx\n"      // edx
         "mov 24(%eax),%ecx\n"      // ecx

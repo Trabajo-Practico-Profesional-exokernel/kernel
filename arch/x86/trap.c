@@ -36,8 +36,8 @@ void init_trap(void) {
     idt_init();
     pic_remap();
 
-    __asm__ __volatile__("sti");
-    printf("[TRAP] Interrupts enabled\n");
+    // __asm__ __volatile__("sti"); // CHECK: if doesn't need to be here, only in switch_context
+    // printf("[TRAP] Interrupts enabled\n");
 }
 
 /*

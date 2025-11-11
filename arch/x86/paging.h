@@ -4,7 +4,6 @@
 #include "inc/types.h"
 #include "arch/mem.h"
 
-
 #define PAGES_PER_TABLE 1024
 #define PAGES_PER_DIR	1024
 
@@ -12,21 +11,27 @@
 #define PAGE_TABLE_INDEX(x) (((x) >> 12) & 0x3ff)
 #define PAGE_GET_PHYSICAL_ADDRESS(x) (*x & ~0xfff)
 
-struct page_info {
-    uint8_t index;
-    uint8_t ref;
-    paddr_t pa;
-    struct page_info* next_free_page;
+/*
+Each process (including the kernel) has a page directory.
+In the page directory, each entry points to a page table. 
+In the page table, each entry points to a 4 KiB physical page frame.
+
+Each page directory has 1024 entries (PDEs).
+Each page table also has 1024 entries (PTEs).
+1024 * 1024 * 4KiB = 4GB
+
+Address translation involves dividing the virtual address into three parts: 
+    - the most significant 10 bits (bits 22-31) specify the index of the page directory entry
+    - the next 10 bits (bits 12-21) specify the index of the page table entry
+    - the least significant 12 bits (bits 0-11) specify the page offset
+*/
+struct pdirectory {
+	uint32_t m_entries[PAGES_PER_DIR];
 };
 
-struct page_manager {
-    struct page_info* free_page_list;
-    struct page_info* pages_array;
-    uint32_t free_pages;
+struct ptable {
+	uint32_t m_entries[PAGES_PER_TABLE];
 };
-
-extern struct page_manager main_page_table;
-
 
 enum PAGE_PTE_FLAGS {
 	I86_PTE_PRESENT			=	1,			//0000000000000000000000000000001
@@ -57,43 +62,32 @@ enum PAGE_PDE_FLAGS {
    	I86_PDE_FRAME			=	0x7FFFF000 	//1111111111111111111000000000000
 };
 
+/*
+Page information saved here
+*/
+struct page_info {
+    uint8_t index;
+    uint8_t ref;
+    paddr_t pa;
+    struct page_info* next_free_page;
+};
+
+struct page_manager {
+    struct page_info* free_page_list;
+    struct page_info* pages_array;
+    uint32_t free_pages;
+};
+
+extern struct page_manager main_page_table;
+
 
 /*
-Bits  | Field
-------+----------------------------------------
-0–7   | config       -> flags (P, RW, US, PWT, etc.)
-8–15  | low_addr     -> bits 12–19 of addr (stored shifted)
-16–31 | high_addr    -> bits 20–31 of addr
+Purpose: CR3 serves as the Page Directory Base Register (PDBR).
+Usage: It holds the physical address of the first page directory for the current task.
+
+Physical Addressing: The upper 20 bits of CR3 are used for the physical address, 
+while the lower bits may be used for process-context identifiers if the PCIDE bit in CR4 is set.
 */
 
-/* pde: page directory entry points to various pte's*/
-struct pde {
-    uint8_t config;
-    uint8_t low_addr; /* only the highest 4 bits are used */
-    uint16_t high_addr;
-} __attribute__((packed));
-typedef struct pde pde_t;
-
-/* pte: page table entry points to 4 KiB blocks of physical memory */
-struct pte {
-    uint8_t config;
-    uint8_t middle; /* only the highest 4 bits and the lowest bit are used */
-    uint16_t high_addr;
-    } __attribute__((packed));
-typedef struct pte pte_t;
-
-
-struct ptable {
-	uint32_t m_entries[PAGES_PER_TABLE];
-};
- 
-//! page directory
-struct pdirectory {
-	uint32_t m_entries[PAGES_PER_DIR];
-};
-
-gen_pt_t* get_gen_table();
-
-//void paging_init(uint32_t boot_page_directory);
 
 #endif /* PAGING_H */

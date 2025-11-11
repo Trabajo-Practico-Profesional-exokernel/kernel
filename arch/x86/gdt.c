@@ -7,7 +7,7 @@
 #define CODE_RX_TYPE    0xA
 #define DATA_RW_TYPE    0x2
 
-#define GDT_NUM_ENTRIES 3
+#define GDT_NUM_ENTRIES 5
 
 struct gdt_entry {
     uint16_t limit_low;     /* The lower 16 bits of the limit */

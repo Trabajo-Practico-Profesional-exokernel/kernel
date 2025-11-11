@@ -16,5 +16,6 @@ void init_arch(void){
     //pde_init();
     vmmngr_initialize();
     idt_init();
-    enable_interrupts();
+    // enable_interrupts();  // CHECK: la primera habilitación de interrupciones debe ocurrir dentro de switch_context
+    printf("after\n");
 }

@@ -18,6 +18,6 @@ void printTrapFull(const FullTrapFrame *tf) {
 }
 
 void printProc(const struct Proc * proc){
-    printf("proc id: %d, status: %d, puntero: %p, page table CR3: %x\n", proc->pid, proc->status, proc->page_table->root, (uint32_t)proc->page_table->paddr);
+    printf("proc id: %d, status: %d, page table CR3: %x\n", proc->pid, proc->status, (uint32_t)proc->pde_paddr);
 	printTrap(&(proc->tf));
 }
