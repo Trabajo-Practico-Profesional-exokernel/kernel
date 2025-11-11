@@ -193,10 +193,9 @@ void vmmngr_initialize () {
     }
  
     //! map 1mb to 3gb (where we are at)
-    // TODO: check if virt = 0xC0100000 or virt=0xc0000000
     for (int i=0, frame=0x100000, virt=0xc0000000; i<1024; i++, frame+=PAGE_SIZE, virt+=PAGE_SIZE) {
  
-        if (frame >= 0x500000) break; // ADDED: Limitar a 4MB de kernel por ahora
+       if (frame >= 0x500000) break; // ADDED: Limitar a 4MB de kernel por ahora
 
        //! create a new page
        pd_entry page=0;

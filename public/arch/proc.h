@@ -26,7 +26,7 @@ struct Proc {
 
     procid_t pid;             // Process ID
     int status;           // Process state: PROC_FREE or PROC_RUNNABLE,  PROC_DYING, PROC_RUNNABLE, PROC_RUNNING, PROC_NOT_RUNNABLE 
-    paddr_t pde_paddr;  // Physical address for Page Directory: C3 for x86 or SATP for RISCV
+    paddr_t pde_paddr;      // Physical address for Page Directory: C3 for x86 or SATP for RISCV
 
     int cpunum; // The CPU that the env is running on
 };
