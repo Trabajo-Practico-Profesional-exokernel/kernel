@@ -33,8 +33,8 @@ void switch_context(struct Proc *next) {
         "pop %eax\n"        // eax = struct Proc* next -> tf
 
         // === Cambiar CR3 ===
-        "mov 56(%eax), %edx\n"  // edx = next->pde_paddr
-        "mov %edx, %cr3\n"      // Cargar el nuevo CR3
+        // "mov 56(%eax), %edx\n"  // edx = next->pde_paddr
+        // "mov %edx, %cr3\n"      // Cargar el nuevo CR3
 
         // === Cambiar stack ===
         "mov 36(%eax), %esp\n"
