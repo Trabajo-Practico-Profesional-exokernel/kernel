@@ -33,7 +33,7 @@ void gdt_init()
 	cpu->cpu_ts.ss0 = GD_TSS;
 	cpu->cpu_ts.iomap_base = sizeof(struct TaskState);
 
-    gdt[SEG_TSS] = SEG16(STS_T32A, sizeof(cpu->cpu_ts) - 1,(uint32_t) &cpu->cpu_ts, PL0);
+    gdt[SEG_TSS] = SEG16(STS_T32A, (uint32_t) (&cpu->cpu_ts), sizeof(struct TaskState) - 1, PL0);
 	gdt[SEG_TSS].s = 0; // set system segment
 	ltr(GD_TSS);	
 }

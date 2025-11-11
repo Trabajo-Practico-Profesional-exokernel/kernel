@@ -2,6 +2,7 @@
 #define PAGING_H
 
 #include "inc/types.h"
+#include "inc/common.h"
 #include "arch/mem.h"
 
 #define PAGES_PER_TABLE 1024
@@ -79,6 +80,7 @@ struct page_manager {
 };
 
 extern struct page_manager main_page_table;
+typedef uint32_t pd_entry;
 
 
 /*
@@ -89,5 +91,13 @@ Physical Addressing: The upper 20 bits of CR3 are used for the physical address,
 while the lower bits may be used for process-context identifiers if the PCIDE bit in CR4 is set.
 */
 
+void enable_paging(void);
+void pt_entry_add_attrib (pd_entry* e, uint32_t attrib);
+void pd_entry_add_attrib (pd_entry* e, uint32_t attrib);
+void pt_entry_set_frame (pd_entry* e, paddr_t addr);
+void pd_entry_set_frame (pd_entry* e, paddr_t addr);
+void vmmngr_initialize();
+struct pdirectory* vm_manager_get_directory();
+void vmmngr_map_page_to_dir(struct pdirectory* dir, paddr_t phys, vaddr_t virt, uint32_t flags);
 
 #endif /* PAGING_H */

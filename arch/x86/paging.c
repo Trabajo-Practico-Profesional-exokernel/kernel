@@ -11,7 +11,7 @@ extern char __free_ram[], __free_ram_end[];
 static struct pdirectory* _cur_directory=0;
 static paddr_t _cur_pdbr = 0; // TODO: check if change to kernel_pdir
 
-typedef uint32_t pd_entry;
+
 
 // Loads new Page Directory to CR3 and to global variable
 bool vm_manager_switch_pdirectory(paddr_t p_dir_phys) {
@@ -165,7 +165,7 @@ inline void pd_entry_enable_global (pd_entry e) {
 // Cuando tu kernel habilita la paginación (al setear el bit PG en CR0), 
 // la CPU está ejecutando código que reside en direcciones físicas bajas.
 
-void vmmngr_initialize () {
+void vmmngr_initialize() {
 
     //! allocate default page table
     paddr_t p_table = alloc_pages(1); // Para 0xC0000000 (Kernel)

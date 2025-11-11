@@ -1,3 +1,6 @@
+#ifndef CPU_H
+#define CPU_H
+
 #include "inc/types.h"
 #include "tss.h"
 
@@ -6,18 +9,20 @@ enum {
 	CPU_STARTED,
 	CPU_HALTED,
 };
-#define NCPU 8
-
-#define cpu (&cpus[0]) // TODO: definir cpunum()
 
 
 // Per-CPU state ----------> for now ONE CPU
 // TODO: for multiple cpus, put gdt inside CpuInfo.
 struct CpuInfo {
 	uint8_t cpu_id;                 // Local APIC ID; index into cpus[] below
+	volatile uint8_t cpu_status;   // The status of the CPU
 	// struct Proc *cpu_proc;            // The currently-running environment.
 	struct TaskState cpu_ts;        // Used by x86 to find stack for interrupt
 };
 
-struct CpuInfo cpus[NCPU];
+#define NCPU 8
+extern struct CpuInfo cpus[NCPU];
 
+#define cpu (&cpus[0]) // TODO: definir cpunum()
+
+#endif

@@ -96,8 +96,8 @@ paddr_t alloc_pages(uint32_t n) {
 
         if (next_paddr == 0) {
             for (uint32_t i = 0; i < num_allocated; i++) {
-                struct page_info *page_to_free = page_info_to_pa(allocated_list[i]);
-                page_free(page_to_free);
+                //struct page_info *page_to_free = page_info_to_pa(allocated_list[i]);
+                page_free((struct page_info *) allocated_list[i]);
             }
             PANIC("alloc_pages: out of memory");
         }
