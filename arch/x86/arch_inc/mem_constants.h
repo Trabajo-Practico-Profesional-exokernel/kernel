@@ -29,4 +29,12 @@
 // Máscara para obtener la dirección física de 20 bits (alineada a 4K)
 #define PAGE_ADDR_MASK 0xFFFFF000
 
+// TODO: make the virtual memory layout
+
+#define KERNBASE        0xF0000000
+#define KSTACKTOP       KERNBASE
+#define KSTKSIZE        (8*PAGE_SIZE)
+#define KSTKGAP         (8*PAGE_SIZE)
+#define KSTACKTOPCPU(i) (KSTACKTOP - (i) * (KSTKSIZE + KSTKGAP))
+
 #endif /* !*/
