@@ -9,15 +9,36 @@
 
 #define GDT_NUM_ENTRIES 5
 
-struct gdt_entry {
-    uint16_t limit_low;     /* The lower 16 bits of the limit */
-    uint16_t base_low;      /* The lower 16 bits of the base */
-    uint8_t  base_mid;      /* The next 8 bits of the base */
-    uint8_t  access;        /* Contains access flags */
-    uint8_t  granularity;   /* Specify granularity, and 4 bits of limit */
-    uint8_t  base_high;     /* The last 8 bits of the base; */
-} __attribute__((packed));  /* It needs to be packed like this, 64 bits */
-typedef struct gdt_entry gdt_entry_t;
+typedef struct gdt_entry {
+	unsigned int limit_low              : 16;
+	unsigned int base_low               : 24;
+    
+	unsigned int accessed               :  1;
+	unsigned int read_write             :  1; // readable for code, writable for data
+	unsigned int conforming_expand_down :  1; // conforming for code, expand down for data
+	unsigned int code                   :  1; // 1 for code, 0 for data
+	unsigned int code_data_segment      :  1; // should be 1 for everything but TSS and LDT
+	unsigned int DPL                    :  2; // privilege level
+	unsigned int present                :  1;
+
+	unsigned int limit_high             :  4;
+	unsigned int available              :  1; // only used in software; has no effect on hardware
+	unsigned int long_mode              :  1;
+	unsigned int big                    :  1; // 32-bit opcodes for code, uint32_t stack for data
+	unsigned int gran                   :  1; // 1 to use 4k page addressing, 0 for byte addressing
+	
+    unsigned int base_high              :  8;
+} gdt_entry gdt_entry_t __attribute__((packed));  /* It needs to be packed like this, 64 bits */
+
+// struct gdt_entry {
+//     uint16_t limit_low;     /* The lower 16 bits of the limit */
+//     uint16_t base_low;      /* The lower 16 bits of the base */
+//     uint8_t  base_mid;      /* The next 8 bits of the base */
+//     uint8_t  access;        /* Contains access flags */
+//     uint8_t  granularity;   /* Specify granularity, and 4 bits of limit */
+//     uint8_t  base_high;     /* The last 8 bits of the base; */
+// } __attribute__((packed));  /* It needs to be packed like this, 64 bits */
+// typedef struct gdt_entry gdt_entry_t;
 
 struct gdt_ptr {
     uint16_t limit;          /* Size of gdt table in bytes*/
@@ -40,21 +61,29 @@ void gdt_init()
     /* the null entry */
     gdt_create_entry(0, 0, 0);
     /* kernel mode code segment */
-    gdt_create_entry(1, PL0, CODE_RX_TYPE);
+    gdt_create_entry(&gdt_entries[1], PL0, CODE_RX_TYPE);
     /* kernel mode data segment */
-    gdt_create_entry(2, PL0, DATA_RW_TYPE);
-    /* user mode code segment */
-    /* user mode data segment */
+    gdt_create_entry(&gdt_entries[2], PL0, DATA_RW_TYPE);
 
-    gdt_create_entry(3, PL3, CODE_RX_TYPE);
-    /* kernel mode data segment */
-    gdt_create_entry(4, PL3, DATA_RW_TYPE);
+    /* user mode code segment */
+    gdt_create_entry(&gdt_entries[3], PL3, CODE_RX_TYPE);
+    /* user mode data segment */
+    gdt_create_entry(&gdt_entries[4], PL3, DATA_RW_TYPE);
+
+    gdt_create_entry(&gdt_entries[5], PL0, DATA_RW_TYPE);
+    
+    cpu->tss.esp0 = KSTACKTOPCPU(0); 
+	cpu->tss.ss0 = SEGSEL_KERNEL_DS;
+	cpu->tss.iomap_base = sizeof(struct TaskStateSegment);
+    gdt_entries[5].base_low = (&cpu->tss) & 0xffff;
+    gdt_entries[5].base_mid = &cpu->tss >> 16;
+
 
     gdt_load_and_set((uint32_t)&gdt_ptr);
 }
 
 
-
+// TODO: refactor (mario)
 static void gdt_create_entry(uint32_t n, uint8_t pl, uint8_t type)
 {
     gdt_entries[n].base_low     = (SEGMENT_BASE & 0xFFFF);
@@ -75,12 +104,12 @@ static void gdt_create_entry(uint32_t n, uint8_t pl, uint8_t type)
     gdt_entries[n].granularity  |= (0x01 << 7) | (0x01 << 6) | 0x0F;
 
     /*
-     * name | value | size | desc
+     * bit | name | value | size | desc
      * ---------------------------
-     * P    |     1 |    1 | segment present in memory
-     * DPL  |    pl |    2 | privilege level
-     * S    |     1 |    1 | descriptor type, 0 = system, 1 = code or data
-     * Type |  type |    4 | segment type, how the segment can be accessed
+     *  0  | Type |  type |    4 | segment type, how the segment can be accessed
+     *  4  | S    |     1 |    1 | descriptor type, 0 = system, 1 = code or data
+     *  5  | DPL  |    pl |    2 | privilege level
+     *  7  | P    |     1 |    1 | segment present in memory
      */
     gdt_entries[n].access =
         (0x01 << 7) | ((pl & 0x03) << 5) | (0x01 << 4) | (type & 0x0F);

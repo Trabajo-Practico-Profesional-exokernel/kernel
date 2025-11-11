@@ -9,7 +9,9 @@
         "trapframe.h": "c",
         "switch.h": "c",
         "string.h": "c",
-        "mem_constants.h": "c"
+        "mem_constants.h": "c",
+        "serial_handler.h": "c",
+        "tss.h": "c"
     },
     "C_Cpp.errorSquiggles": "disabled"
 }
