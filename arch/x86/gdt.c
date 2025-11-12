@@ -4,11 +4,8 @@
 #include "gdt.h"
 #include "cpu.h"
 
-#define SEGMENT_BASE    0
+#define SEGMENT_BASE    0x0
 #define SEGMENT_LIMIT   0xFFFFF
-
-#define CODE_RX_TYPE    0xA
-#define DATA_RW_TYPE    0x2
 
 #define GDT_NUM_ENTRIES 6
 
@@ -17,18 +14,18 @@ struct Segdesc gdt[GDT_NUM_ENTRIES] = {
 	[0] = {0},
 
 	/* span whole address space; we dont use segmentation, but paging */
-	[SEG_KT] = SEG(STA_X | STA_R, 0x0, 0xffffffff, PL0),
-	[SEG_KD] = SEG(STA_W		, 0x0, 0xffffffff, PL0),
-	[SEG_UT] = SEG(STA_X | STA_R, 0x0, 0xffffffff, PL3),
-	[SEG_UD] = SEG(STA_W        , 0x0, 0xffffffff, PL3),
+	[SEG_KT] = SEG(STA_X | STA_R, SEGMENT_BASE, SEGMENT_LIMIT, PL0),
+	[SEG_KD] = SEG(STA_W		, SEGMENT_BASE, SEGMENT_LIMIT, PL0),
+	[SEG_UT] = SEG(STA_X | STA_R, SEGMENT_BASE, SEGMENT_LIMIT, PL3),
+	[SEG_UD] = SEG(STA_W        , SEGMENT_BASE, SEGMENT_LIMIT, PL3),
 	[SEG_TSS] = {0}
 };
+
 
 void gdt_init()
 {
     lgdt(gdt, sizeof(gdt));
-	reload_segments();
-	return;
+	lseg();
 
 	// TODO: ver si se mete dentro de estructura proc, entonces se puede acceder a kstack
     cpu->cpu_ts.esp0 = KSTACKTOPCPU(0);

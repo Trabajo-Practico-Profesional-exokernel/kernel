@@ -42,22 +42,22 @@ ltr(uint16_t sel)
   asm volatile("ltr %0" : : "r" (sel));
 }
 
-static inline void
-reload_segments(void)
-{
-    asm volatile(
-        "ljmp %[cs], $1f\n\t"
-        "1:\n\t"
-        "movw %[ds], %%ax\n\t"
+static inline void lseg(void) {
+    asm volatile (
+        "movw $0x10, %%ax\n\t"   // 0x10 = kernel data selector
         "movw %%ax, %%ds\n\t"
-        "movw %%ax, %%es\n\t"
         "movw %%ax, %%ss\n\t"
+        "movw %%ax, %%es\n\t"
+        "movw %%ax, %%fs\n\t"
+        "movw %%ax, %%gs\n\t"
+        "ljmp $0x08, $1f\n\t"    // 0x08 = kernel code selector
+        "1:\n\t"
         :
-        : [cs] "i" (0x08),
-          [ds] "i" (0x10)
+        :
         : "ax"
     );
 }
+
 
 // -------------------------------
 // E/S de puertos (in/out)
