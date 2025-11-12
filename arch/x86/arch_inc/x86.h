@@ -42,6 +42,23 @@ ltr(uint16_t sel)
   asm volatile("ltr %0" : : "r" (sel));
 }
 
+static inline void
+reload_segments(void)
+{
+    asm volatile(
+        "ljmp %[cs], $1f\n\t"
+        "1:\n\t"
+        "movw %[ds], %%ax\n\t"
+        "movw %%ax, %%ds\n\t"
+        "movw %%ax, %%es\n\t"
+        "movw %%ax, %%ss\n\t"
+        :
+        : [cs] "i" (0x08),
+          [ds] "i" (0x10)
+        : "ax"
+    );
+}
+
 // -------------------------------
 // E/S de puertos (in/out)
 // -------------------------------

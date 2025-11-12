@@ -16,7 +16,7 @@
 #define SEG_KT  (GD_KT >> 3)  // segment kernel code
 #define SEG_KD  (GD_KD >> 3)  // kernel data+stack
 #define SEG_UT  (GD_UT >> 3)  // kernel code/text 
-#define SEG_UD  (GD_KD >> 3)  // kernel data+stack
+#define SEG_UD  (GD_UD >> 3)  // kernel data+stack
 #define SEG_TSS (GD_TSS >> 3) // current process task state 
 
 #define PL0 0x0
