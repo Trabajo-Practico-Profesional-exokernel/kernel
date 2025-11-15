@@ -62,7 +62,7 @@ void create_process(struct Proc * proc, uint32_t pc) { // pc == entry point == s
             KERNEL_PERMISSIONS_ALL
     );
 
-    proc->page_table = page_table;
+    proc->pde_paddr = page_table_addr;
 
     #else //x86
 

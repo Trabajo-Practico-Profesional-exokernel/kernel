@@ -69,7 +69,7 @@ void switch_proc(struct Proc* next) {
     #ifdef IS_RISC
     SWITCH_TO_STACK(&trampoline_stacks[curr->cpunum][TRAMPOLINE_STACK_SIZE])
     
-    switch_page_table(curr->page_table, (uint8_t *) curr->kernel_sp);
+    switch_page_table((uint32_t *)curr->pde_paddr, (uint8_t *) curr->kernel_sp);
     #else
     // TODO: llamar switch_page_table para lo de cr3
     switch_page_table(curr->pde_paddr);
