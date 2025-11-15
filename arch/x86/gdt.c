@@ -25,7 +25,7 @@ struct Segdesc gdt[GDT_NUM_ENTRIES] = {
 void gdt_init()
 {
     lgdt(gdt, sizeof(gdt));
-	lseg();
+	lseg(); //TODO: mario???? move down
 
 	// TODO: ver si se mete dentro de estructura proc, entonces se puede acceder a kstack
     cpu->cpu_ts.esp0 = KSTACKTOPCPU(0);

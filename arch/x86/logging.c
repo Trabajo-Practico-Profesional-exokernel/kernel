@@ -3,18 +3,18 @@
 
 void printTrap(const struct TrapFrame *tf) {
     printf("tf: %p\n", tf);
-    printf("edi=%x  esi=%x  ebp=%x\n", tf->edi, tf->esi, tf->ebp);
-    printf("oesp=%x  ebx=%x  edx=%x\n", tf->oesp, tf->ebx, tf->edx);
-    printf("ecx=%x  eax=%x\n", tf->ecx, tf->eax);
+    printf("edi=%x  esi=%x  ebp=%x\n", tf->regs.edi, tf->regs.esi, tf->regs.ebp);
+    printf("oesp=%x  ebx=%x  edx=%x\n", tf->regs.oesp, tf->regs.ebx, tf->regs.edx);
+    printf("ecx=%x  eax=%x\n", tf->regs.ecx, tf->regs.eax);
     printf("eip=%x  esp=%x\n", tf->eip, tf->esp);
 }
 
 void printTrapFull(const FullTrapFrame *tf) {
     printf("tf: %p\n", tf);
-    printf("edi=%x  esi=%x  ebp=%x\n", tf->edi, tf->esi, tf->ebp);
-    printf("oesp=%x  ebx=%x  edx=%x\n", tf->oesp, tf->ebx, tf->edx);
-    printf("ecx=%x  eax=%x\n", tf->ecx, tf->eax);
-    printf("eip=%x  es=%x\n", tf->eip, tf->es);
+    printf("edi=%x  esi=%x  ebp=%x\n", tf->regs.edi, tf->regs.esi, tf->regs.ebp);
+    printf("oesp=%x  ebx=%x  edx=%x\n", tf->regs.oesp, tf->regs.ebx, tf->regs.edx);
+    printf("ecx=%x  eax=%x\n", tf->regs.ecx, tf->regs.eax);
+    printf("eip=%x  esp=%x\n", tf->eip, tf->esp);
 }
 
 void printProc(const struct Proc * proc){

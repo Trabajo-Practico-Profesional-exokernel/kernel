@@ -34,7 +34,7 @@ paddr_t get_next_free_page(){
     return pa;
 }
 
-void load_cr3(uint32_t pde_paddr) {
+void switch_page_table(uint32_t pde_paddr) {
     __asm__ volatile("mov %0, %%cr3" :: "r"(pde_paddr) : "memory");
 }
 

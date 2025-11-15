@@ -19,7 +19,11 @@ paddr_t get_paddr_last_page();
 paddr_t get_paddr_kernel_start();
 paddr_t get_paddr_kernel_end();
 
+#ifdef IS_RISCV
 void switch_page_table(uint32_t *table_next, uint8_t * next_stack);
+#else
+void switch_page_table(uint32_t pde_paddr);
+#endif
 
 //TODO: CHANGE
 // paddr_t direct_map_range(gen_pt_t *table1, paddr_t range_start, paddr_t range_end, uint32_t flags);
@@ -28,6 +32,6 @@ void switch_page_table(uint32_t *table_next, uint8_t * next_stack);
 
 //void direct_map_all_pages(uint32_t *table1, paddr_t start, uint32_t flags);
 
-void load_cr3(uint32_t pde_paddr);
+void switch_page_table(uint32_t pde_paddr);
 
 #endif /* !*/

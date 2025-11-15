@@ -21,7 +21,7 @@ bool vm_manager_switch_pdirectory(paddr_t p_dir_phys) {
     _cur_pdbr = p_dir_phys;
     _cur_directory = (struct pdirectory*) p_dir_phys; 
     
-    load_cr3(_cur_pdbr);
+    switch_page_table(_cur_pdbr);
     return true;
 }
  

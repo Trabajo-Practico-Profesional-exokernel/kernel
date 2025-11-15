@@ -6,7 +6,6 @@
 #define SEGSEL_KERNEL_CS 0x08
 #define SEGSEL_KERNEL_DS 0x10
 
-
 #define GD_KT  0x08 // kernel code/text 
 #define GD_KD  0x10 // kernel data 
 #define GD_UT  0x18 // user code/text 
@@ -70,27 +69,25 @@
 
 /*  Segment descriptor as described above */
 struct Segdesc {
-    unsigned int limit_15_0             : 16;
-    unsigned int base_15_0              : 16;
-    unsigned int base_23_16             :  8;
+    unsigned int limit_low              : 16;
+    unsigned int base_low               : 24;
     unsigned int type                   :  4; // STS_ constants
     unsigned int s                      :  1; // 0 = system; 1 = code/data 
     unsigned int dpl                    :  2; // privilege level
     unsigned int p                      :  1; // present
-    unsigned int limit_19_16            :  4;
+    unsigned int limit_high             :  4;
     unsigned int rsv                    :  1; // reserved 
     unsigned int l                      :  1; // long-mode code
     unsigned int db                     :  1; // size 
     unsigned int g                      :  1; // granularity 
-    unsigned int base_31_24             :  8; 
+    unsigned int base_high              :  8; 
 };  
 
 #define SEG_NULL (struct segdesc) {0}
 
 #define SEG(type, base, lim, dpl) (struct Segdesc)		    	\
     { (lim) & 0xffff,                                           \
-      (base) & 0xffff,                                          \
-      ((base) >> 16) & 0xff,                                    \
+      (base) & 0xffffff,                                        \
       type,                                                     \
       1,                                                        \
       dpl,                                                      \
@@ -104,8 +101,7 @@ struct Segdesc {
 
 #define SEG16(type, base, lim, dpl) (struct Segdesc)			\
     { (lim) & 0xffff,                                           \
-      (base) & 0xffff,                                          \
-      ((base) >> 16) & 0xff,                                    \
+      (base) & 0xffffff,                                        \
       type,                                                     \
       1,                                                        \
       dpl,                                                      \
@@ -143,6 +139,9 @@ struct Segdesc {
 #define STA_W       0x2     // Writeable (non-executable segments)
 #define STA_R       0x2     // Readable (executable segments)
 #define STA_A       0x1     // Accessed
+
+
+
 
 void gdt_init();
 

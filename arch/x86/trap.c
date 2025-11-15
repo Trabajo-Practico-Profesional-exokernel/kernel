@@ -5,7 +5,7 @@
 #include "inc/common.h"
 
 extern void isr32(void);
-void sched_yield(struct FullTrapFrame *tf);
+void sched_yield(FullTrapFrame *tf);
 
 /*
 ==================================================
@@ -47,7 +47,7 @@ void init_trap(void) {
 */
 
 //No toca sti (eso se hace en el stub después del iret)
-void handle_trap(struct FullTrapFrame *tf) {
+void handle_trap(FullTrapFrame *tf) {
     switch (tf->int_no) {
         case 32: // Timer IRQ
             // End of interrupt (solo master, IRQ0)
