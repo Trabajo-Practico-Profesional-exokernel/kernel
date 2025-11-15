@@ -34,7 +34,8 @@
 __attribute__((naked))
 void switch_context(struct Proc *next) {
     __asm__ __volatile__ (        
-        "pop %ecx\n"        // return address (ignore)
+        // "pop %ecx\n"        // return address (ignore)
+        "mov 4(%esp), %esp\n"
         // "pop %eax\n"        // eax = struct Proc* next -> tf
 
         "pop %gs\n"
