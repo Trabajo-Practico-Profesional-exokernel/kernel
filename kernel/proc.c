@@ -75,10 +75,6 @@ void create_process(struct Proc * proc, uint32_t pc) { // pc == entry point == s
     struct pdirectory *new_dir = (struct pdirectory*) pde_paddr; 
     struct pdirectory *kernel_dir = vm_manager_get_directory(); // Obtiene el PD actual (del kernel)
 
-
-    //debug
-    paddr_t _debug = alloc_pages(1);
-
     // 3. Copiar los mapeos del kernel
     if (kernel_dir) { 
 
@@ -105,7 +101,6 @@ void create_process(struct Proc * proc, uint32_t pc) { // pc == entry point == s
     proc->pde_paddr = pde_paddr; 
     printf("[DBG] `proc->pde_paddr` CREADO: paddr=%x\n",
        (uint32_t)proc->pde_paddr);
- (uint32_t)proc->pde_paddr)
     #endif
 
     proc->status = PROC_RUNNABLE;

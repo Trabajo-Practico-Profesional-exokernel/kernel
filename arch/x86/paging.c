@@ -280,3 +280,28 @@ void vmmngr_map_page_to_dir(struct pdirectory* dir, paddr_t phys, vaddr_t virt, 
     pt_entry_set_frame(page, phys);
     pt_entry_add_attrib(page, flags);
 }
+
+
+// void vmmngr_map_page_to_dir(struct pdirectory* dir, paddr_t phys, vaddr_t virt, uint32_t flags) {
+//     uint32_t pde_index = PAGE_DIRECTORY_INDEX(virt);
+//     pd_entry* pde = &dir->m_entries[pde_index];
+
+//     if (!(*pde & I86_PDE_PRESENT)) {
+//         paddr_t pt_addr = alloc_pages(1);
+
+//         memset(KADDR(pt_addr), 0, sizeof(struct ptable));
+
+//         uint32_t pde_flags = I86_PDE_PRESENT | I86_PDE_WRITABLE;
+//         if (flags & I86_PTE_USER) pde_flags |= I86_PDE_USER;
+
+//         pd_entry_set_frame(pde, pt_addr);
+//         pd_entry_add_attrib(pde, pde_flags);
+//     }
+
+//     struct ptable* table = (struct ptable*) KADDR(PAGE_GET_PHYSICAL_ADDRESS(pde));
+
+//     pd_entry* pte = &table->m_entries[PAGE_TABLE_INDEX(virt)];
+
+//     pt_entry_set_frame(pte, phys);
+//     pt_entry_add_attrib(pte, flags);
+// }
