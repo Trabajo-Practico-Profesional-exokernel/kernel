@@ -20,6 +20,7 @@ void kmain()
     clear();
     move_cursor(0);
     printf("HOLIS\n");
+
     init_trap();
 
     printf("\n\nHello World!\n");

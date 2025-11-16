@@ -58,6 +58,8 @@ void map_page(uint32_t *table1, vaddr_t vaddr, paddr_t paddr, uint32_t flags) {
     if (!is_aligned(paddr, PAGE_SIZE))
         PANIC("unaligned paddr %x", paddr);
 
+
+    // YO ESTO LO CAMBIARIA A QUE USE LA PDE EN VEZ DE HARDCODEARLO
     uint32_t vpn1 = (vaddr >> 22) & 0x3ff;
     if ((table1[vpn1] & PAGE_V) == 0) {
         // Create the 1st level page table if it doesn't exist.
@@ -65,6 +67,7 @@ void map_page(uint32_t *table1, vaddr_t vaddr, paddr_t paddr, uint32_t flags) {
         table1[vpn1] = ((pt_paddr / PAGE_SIZE) << 10) | PAGE_V;
     }
 
+    // ACA HARIA LA PTE
     // Set the 2nd level page table entry to map the physical page.
     uint32_t vpn0 = (vaddr >> 12) & 0x3ff;
     uint32_t *table0 = (uint32_t *) ((table1[vpn1] >> 10) * PAGE_SIZE);

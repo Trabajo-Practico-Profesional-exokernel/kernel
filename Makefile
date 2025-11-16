@@ -15,7 +15,7 @@ ifeq ($(ARCH),x86)
 	CC      = gcc
 	AS      = nasm
 	CFLAGS  = -I$(INC_DIR) -Iarch/x86 -Iarch/x86/drivers -m32 -nostdlib -nostdinc -fno-builtin -fno-stack-protector \
-	           -nostartfiles -nodefaultlibs -Wall -Wextra -c -g
+	           -nostartfiles -nodefaultlibs -Wall -Wextra -c -g -DIS_X86
 	ASFLAGS = -f elf
 	LDFLAGS = -T arch/x86/drivers/linker/link.ld -melf_i386
 	QEMU    = qemu-system-i386 -cdrom os.iso  -m 64 -no-reboot -no-shutdown -nographic -serial mon:stdio

@@ -33,8 +33,23 @@ Pero también existe el stack pointer real que se usará al volver:
 
 #include "inc/types.h"
 
+// For context switch between processes  
+typedef struct PushTrapFrame {
+    uint32_t edi;
+    uint32_t esi;
+    uint32_t ebp;
+    uint32_t oesp; // esp antes del cambio. esta para que ande pusha/popa
+    uint32_t ebx;
+    uint32_t edx;
+    uint32_t ecx;
+    uint32_t eax;
+    // uint32_t eip;   // return address (instruction pointer)
+    // uint32_t esp;   // stack pointer
+} __attribute__((packed)) PushTrapFrame;
+
+
 // For traps and interruptions
-typedef struct FullTrapFrame {
+typedef struct TrapFrame {
     /* Segment registers pushed by your stub (push ds; push es; push fs; push gs) */
     uint32_t gs;
     uint32_t fs;
@@ -42,14 +57,15 @@ typedef struct FullTrapFrame {
     uint32_t ds;
 
     /* Registers as left by pusha: edi, esi, ebp, oesp, ebx, edx, ecx, eax */
-    uint32_t edi;
-    uint32_t esi;
-    uint32_t ebp;
-    uint32_t oesp; //ESP del proceso en el momento del trap
-    uint32_t ebx;
-    uint32_t edx;
-    uint32_t ecx;
-    uint32_t eax;
+    // uint32_t edi;
+    // uint32_t esi;
+    // uint32_t ebp;
+    // uint32_t oesp; //ESP del proceso en el momento del trap
+    // uint32_t ebx;
+    // uint32_t edx;
+    // uint32_t ecx;
+    // uint32_t eax;
+    PushTrapFrame regs;
 
     /* pushed by the stub just before calling handle_trap */
     uint32_t int_no;
@@ -60,23 +76,13 @@ typedef struct FullTrapFrame {
     uint32_t cs;
     uint32_t eflags;
     /* optional if ring change: useresp and ss (can be 0 for kernel-only) */
-    uint32_t useresp;
+    uint32_t esp; //useresp
     uint32_t ss;
-} __attribute__((packed)) FullTrapFrame;
-
-// For context switch between processes  
-typedef struct TrapFrame {
-    uint32_t edi;
-    uint32_t esi;
-    uint32_t ebp;
-    uint32_t oesp; // esp antes del cambio. esta para que ande pusha/popa
-    uint32_t ebx;
-    uint32_t edx;
-    uint32_t ecx;
-    uint32_t eax;
-    uint32_t eip;   // return address (instruction pointer)
-    uint32_t esp;   // stack pointer
 } __attribute__((packed)) TrapFrame;
+
+typedef TrapFrame FullTrapFrame;
+
+
 
 #endif
 
@@ -97,14 +103,14 @@ typedef struct TrapFrame {
 
 
 
-// CAMBIAR PARA HACERLO CON x86
+// TODO: CAMBIAR PARA HACERLO CON x86
 // Macros for syscalls For syscalls param and return handling
-#define SYSCALL_ARG0(tf) tf->eax
-#define SYSCALL_ARG1(tf) tf->eax
-#define SYSCALL_ARG2(tf) tf->eax
-#define SYSCALL_SYSNO(tf) tf->eax
+#define SYSCALL_ARG0(tf) tf->regs.eax
+#define SYSCALL_ARG1(tf) tf->regs.eax
+#define SYSCALL_ARG2(tf) tf->regs.eax
+#define SYSCALL_SYSNO(tf) tf->regs.eax
 
-#define SET_SYSCALL_RET0(tf, vl) tf->eax=vl;
+#define SET_SYSCALL_RET0(tf, vl) tf->regs.eax=vl;
 
 // Macro to define how to change stack base/top
 #define SWITCH_TO_STACK(stack_base, stack_top)               \
