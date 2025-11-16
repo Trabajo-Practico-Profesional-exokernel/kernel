@@ -134,9 +134,7 @@ void create_process_user(struct Proc * proc, uint32_t proc_entry,
     #endif
 }
 
-
-void load_create_process_user(struct Proc * proc, const void *image, size_t image_size) {
-    
+void load_create_process_user(struct Proc * proc, const struct AppBinaryInfo * app_info) {    
     create_process(proc, VADDR_USER_BASE);
 
     #ifdef IS_RISC
@@ -146,18 +144,18 @@ void load_create_process_user(struct Proc * proc, const void *image, size_t imag
     #endif
 
     // Mapear paginas de usuario y copiar la imagen
-    for (uint32_t off = 0; off < image_size; off += PAGE_SIZE) {
+    for (uint32_t off = 0; off < app_info->size; off += PAGE_SIZE) {
         paddr_t page = alloc_pages(1);
         if (page == 0) {
             PANIC("load_create_process_user: out of memory");
         }
 
         // Handle the case where the data to be copied is smaller than the page size.
-        size_t remaining = image_size - off;
+        size_t remaining = app_info->size - off;
         size_t copy_size = (PAGE_SIZE <= remaining) ? PAGE_SIZE : remaining;
 
         // Copiar los datos a la página física recién asignada
-        memcpy((void *) page, image + off, copy_size);
+        memcpy((void *) page, app_info->start + off, copy_size);
 
         // Mapear la página física en el espacio de direcciones virtual del proceso
         #ifdef IS_RISC

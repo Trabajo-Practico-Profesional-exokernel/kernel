@@ -8,12 +8,15 @@
 #include "arch_inc/mem_constants.h" //defines perms like PAGE_R and so on.
 
 #ifdef IS_RISC
-void main_app_a();
+#include "meta/apps_info.h" // Include auto generated app_info and indexs for apps  
 
-// This is created on the shell.bin.o by the llvm copy thing or so. 
-// _binary_ prefix is always there apps_build_shell_bin is the path to the binary basically
-// Essentially is where and how big is the niary of the shell app.
-extern char _binary_apps_build_shell_bin_start[], _binary_apps_build_shell_bin_size[];
+// meta/gen/apps_meta.c defines this...
+extern struct AppBinaryInfo _binary_apps[];
+
+
+// void main_app_a();
+
+
 
 // This is defined on link.ld of the kernel... to hardcode a simple user space page
 extern char __user_space_start[], __user_space_end[];
@@ -25,16 +28,14 @@ void init_sched(void) {
     set_proc_a(proc_a);
     set_proc_b(proc_b);
 
-    create_process_user(proc_a, (uint32_t) main_app_a
-    	, (paddr_t) __user_space_start, (paddr_t) __user_space_end);
-    
-    load_create_process_user(proc_b,
-    	_binary_apps_build_shell_bin_start, (size_t) _binary_apps_build_shell_bin_size);
-    
-    // create_process_user(proc_b, (uint32_t) main_app_b
+    // create_process_user(proc_a, (uint32_t) main_app_a
     // 	, (paddr_t) __user_space_start, (paddr_t) __user_space_end);
 
-    printf("AT CREATE PROCESS A expected pc= %x, ", (uint32_t) main_app_a);
+    load_create_process_user(proc_a, &_binary_apps[APP_IND_PROC_A]);
+    load_create_process_user(proc_b, &_binary_apps[APP_IND_PROC_B]);
+    // load_create_process_user(proc_b, &_binary_apps[APP_IND_SHELL]);
+    
+    printf("AT CREATE PROCESS A expected pc= %x, ", (uint32_t) VADDR_USER_BASE);
     printProc(proc_a);
     
     printf("AT CREATE PROCESS SHELL expected pc= %x, ", (uint32_t)VADDR_USER_BASE);
