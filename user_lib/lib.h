@@ -5,16 +5,12 @@
 
 // Include these to save time on user programs
 #include "inc/types.h"
-#include "inc/syscalls.h"
+#include "syscalls.h"
 
 ////
 //// Defined by arch/user/entry_point.c
 ////
 __attribute__((noreturn)) void exit(void);
-
-void putchar(char ch);
-
-int getchar(void);
 
 void sleep(int delay);
 

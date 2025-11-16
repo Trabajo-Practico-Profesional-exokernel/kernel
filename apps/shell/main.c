@@ -35,7 +35,10 @@ void handle_exec(char* program_name){
     for (int ind_program = 0; ind_program < APP_COUNT; ind_program++) {
         if (strncmp(program_name, _app_names[ind_program] , strlen(program_name)) == 0) {
             printf("SHOULD RUN AT INDEX! %d: '%s' args '%s'\n", ind_program, program_name, args);
+            
+            int ret= exec(ind_program, &args);
 
+            printf("Return code for %s is ... %d\n", program_name, ret);
             return;
         }
     }

@@ -10,6 +10,14 @@ void syscall_putchar(FullTrapFrame *tf) {
     putchar(SYSCALL_ARG0(tf));
 }
 
+
+void syscall_exec(FullTrapFrame *tf) {
+    int prog_ind = SYSCALL_ARG0(tf);
+    printf("Should run program at ind %d \n", prog_ind);
+
+    SET_SYSCALL_RET0(tf, 0)
+}
+
 void syscall_getchar(FullTrapFrame *tf) {
     while (1) {
         long ch = getchar();
@@ -30,6 +38,7 @@ void syscall_getchar(FullTrapFrame *tf) {
 syscall_handler_t syscall_table[MAX_SYSCALLS] = {
     [SYS_PUTCHAR] = syscall_putchar,
     [SYS_GETCHAR] = syscall_getchar,
+    [SYS_EXEC] = syscall_exec,
     // ... other handlers
 };
 
