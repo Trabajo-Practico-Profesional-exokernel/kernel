@@ -42,6 +42,8 @@ for app_name in $REGISTERED_APPS;do
     count=$(( count + 1 ))
 done
 
+defines_index+="#define APP_COUNT $count\n"
+
 ###
 ### GENERATE apps_info.h file!
 ###
@@ -53,6 +55,7 @@ OUTPUT_FILE="meta/gen/meta/apps_info.h"
 # Read the template file into a variable
 template=$(<"$TEMPLATE_FILE")
 # Replace the placeholders with the dynamically generated content
+
 template=$(echo "$template" | sed "s|{DEFINES_APPS_INDEXS}|$defines_index|g")
 
 # Write the final result to the output file

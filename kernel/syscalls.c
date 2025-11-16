@@ -6,17 +6,49 @@
 #include "arch/stdio.h"
 
 
+// Sched exec , wait and so on...
+#include "sched.h"
+#include "proc.h"
+
+#include "meta/apps_info.h" // Include auto generated app_info and indexs for apps  
+
+// meta/gen/apps_meta.c defines this...
+extern struct AppBinaryInfo _binary_apps[];
+
+
+void syscall_exec(FullTrapFrame *tf) {
+    int prog_ind = SYSCALL_ARG0(tf);
+
+    if (prog_ind < 0 || prog_ind>= APP_COUNT){
+        printf("Invalid exec call ind %d \n", prog_ind);
+        SET_SYSCALL_RET0(tf, DEF_ERR_CODE)        
+        return;
+    }
+    printf("Should run program at ind %d \n", prog_ind);
+    
+    struct Proc* proc= get_first_free_proc();
+    // It cannot but NULL it throws panic for now but check it anyway for the future!
+    if (proc == NULL){
+        SET_SYSCALL_RET0(tf, DEF_ERR_CODE)
+        return;
+    }
+
+    printf("Should run free proc %p \n", proc);
+    load_create_process_user(proc, &_binary_apps[prog_ind]);
+
+    // Now do switch? or not? naaa If you want you could wait for it! after ret.
+    SET_SYSCALL_RET0(tf, proc->pid)
+}
+
+
+
+
+
 void syscall_putchar(FullTrapFrame *tf) {
     putchar(SYSCALL_ARG0(tf));
 }
 
 
-void syscall_exec(FullTrapFrame *tf) {
-    int prog_ind = SYSCALL_ARG0(tf);
-    printf("Should run program at ind %d \n", prog_ind);
-
-    SET_SYSCALL_RET0(tf, 0)
-}
 
 void syscall_getchar(FullTrapFrame *tf) {
     while (1) {

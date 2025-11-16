@@ -20,7 +20,7 @@ paddr_t get_paddr_kernel_start();
 paddr_t get_paddr_kernel_end();
 
 #ifdef IS_RISC
-void switch_page_table(uint32_t *table_next, uint8_t * next_stack);
+void switch_page_table(uint32_t *table_next);
 paddr_t direct_map_range(paddr_t *table1, paddr_t range_start, paddr_t range_end, uint32_t flags);
 paddr_t offset_map_range(paddr_t *table1, paddr_t range_start, paddr_t range_end, 
 						vaddr_t mapped_vstart, uint32_t flags);

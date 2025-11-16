@@ -37,8 +37,19 @@ paddr_t get_paddr_kernel_end(){
 
 
 
+void switch_page_table(uint32_t *table_next){
+    __asm__ __volatile__(
+        "sfence.vma\n" // sfence.vma clears TLB cache, just in case?
+        "csrw satp, %[satp]\n" // Write the index of physical page | constant for SATP
+        "sfence.vma\n"  // sfence.vma clears TLB cache , to ensure no remaining map is old
+        :
+        : [satp] "r" (SATP_SV32 | ((uint32_t) table_next / PAGE_SIZE))
+    );
+
+}
 
 
+/*
 void switch_page_table(uint32_t *table_next, uint8_t* next_stack){
     __asm__ __volatile__(
         "csrw sscratch, %[sscratch]\n" // save the kernel stack pointer just
@@ -51,6 +62,7 @@ void switch_page_table(uint32_t *table_next, uint8_t* next_stack){
     );
 
 }
+*/
 
 void map_page(uint32_t *table1, vaddr_t vaddr, paddr_t paddr, uint32_t flags) {
     if (!is_aligned(vaddr, PAGE_SIZE))

@@ -64,6 +64,12 @@ struct TrapFrame {
 #define SWITCH_TO_STACK(stack_top) \
     __asm__ volatile("mv sp, %0" :: "r"(stack_top) :);
 
+#define SSCRATCH_STACK() \
+    __asm__ volatile("csrw sscratch, sp" :: :);
+
+#define SSCRATCH_NEW_STACK(stack_top) \
+    __asm__ volatile("csrw sscratch, %0" :: "r"(stack_top) :);
+
 // Macros for syscalls For syscalls param and return handling
 #define SYSCALL_ARG0(tf) tf->a0
 #define SYSCALL_ARG1(tf) tf->a1

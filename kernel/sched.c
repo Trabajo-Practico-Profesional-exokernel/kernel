@@ -67,9 +67,17 @@ void switch_proc(struct Proc* next) {
     printf("\n\n");
 
     #ifdef IS_RISC
-    SWITCH_TO_STACK(&trampoline_stacks[curr->cpunum][TRAMPOLINE_STACK_SIZE])
-    
-    switch_page_table((uint32_t *)curr->pde_paddr, (uint8_t *) curr->kernel_sp);
+
+    // Now we are not using kernel stack pointers of process at this point... so no need to switch stack
+    // SWITCH_TO_STACK(&trampoline_stacks[curr->cpunum][TRAMPOLINE_STACK_SIZE])
+    // SSCRATCH_STACK() // Save for next trap to use this stack pointer i.e trampoline
+
+    // BUUT you have to sscratch it for next trap since its not being restored like the end of trapentry would.
+    SSCRATCH_NEW_STACK(&trampoline_stacks[curr->cpunum][TRAMPOLINE_STACK_SIZE])
+
+    // switch_page_table((uint32_t *)curr->pde_paddr, (uint8_t *) curr->kernel_sp);
+    switch_page_table((uint32_t *)curr->pde_paddr);
+
     #else
     // TODO: llamar switch_page_table para lo de cr3
     switch_page_table(curr->pde_paddr);

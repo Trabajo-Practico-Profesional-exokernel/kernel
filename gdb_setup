@@ -1,1 +1,2 @@
-b switch_context
+b trap_entry
+b *0x80200d60
