@@ -2,6 +2,7 @@
 #define X86_H
 
 #include "inc/types.h"
+#include "../gdt.h"
 
 // -------------------------------
 // Control de interrupciones
@@ -22,6 +23,41 @@ static inline void sti(void) {
 static inline void hlt(void) {
     __asm__ __volatile__("hlt");
 }
+
+static inline void
+lgdt(struct Segdesc *p, uint32_t size)
+{
+  volatile uint16_t pd[3];
+
+  pd[0] = size-1;
+  pd[1] = (uint32_t)p;
+  pd[2] = (uint32_t)p >> 16;
+
+  asm volatile("lgdt (%0)" : : "r" (pd));
+}
+
+static inline void
+ltr(uint16_t sel)
+{
+  asm volatile("ltr %0" : : "r" (sel));
+}
+
+static inline void lseg(void) {
+    asm volatile (
+        "movw $0x10, %%ax\n\t"   // 0x10 = kernel data selector
+        "movw %%ax, %%ds\n\t"
+        "movw %%ax, %%ss\n\t"
+        "movw %%ax, %%es\n\t"
+        "movw %%ax, %%fs\n\t"
+        "movw %%ax, %%gs\n\t"
+        "ljmp $0x08, $1f\n\t"    // 0x08 = kernel code selector
+        "1:\n\t"
+        :
+        :
+        : "ax"
+    );
+}
+
 
 // -------------------------------
 // E/S de puertos (in/out)

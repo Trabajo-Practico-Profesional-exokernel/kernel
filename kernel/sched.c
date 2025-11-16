@@ -62,14 +62,21 @@ void switch_proc(struct Proc* next) {
     curr->status = PROC_RUNNING;
 
 
-    printf("[SWITCH PROC]\n");
+    printf("[NEXT PROC BEFORE SWITCH_CONTEXT] ");
     printProc(next);
+    printf("\n\n");
 
     #ifdef IS_RISC
     SWITCH_TO_STACK(&trampoline_stacks[curr->cpunum][TRAMPOLINE_STACK_SIZE])
     
-    switch_page_table(curr->page_table, (uint8_t *) curr->kernel_sp);
+    switch_page_table((uint32_t *)curr->pde_paddr, (uint8_t *) curr->kernel_sp);
+    #else
+    // TODO: llamar switch_page_table para lo de cr3
+    switch_page_table(curr->pde_paddr);
+
     #endif
+
+
 
     switch_context(curr);
 }
@@ -99,6 +106,9 @@ void sched_yield(FullTrapFrame *tf, uintptr_t proc_pc) {
     
     curr->status = PROC_RUNNABLE;
     curr_slices = 0;
+
+    printf("[PROC RUNNING] ");
+    printProc(curr);
 
     if (curr == proc_a){
         printf("Should switch to PROC B\n");

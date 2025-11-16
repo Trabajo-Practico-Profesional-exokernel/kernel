@@ -56,7 +56,7 @@ void proc_a_entry(void) {
     //syscall(SYS_KALLOC, 1, 0, 0); //For when its on user space.
     //printf("called kalloc on A\n");
     while (1) {
-        printf("A after sleep\n");
+        // printf("A after sleep\n");
         sleep(SLEEP_TIME);
         //printProc(proc_a);
     }
@@ -65,7 +65,7 @@ void proc_a_entry(void) {
 void proc_b_entry(void) {
     printf("starting process B\n");
     while (1) {
-        printf("B after sleep proc_b: \n");
+        // printf("B after sleep proc_b: \n");
         sleep(SLEEP_TIME);
     }
 }
@@ -88,10 +88,12 @@ void init_sched(void) {
     
     create_process(proc_a, (uint32_t) proc_a_entry);
     create_process(proc_b,(uint32_t) proc_b_entry);
-    printf("AT CREATE PROCESS A expected pc= %u, \n", (uint32_t) proc_a_entry);
+    printf("[INIT SCHED] AT CREATE PROCESS A expected pc= %u, \n", (uint32_t) proc_a_entry);
+    printf("[INIT SCHED] ");
     printProc(proc_a);
     
-    printf("AT CREATE PROCESS B expected pc= %u, \n", (uint32_t) proc_b_entry);
+    printf("[INIT SCHED] AT CREATE PROCESS B expected pc= %u, \n", (uint32_t) proc_b_entry);
+    printf("[INIT SCHED] ");
     printProc(proc_b);
 
     printf("START!\n");

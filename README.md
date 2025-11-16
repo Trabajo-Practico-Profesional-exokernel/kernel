@@ -69,7 +69,6 @@ Por default asume el target es riscv y el setup file, comandos setup de breakpoi
 
 Para el debugger para riscv se necesita gdb-multiarch
 ```bash
-sudo apt install gdb-multiarch
 ```
 
 ```bash

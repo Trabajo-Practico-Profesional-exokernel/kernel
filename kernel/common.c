@@ -119,7 +119,7 @@ vprintf(const char *fmt, va_list ap)
         printint(va_arg(ap, uint64_t), 16, 0);
         i += 2;
       } else if(c0 == 'p'){
-        printptr(va_arg(ap, uint64_t));
+        printptr(va_arg(ap, uint32_t)); //////////// ADDED: CHANGED FROM 64 TO 32
       } else if(c0 == 'c'){
         putchar(va_arg(ap, uint32_t));
       } else if(c0 == 's'){
