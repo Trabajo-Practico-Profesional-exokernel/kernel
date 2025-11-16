@@ -15,10 +15,11 @@ BUILD_FOLDER=apps/build
 mkdir -p $BUILD_FOLDER
 
 CFLAGS="-I$INC_DIR -I$ARCH_FOLDER -std=c11 -O2 -g3 -Wall -Wextra --target=riscv32-unknown-elf -fno-stack-protector -ffreestanding -nostdlib"
-CFLAGS+=" -Ipublic" 
+CFLAGS+=" -Ipublic -Istd" 
 
-COMMON_SRC_FILES="$ARCH_FOLDER/user/entry_point.c kernel/common.c"
+COMMON_SRC_FILES="$ARCH_FOLDER/user/entry_point.c"
 COMMON_SRC_FILES+=" $(find "user_lib" -name "*.c")"
+COMMON_SRC_FILES+=" $(find "std" -name "*.c")"
 
 # first build apps that have many .c files i.e have their own folder....
 for app_dir in apps/*/; do

@@ -3,6 +3,7 @@
 #include "arch/arch_init.h"
 #include "inc/types.h"
 #include "inc/common.h"
+#include "std/string.h"
 
 #include "drivers/opensbi.h"
 

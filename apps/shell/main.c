@@ -1,4 +1,5 @@
 #include "lib.h"
+#include "std/string.h"
 
 #include "app_names.h"
 extern char* _app_names[];
