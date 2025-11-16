@@ -14,6 +14,10 @@ int strncmp(const char *s1, const char *s2, size_t size);
 char *strchr(const char *s, char c);
 char *strfind(const char *s, char c);
 
+
+void split_by_once(char* src, char** after_delim, char delimeter);
+
+
 void *memset(void *dst, int c, size_t len);
 void *memcpy(void *dst, const void *src, size_t len);
 void *memmove(void *dst, const void *src, size_t len);

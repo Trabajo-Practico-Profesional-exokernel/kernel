@@ -116,6 +116,17 @@ strfind(const char *s, char c)
 	return (char *) s;
 }
 
+void split_by_once(char* src, char** after_delim, char delimeter){
+    char* space_char = strchr(src, delimeter);
+    if (space_char == 0){
+        *after_delim = ""; //Replace args to an empty string
+    } else {
+        // Next char is start of args...
+        *after_delim = space_char+1;
+        *space_char =0; //Replace value by 0 so that input_buf ends here for strncmp!
+    }
+}
+
 #if ASM
 void *
 memset(void *v, int c, size_t n)
