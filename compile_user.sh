@@ -17,8 +17,6 @@ mkdir -p $BUILD_FOLDER
 CFLAGS="-I$INC_DIR -I$ARCH_FOLDER -std=c11 -O2 -g3 -Wall -Wextra --target=riscv32-unknown-elf -fno-stack-protector -ffreestanding -nostdlib"
 CFLAGS+=" -Ipublic" 
 
-CFLAGS+=" -Imeta/user_gen" #Be able to access to infor about what apps are there.. for shell basically
-
 COMMON_SRC_FILES="$ARCH_FOLDER/user/entry_point.c kernel/common.c"
 
 # first build apps that have many .c files i.e have their own folder....
@@ -39,10 +37,12 @@ for app_dir in apps/*/; do
 
     # Collect all .c files in the app directory
     SRC_FILES=$(find "$app_dir" -name "*.c")
-
+    APP_CFLAGS=$CFLAGS
     # not the best? lol but works!
     if [[ "$app_name" == "shell" ]];then
+        #Be able to access to infor about what apps are there.. for shell basically
         SRC_FILES+=" $(find "meta/user_gen" -name "*.c")"
+        APP_CFLAGS+=" -Imeta/user_gen" 
     fi
 
     # Check if there are any .c files
@@ -53,7 +53,7 @@ for app_dir in apps/*/; do
     echo "build '$app_name' with src files $SRC_FILES"
 
     # Build the app (ELF file)
-    $CC $CFLAGS -Wl,-T$ARCH_FOLDER/linker/user.ld -Wl,-Map=$app_build_folder/app.map -o $app_build_folder/app.elf $SRC_FILES $COMMON_SRC_FILES
+    $CC $APP_CFLAGS -Wl,-T$ARCH_FOLDER/linker/user.ld -Wl,-Map=$app_build_folder/app.map -o $app_build_folder/app.elf $SRC_FILES $COMMON_SRC_FILES
 
     # # Convert ELF to binary
     $OBJCOPY --set-section-flags .bss=alloc,contents -O binary $app_build_folder/app.elf $app_build_folder/app.bin

@@ -32,8 +32,8 @@ void init_sched(void) {
     // 	, (paddr_t) __user_space_start, (paddr_t) __user_space_end);
 
     load_create_process_user(proc_a, &_binary_apps[APP_IND_PROC_A]);
-    load_create_process_user(proc_b, &_binary_apps[APP_IND_PROC_B]);
-    // load_create_process_user(proc_b, &_binary_apps[APP_IND_SHELL]);
+    // load_create_process_user(proc_b, &_binary_apps[APP_IND_PROC_B]);
+    load_create_process_user(proc_b, &_binary_apps[APP_IND_SHELL]);
     
     printf("AT CREATE PROCESS A expected pc= %x, ", (uint32_t) VADDR_USER_BASE);
     printProc(proc_a);

@@ -100,3 +100,15 @@ template=$(echo "$template" | sed "s|{APP_NAMES}|$apps_names|g")
 echo "$template" > "$OUTPUT_FILE"
 
 echo "Generated $OUTPUT_FILE with the app names."
+
+
+###
+### Also create a .h file with the count of generated apps
+###
+
+OUTPUT_FILE="meta/user_gen/app_names.h"
+
+# Write the final result to the output file
+echo "#define APP_COUNT $count" > "$OUTPUT_FILE"
+
+echo "Generated $OUTPUT_FILE with the apps info."
