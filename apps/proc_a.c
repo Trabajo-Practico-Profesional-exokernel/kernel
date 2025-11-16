@@ -1,6 +1,3 @@
-
-#include "inc/syscalls.h"
-#include "inc/common.h"
 #include "lib.h"
 #define SLEEP_TIME 300000000
 

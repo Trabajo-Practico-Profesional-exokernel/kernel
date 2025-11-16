@@ -8,7 +8,7 @@
 OBJCOPY=llvm-objcopy  # or path to llvm-objcopy
 QEMU=qemu-system-riscv32
 CC=clang
-INC_DIR=public/user
+INC_DIR=user_lib
 ARCH_FOLDER=arch/riscV
 BUILD_FOLDER=apps/build
 
@@ -18,6 +18,7 @@ CFLAGS="-I$INC_DIR -I$ARCH_FOLDER -std=c11 -O2 -g3 -Wall -Wextra --target=riscv3
 CFLAGS+=" -Ipublic" 
 
 COMMON_SRC_FILES="$ARCH_FOLDER/user/entry_point.c kernel/common.c"
+COMMON_SRC_FILES+=" $(find "user_lib" -name "*.c")"
 
 # first build apps that have many .c files i.e have their own folder....
 for app_dir in apps/*/; do
