@@ -180,10 +180,13 @@ void handle_trap(FullTrapFrame *tf) {
         //WRITE_CSR(user_pc, new_pc); // Redirect execution
         user_pc = handle_syscall(tf, user_pc);
         //user_pc += 4;  // Skip ins
-        WRITE_CSR(sepc, user_pc);        
+        WRITE_CSR(sepc, user_pc);      
+
     } else if(scause == 2) {
         // Just for testing purpose? skip this instruction
-        printf("ignore trap illegal ins scause=%x, stval=%x, sepc=%x\n", scause, stval, user_pc);
+        //printf("ignore trap illegal ins scause=%x, stval=%x, sepc=%x\n", scause, stval, user_pc);
+        PANIC("DO NOT IGNORE trap illegal ins scause=%x, stval=%x, sepc=%x\n", scause, stval, user_pc);
+        
         user_pc += 4;  // Skip illegal instruction
         WRITE_CSR(sepc, user_pc);
     } else if(IS_CLOCK_INTERRUPT(scause)) {

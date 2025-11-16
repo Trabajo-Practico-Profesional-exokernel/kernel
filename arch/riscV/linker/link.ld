@@ -27,6 +27,12 @@ SECTIONS {
     . += 128 * 1024; /* add stack, 128KB */
     __stack_top = .; /* where the stack ends */
 
+
+    . = ALIGN(4); /* Align */
+    . += 128 * 1024; /* add stack, 128KB */
+    __trap_stack_top = .; /* where trap entry stack ends */
+
+
     . = ALIGN(4096); /* align to page size */
     __kernel_base_end = .; /* To know where in memory does the kernel base end, without heap memory*/
 
