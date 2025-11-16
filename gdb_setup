@@ -1,2 +1,2 @@
-b trap_entry
-b *0x80200d60
+b syscall_exec
+b trap__entry

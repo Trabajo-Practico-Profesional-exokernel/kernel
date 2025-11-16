@@ -1,0 +1,17 @@
+#ifndef COMMAND_HANDLER
+#define COMMAND_HANDLER
+
+// #include "inc/types.h"
+
+typedef int (*command_handler_t)(char *args);
+
+struct CommandEntry {
+    char * action_name;
+    command_handler_t handler;
+};
+
+int exec_command(char * action, char* args);
+
+#define ERR_CODE -1
+#define OK_CODE 0
+#endif

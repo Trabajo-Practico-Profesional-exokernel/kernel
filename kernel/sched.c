@@ -71,7 +71,7 @@ void switch_proc(struct Proc* next) {
     // Now we are not using kernel stack pointers of process at this point... so no need to switch stack
     // SWITCH_TO_STACK(&trampoline_stacks[curr->cpunum][TRAMPOLINE_STACK_SIZE])
     // SSCRATCH_STACK() // Save for next trap to use this stack pointer i.e trampoline
-
+    printf("----> trampoline sscratch stack top %p \n", &trampoline_stacks[curr->cpunum][TRAMPOLINE_STACK_SIZE]);
     // BUUT you have to sscratch it for next trap since its not being restored like the end of trapentry would.
     SSCRATCH_NEW_STACK(&trampoline_stacks[curr->cpunum][TRAMPOLINE_STACK_SIZE])
 

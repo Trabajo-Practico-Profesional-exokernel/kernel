@@ -33,7 +33,7 @@ void syscall_exec(FullTrapFrame *tf) {
         return;
     }
 
-    printf("Should run free proc %p \n", proc);
+    printf("Should run free proc %p binary: %p \n", proc, &_binary_apps[prog_ind]);
     load_create_process_user(proc, &_binary_apps[prog_ind]);
 
     // Now do switch? or not? naaa If you want you could wait for it! after ret.

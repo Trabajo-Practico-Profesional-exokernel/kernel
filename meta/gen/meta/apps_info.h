@@ -12,9 +12,10 @@ struct AppBinaryInfo {
 
 
 #define APP_IND_SHELL 0
-#define APP_IND_HELLO_WORLD 1
-#define APP_IND_PROC_A 2
-#define APP_IND_PROC_B 3
-#define APP_COUNT 4
+#define APP_IND_TESTS_SHELL 1
+#define APP_IND_HELLO_WORLD 2
+#define APP_IND_PROC_A 3
+#define APP_IND_PROC_B 4
+#define APP_COUNT 5
 
 #endif

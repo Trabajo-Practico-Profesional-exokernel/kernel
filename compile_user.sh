@@ -41,7 +41,7 @@ for app_dir in apps/*/; do
     SRC_FILES=$(find "$app_dir" -name "*.c")
     APP_CFLAGS=$CFLAGS
     # not the best? lol but works!
-    if [[ "$app_name" == "shell" ]];then
+    if [[ "$app_name" == "shell" || "$app_name" == "tests_shell" ]];then
         #Be able to access to infor about what apps are there.. for shell basically
         SRC_FILES+=" $(find "meta/user_gen" -name "*.c")"
         APP_CFLAGS+=" -Imeta/user_gen" 
