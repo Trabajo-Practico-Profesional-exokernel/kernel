@@ -6,6 +6,7 @@
 #include "std/string.h"
 
 #include "drivers/opensbi.h"
+#include "arch/mem.h"
 
 extern char __bss[], __bss_end[], __stack_top[], __trap_stack_top[];
 

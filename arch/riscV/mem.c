@@ -34,7 +34,31 @@ paddr_t get_paddr_kernel_end(){
     return (paddr_t) __kernel_base_end;
 }
 
+paddr_t kernel_page_table; // Physical address for Page Directory: SATP for RISCV
+#define KERNEL_PERMISSIONS_ALL (PAGE_R | PAGE_W | PAGE_X)
 
+void mem_init(void){
+    kernel_page_table = alloc_pages(1);
+
+    uint32_t *page_table = (uint32_t *) kernel_page_table;
+
+    // First map page for page table as direct map
+    // map_page(page_table,kernel_page_table, kernel_page_table, KERNEL_PERMISSIONS_ALL);
+    
+    printf("SETTING UP KERNEL PAGETABLE at %x\n", kernel_page_table);
+    printf("MAP IN KERNEL from kernel base to ram end: %x to %x\n", (paddr_t) __kernel_base, (paddr_t) __free_ram_end);
+    direct_map_range(page_table, 
+            (paddr_t) __kernel_base,
+            // (paddr_t) __kernel_base_end,
+            (paddr_t) __free_ram_end,
+            KERNEL_PERMISSIONS_ALL
+    );
+}
+void switch_to_kernel_tables(void){
+    printf("SHOULD SWITCH TO KENERL PAGES? IS THAT IT? %x\n", (uint32_t *) kernel_page_table);
+
+    switch_page_table((uint32_t *) kernel_page_table);
+}
 
 
 void switch_page_table(uint32_t *table_next){
@@ -90,6 +114,7 @@ void map_page(uint32_t *table1, vaddr_t vaddr, paddr_t paddr, uint32_t flags) {
 paddr_t direct_map_range(uint32_t *table1, paddr_t range_start, paddr_t range_end, uint32_t flags){
     paddr_t paddr = range_start;
     while (paddr < range_end){
+        // printf("MAPPING PAGE %x < %x\n", paddr, range_end);
         map_page(table1, paddr, paddr, flags); // Direct map        
         paddr += PAGE_SIZE;
     }

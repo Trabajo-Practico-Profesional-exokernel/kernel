@@ -19,6 +19,7 @@ void set_proc_b(struct Proc * proc);
 
 // Tampoco deberia usarse!
 void set_curr(struct Proc * proc);
+struct Proc * get_curr();
 
 
 #endif

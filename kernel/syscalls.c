@@ -9,6 +9,7 @@
 // Sched exec , wait and so on...
 #include "sched.h"
 #include "proc.h"
+#include "arch/mem.h" // needed for switch to kernel page tables
 
 #include "meta/apps_info.h" // Include auto generated app_info and indexs for apps  
 
@@ -17,6 +18,7 @@ extern struct AppBinaryInfo _binary_apps[];
 
 
 void syscall_exec(FullTrapFrame *tf) {
+
     int prog_ind = SYSCALL_ARG0(tf);
 
     if (prog_ind < 0 || prog_ind>= APP_COUNT){
@@ -34,10 +36,25 @@ void syscall_exec(FullTrapFrame *tf) {
     }
 
     printf("Should run free proc %p binary: %p \n", proc, &_binary_apps[prog_ind]);
-    load_create_process_user(proc, &_binary_apps[prog_ind]);
 
+    #ifdef IS_RISC
+    switch_to_kernel_tables();
+    load_create_process_user(proc, &_binary_apps[prog_ind]);
+    
+    // Do switch to new proc? ... no?
+    SET_SYSCALL_RET0(tf, proc->pid)
+
+    // Switch back to page table of user!
+    switch_page_table((uint32_t *)(get_curr()->pde_paddr));
+    #else
+
+    load_create_process_user(proc, &_binary_apps[prog_ind]);
     // Now do switch? or not? naaa If you want you could wait for it! after ret.
     SET_SYSCALL_RET0(tf, proc->pid)
+    #endif
+
+
+
 }
 
 

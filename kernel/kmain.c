@@ -4,6 +4,7 @@
 #include "arch/trap.h"
 #include "arch/stdio.h"
 #include "arch/arch_init.h"
+#include "arch/mem.h"
 
 
 
@@ -22,6 +23,16 @@ void kmain()
     printf("HOLIS\n");
 
     init_trap();
+
+    #ifdef IS_RISC
+    //Doing it after init_trap just to be able to see a trap/panic if something fails!
+    // Mem init for riscv == setup pagetable for kernel.
+    mem_init();
+    // Why not ... maybe not full needed at first but works.
+    switch_to_kernel_tables();
+
+
+    #endif
 
     printf("\n\nHello World!\n");
     

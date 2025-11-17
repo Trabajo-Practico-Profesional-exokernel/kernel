@@ -31,6 +31,11 @@ void set_curr(struct Proc * proc){
     curr = proc;    
 }
 
+struct Proc * get_curr(){
+    return curr;
+}
+
+
 
 struct Proc procs[PROCS_MAX]; // All process control structures.
 
