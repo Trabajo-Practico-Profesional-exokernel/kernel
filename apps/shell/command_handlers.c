@@ -35,8 +35,9 @@ int handle_exec(char* args){
         return ERR_CODE;
     }
     // Wait for the child!
-    printf("Should wait for  proc %d end!\n", pid_child);
-    return OK_CODE;
+    // printf("Should wait for  proc %d end!\n", pid_child);
+    return wait(pid_child);
+    // return OK_CODE;
 }
 
 
