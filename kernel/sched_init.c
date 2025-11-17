@@ -23,27 +23,21 @@ extern char __user_space_start[], __user_space_end[];
 
 void init_sched(void) {
     //proc_a = create_process((uint32_t) proc_a_entry);
-    struct Proc * proc_a = get_first_free_proc();
-    struct Proc * proc_b = get_first_free_proc();
-    set_proc_a(proc_a);
-    set_proc_b(proc_b);
+    struct Proc * proc_shell = get_first_free_proc();
+    // struct Proc * proc_a = get_first_free_proc();
 
-    // create_process_user(proc_a, (uint32_t) main_app_a
-    // 	, (paddr_t) __user_space_start, (paddr_t) __user_space_end);
-
-    load_create_process_user(proc_a, &_binary_apps[APP_IND_PROC_A]);
-    // load_create_process_user(proc_b, &_binary_apps[APP_IND_PROC_B]);
+    // load_create_process_user(proc_a, &_binary_apps[APP_IND_PROC_A]);
+    // load_create_process_user(proc_a, &_binary_apps[APP_IND_TESTS_SHELL]);
     
-    load_create_process_user(proc_b, &_binary_apps[APP_IND_TESTS_SHELL]);
-    // load_create_process_user(proc_b, &_binary_apps[APP_IND_SHELL]);
-    
-    printf("AT CREATE PROCESS A expected pc= %x, ", (uint32_t) VADDR_USER_BASE);
-    printProc(proc_a);
+    load_create_process_user(proc_shell, &_binary_apps[APP_IND_SHELL]);
     
     printf("AT CREATE PROCESS SHELL expected pc= %x, ", (uint32_t)VADDR_USER_BASE);
-    printProc(proc_b);
-    // Start proc_a!
-    switch_proc(proc_b);
+    printProc(proc_shell);
+
+    
+    // Start proc_shell!
+    switch_proc(proc_shell);
+    
     PANIC("unreachable here!");
 }
 

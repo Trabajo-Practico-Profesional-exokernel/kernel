@@ -7,9 +7,11 @@
 
 #define LOG2NPROC 10
 #define NPROC (1 << LOG2NPROC)
-#define PROCX(procid) ((procid) & (NPROC - 1))
 
-#define PROCS_MAX 8       // Maximum number of processes
+#define PROCS_MAX NPROC//8       // Maximum number of processes
+
+#define PROCX(procid) ((procid) & (PROCS_MAX - 1))
+
 
 #define KERN_STACK_PAGES 2
 

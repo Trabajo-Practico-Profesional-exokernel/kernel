@@ -61,6 +61,7 @@ struct Proc * get_first_free_proc(){
 }
 
 
+
 void switch_proc(struct Proc* next) {
     curr = next;
     
@@ -99,24 +100,73 @@ void sched_yield(FullTrapFrame *tf, uintptr_t proc_pc) {
     if (curr_slices< MAX_TIME_SLICES){
         return;
     }
-    update_trapframe(curr, tf);
+    
     #ifdef IS_RISC
+
     curr_slices = 0;
-    
-    //printf("Should preemptive sched! But for now just update curr proc\n");
-    //printProc(curr);
 
-    curr->status = PROC_RUNNABLE;
+    ////
+    //// Round robin!
+    ////
 
-    if (curr == proc_a){
-        printf("Should switch to PROC SHELL\n");
-        switch_proc(proc_b);
-    } else{
-        printf("Should switch to PROC A\n");
-        switch_proc(proc_a);
+    int currind = -1;
+
+    if (curr){
+        update_trapframe(curr, tf);
+
+        currind= PROCX(curr->pid);
+
+        // If it was preemted, not in blocked state or so... then set it as runnable
+        if (curr->status == PROC_RUNNING) {
+            curr->status = PROC_RUNNABLE;  
+        }
     }
-    #else // IS X86
+
+    int ind = currind + 1;
+
+    // Look for next in range [curr+1 ; end] 
+    while (ind < PROCS_MAX &&
+           procs[ind].status !=
+                   PROC_RUNNABLE) {  
+        ind++;
+    }
+    if (ind < PROCS_MAX) { 
+        switch_proc(&procs[ind]);
+    }
+
+    // Now circular loop!
+    // Look for next in range [0; curr] 
+    ind = 0;
+    while (ind < currind &&
+           procs[ind].status !=
+                   PROC_RUNNABLE) {  
+        ind++;
+    }
+
+
+    if (ind < currind) {
+        switch_proc(&procs[ind]);
+    }
+
+    // Found nothing , if curr is blocked or dead.. then reset it 
+    if (curr && curr->status != PROC_RUNNABLE) {
+        curr = NULL;
+    }
+
+    // keep runing the last proc while it exists
+    if (curr) {
+        switch_proc(curr);
+    }
+
+    PANIC("+++++++++++++++++++++ Nothing to run at sched yield!?");
     
+    #else 
+    
+    /////
+    ///// IS X86
+    /////
+    update_trapframe(curr, tf);
+
     curr->status = PROC_RUNNABLE;
     curr_slices = 0;
 
