@@ -67,11 +67,6 @@ void switch_proc(struct Proc* next) {
     
     curr->status = PROC_RUNNING;
 
-
-    printf("[NEXT PROC BEFORE SWITCH_CONTEXT] ");
-    printProc(next);
-    printf("\n\n");
-
     #ifdef IS_RISC
 
     // Now we are not using kernel stack pointers of process at this point... so no need to switch stack
@@ -79,12 +74,18 @@ void switch_proc(struct Proc* next) {
     // SSCRATCH_STACK() // Save for next trap to use this stack pointer i.e trampoline
     // printf("----> trampoline sscratch stack top %p \n", &trampoline_stacks[curr->cpunum][TRAMPOLINE_STACK_SIZE]);
     // BUUT you have to sscratch it for next trap since its not being restored like the end of trapentry would.
+    printf("--------------------------- SWITCH TO PROC %u \n", curr->pid);
+    
     SSCRATCH_NEW_STACK(&trampoline_stacks[curr->cpunum][TRAMPOLINE_STACK_SIZE])
 
     // switch_page_table((uint32_t *)curr->pde_paddr, (uint8_t *) curr->kernel_sp);
     switch_page_table((uint32_t *)curr->pde_paddr);
 
     #else
+    printf("[NEXT PROC BEFORE SWITCH_CONTEXT] ");
+    printProc(next);
+    printf("\n\n");
+
     // TODO: llamar switch_page_table para lo de cr3
     switch_page_table(curr->pde_paddr);
 

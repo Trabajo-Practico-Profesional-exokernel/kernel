@@ -12,10 +12,12 @@
 #include "arch/mem.h" // needed for switch to kernel page tables
 
 #include "meta/apps_info.h" // Include auto generated app_info and indexs for apps  
-
+#ifdef IS_RISC
 // meta/gen/apps_meta.c defines this...
 extern struct AppBinaryInfo _binary_apps[];
-
+#else
+struct AppBinaryInfo _binary_apps[10];
+#endif
 
 void syscall_exec(FullTrapFrame *tf, uintptr_t pc) {
 

@@ -14,6 +14,10 @@ curl -LO https://github.com/qemu/qemu/raw/v8.0.4/pc-bios/opensbi-riscv32-generic
 sudo apt-get install build-essential nasm genisoimage bochs bochs-sdl
 ```
 
+```bash
+sudo apt-get install qemu-system-i386
+```
+
 
 Qemu for riscv and other dependencies in general needed to run debugging and copying of binaries
 ```bash

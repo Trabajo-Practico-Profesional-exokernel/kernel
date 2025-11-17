@@ -2,6 +2,7 @@
 #include "arch_inc/mem_constants.h"
 #include "arch/mem.h"
 #include "paging.h" // Aporta page_info y page_manager
+#include "std/string.h"
 
 // EN TEORIA ES LO MISMO QUE EN RISCV
 extern char __free_ram[], __free_ram_end[], __kernel_base[], __kernel_base_end[];

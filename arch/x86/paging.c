@@ -2,6 +2,7 @@
 #include "inc/types.h"
 #include "inc/common.h"
 #include "arch_inc/mem_constants.h"
+#include "std/string.h"
 
 #define NUM_ENTRIES 1024
 
