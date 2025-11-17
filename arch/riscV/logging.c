@@ -26,6 +26,6 @@ void printTrapFull(const FullTrapFrame *tf){
 
 
 void printProc(const struct Proc * proc){
-	printf("proc id: %d, status: %d\n", proc->pid, proc->status);
+	printf("proc id: %d, status: %d pc: %x \n", proc->pid, proc->status, proc->pc);
 	printTrap(&(proc->tf));
 }

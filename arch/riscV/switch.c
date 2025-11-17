@@ -1,5 +1,6 @@
 #include "arch/switch.h"
 #include "arch/mem_layout.h"
+#include "inc/common.h"
 
 /*
 sret inspects two bits in sstatus:
@@ -102,7 +103,11 @@ void update_trapframe(struct Proc *proc, FullTrapFrame *tf){
     proc->tf.s2 = tf->s2;
     proc->tf.s1 = tf->s1;
     proc->tf.s0 = tf->s0;
-    proc->tf.ra = tf->ra;    
+    proc->tf.ra = tf->ra;
+
+    // SET USER SP! Fulltf has the user one!
+    proc->tf.sp = tf->sp;
+    // printf("OLD? SP? %x vs new sp %x \n", proc->tf.sp, tf->sp);
 }
 
 
