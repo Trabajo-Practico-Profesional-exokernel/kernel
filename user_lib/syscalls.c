@@ -16,3 +16,21 @@ void putchar(char ch) {
 int getchar(void) {
     return syscall(SYS_GETCHAR, 0, 0, 0);
 }
+
+
+int wait(int pid){
+    return syscall(SYS_WAIT, pid, 0, 0);
+}
+
+void sys_yield(){
+    syscall(SYS_YIELD, 0, 0, 0);
+}
+
+__attribute__((noreturn)) void exit(int ret_code) {
+    syscall(SYS_EXIT, ret_code, 0, 0);
+    // SHOULD NEVER HAPPEN... just to make compiler shutup
+    printf("SHOULD NOT REACH HERE! AFTER EXIT\n");
+    for(;;){
+
+    }
+}

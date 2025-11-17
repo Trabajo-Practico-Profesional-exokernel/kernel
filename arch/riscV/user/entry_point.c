@@ -2,8 +2,9 @@
 
 extern char __stack_top[];
 
-__attribute__((noreturn)) void exit(void) {
-    for (;;);
+__attribute__((noreturn)) void do_exit(void) {
+    printf("-------> PROCESS EXITED NORMALLY!\n");
+    exit(0); // Syscall exit!
 }
 
 //__attribute__((section(".user_func")))
@@ -32,7 +33,7 @@ void start(void) {
     __asm__ __volatile__(
         "mv sp, %[stack_top] \n"
         "call main           \n"
-        "call exit           \n"
+        "call do_exit           \n"
         :: [stack_top] "r" (__stack_top)
     );
 }

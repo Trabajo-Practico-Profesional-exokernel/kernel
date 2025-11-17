@@ -95,16 +95,28 @@ void switch_proc(struct Proc* next) {
     switch_context(curr);
 }
 
-void sched_yield(FullTrapFrame *tf, uintptr_t proc_pc) {
+void clock_yield(FullTrapFrame *tf, uintptr_t proc_pc){
     curr_slices+=1;
+    
     if (curr_slices< MAX_TIME_SLICES){
         return;
     }
-    
-    #ifdef IS_RISC
-
     curr_slices = 0;
 
+    curr->pc = proc_pc;
+    update_trapframe(curr, tf);
+
+    sched_yield();
+}
+
+void save_curr_proc_state(FullTrapFrame *tf, uintptr_t proc_pc){
+    curr->pc = proc_pc;
+    update_trapframe(curr, tf);    
+}
+
+
+void sched_yield(void) {
+    #ifdef IS_RISC
     ////
     //// Round robin!
     ////
@@ -112,14 +124,13 @@ void sched_yield(FullTrapFrame *tf, uintptr_t proc_pc) {
     int currind = -1;
 
     if (curr){
-        update_trapframe(curr, tf);
-
-        currind= PROCX(curr->pid);
-
         // If it was preemted, not in blocked state or so... then set it as runnable
         if (curr->status == PROC_RUNNING) {
             curr->status = PROC_RUNNABLE;  
         }
+
+        currind= PROCX(curr->pid);
+
     }
 
     int ind = currind + 1;
@@ -165,10 +176,7 @@ void sched_yield(FullTrapFrame *tf, uintptr_t proc_pc) {
     /////
     ///// IS X86
     /////
-    update_trapframe(curr, tf);
-
     curr->status = PROC_RUNNABLE;
-    curr_slices = 0;
 
     printf("[PROC RUNNING] ");
     printProc(curr);

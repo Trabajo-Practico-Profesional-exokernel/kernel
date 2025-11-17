@@ -7,10 +7,6 @@
 #include "inc/types.h"
 #include "syscalls.h"
 
-////
-//// Defined by arch/user/entry_point.c
-////
-__attribute__((noreturn)) void exit(void);
 
 void sleep(int delay);
 

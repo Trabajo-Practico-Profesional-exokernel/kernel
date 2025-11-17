@@ -5,6 +5,10 @@
 #include "arch/proc.h"
 
 void create_process(struct Proc * proc, uint32_t pc);
+
+void free_process(struct Proc * proc);
+
+
 void create_process_user(struct Proc * proc, uint32_t proc_entry,
     paddr_t user_space_start, paddr_t user_space_end);
 

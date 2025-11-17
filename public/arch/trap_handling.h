@@ -8,7 +8,7 @@
 uintptr_t handle_syscall(FullTrapFrame *tf, uintptr_t pc);
 
 // Some better ways than just a switch with sysno!
-typedef void (*syscall_handler_t)(FullTrapFrame *tf);
+typedef void (*syscall_handler_t)(FullTrapFrame *tf, uintptr_t pc);
 
 
 

@@ -5,7 +5,13 @@
 #include "arch/proc.h"
 
 struct Proc * get_first_free_proc();
-void sched_yield(FullTrapFrame *tf, uintptr_t pc);
+
+void clock_yield(FullTrapFrame *tf, uintptr_t proc_pc);
+
+void save_curr_proc_state(FullTrapFrame *tf, uintptr_t proc_pc);
+void sched_yield(void);
+
+
 void switch_proc(struct Proc * proc);
 
 void init_cpu(int cpunum);

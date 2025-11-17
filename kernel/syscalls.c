@@ -17,7 +17,7 @@
 extern struct AppBinaryInfo _binary_apps[];
 
 
-void syscall_exec(FullTrapFrame *tf) {
+void syscall_exec(FullTrapFrame *tf, uintptr_t pc) {
 
     int prog_ind = SYSCALL_ARG0(tf);
 
@@ -53,31 +53,62 @@ void syscall_exec(FullTrapFrame *tf) {
     SET_SYSCALL_RET0(tf, proc->pid)
     #endif
 
+}
 
 
+void syscall_exit(FullTrapFrame *tf, uintptr_t pc){
+    int exit_code = SYSCALL_ARG0(tf);
+    struct Proc * exited_proc = get_curr();
+    printf("Process %u exited with code %d\n", exited_proc->pid, exit_code);
+
+    #ifdef IS_RISC
+    switch_to_kernel_tables();
+    #endif
+    
+    // Delete! .. from proc.c
+    free_process(exited_proc);
+
+    // TO DO! Notify for processes waiting?
+    sched_yield();
+}
+
+void syscall_yield(FullTrapFrame *tf, uintptr_t pc){
+    save_curr_proc_state(tf, pc);
+    sched_yield();
+}
+
+
+void syscall_wait(FullTrapFrame *tf, uintptr_t pc){
+    int waited_proc = SYSCALL_ARG0(tf);
+    struct Proc * waiting_proc = get_curr();
+    printf("Process %d should wait blocked for %d exit!(For now just yield!)\n",waiting_proc->pid,  waited_proc);
+    
+    SET_SYSCALL_RET0(tf, 0) // On tf saved... save hardcoded ret code for waited proc
+
+    save_curr_proc_state(tf, pc);
+    sched_yield();    
 }
 
 
 
 
-
-void syscall_putchar(FullTrapFrame *tf) {
+void syscall_putchar(FullTrapFrame *tf, uintptr_t pc) {
     putchar(SYSCALL_ARG0(tf));
 }
 
 
 
-void syscall_getchar(FullTrapFrame *tf) {
+void syscall_getchar(FullTrapFrame *tf, uintptr_t pc) {
     while (1) {
         long ch = getchar();
         if (ch >= 0) {
             SET_SYSCALL_RET0(tf, ch); // change sys ret vl
             break;
-        //} else {
-            //printf("No char recv? %x \n", ch);
         }
 
-        // yield or do something? do not stay doing nothing..
+        // save_curr_proc_state(tf, pc);
+        // get_curr()->status = PROC_NOT_RUNNABLE;
+        // sched_yield();
     }            
 }
 
@@ -88,6 +119,10 @@ syscall_handler_t syscall_table[MAX_SYSCALLS] = {
     [SYS_PUTCHAR] = syscall_putchar,
     [SYS_GETCHAR] = syscall_getchar,
     [SYS_EXEC] = syscall_exec,
+
+    [SYS_EXIT] = syscall_exit,
+    [SYS_WAIT] = syscall_wait,
+    [SYS_YIELD] = syscall_yield,
     // ... other handlers
 };
 
@@ -98,7 +133,7 @@ uintptr_t handle_syscall(FullTrapFrame *tf, uintptr_t pc) {
         printf("unexpected syscall a3=%x max sysno: %x at pc: %x\n", sysno, MAX_SYSCALLS, pc);
         printTrapFull(tf);
     } else {
-        syscall_table[sysno](tf);
+        syscall_table[sysno](tf, pc);
     }
 
     return pc + 4; // skip ecall
