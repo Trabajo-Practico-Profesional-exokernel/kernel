@@ -9,6 +9,26 @@ int exec(int prog_ind, char ** args){
 }
 
 
+void send_msg(int proc_pid, char *msg, int len_msg) {
+    printf("msg '%s'\n", *msg);
+
+    syscall(SYS_SEND_MSG, proc_pid, (int)(msg), len_msg);
+}
+
+void sendchar(int proc_pid, char ch) {
+    printf("sending char\n");
+    syscall(SYS_SENDCHAR, proc_pid, ch, 0);
+}
+
+char recv_msg() {
+    return (char)syscall(SYS_RECV_MSG, 0, 0, 0); 
+}
+
+void recvchar(int proc_pid, char ch) {
+    printf("receiving char\n");
+    syscall(SYS_RECVCHAR, proc_pid, ch, 0);
+}
+
 void putchar(char ch) {
     syscall(SYS_PUTCHAR, ch, 0, 0);
 }

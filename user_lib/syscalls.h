@@ -8,9 +8,10 @@ int getchar(void);
 
 // Receives index of program to exec and pointer to the args to exec with.
 int exec(int prog_ind, char ** args);
-
+void send_msg(int pid_proc, char * msg_out, int len_msg_out);
+void sendchar(int proc_pid, char ch);
 void sys_yield(void);
-
+char recv_msg();
 int wait(int pid);
 ////
 //// Calls syscall exit or so.

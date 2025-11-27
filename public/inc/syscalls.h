@@ -9,4 +9,10 @@
 #define SYS_YIELD 5
 
 
+#define SYS_SEND_MSG 6
+#define SYS_RECV_MSG 7
+
+#define SYS_SENDCHAR 8
+#define SYS_RECVCHAR 9
+
 #define DEF_ERR_CODE -1

@@ -127,6 +127,26 @@ void split_by_once(char* src, char** after_delim, char delimeter){
     }
 }
 
+
+#define ERR_PARSE_CODE -1
+
+int parse_num_and_msg(char* input_buffer, char** msg_out) {
+    char* endptr;
+    long number = strtol(input_buffer, &endptr, 10);
+
+    if (endptr == input_buffer) {
+        return ERR_PARSE_CODE; 
+    }
+
+    while (*endptr == ' ') {
+        endptr++;
+    }
+
+    *msg_out = endptr;
+    
+    return (int)number;
+}
+
 #if ASM
 void *
 memset(void *v, int c, size_t n)

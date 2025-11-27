@@ -2,7 +2,9 @@
 #include "inc/syscalls.h"
 #include "arch/trap_handling.h"
 #include "arch/logging.h"
-
+#include "std/string.h"
+#include "arch/communication.h"
+#include "arch_inc/trap_constants.h"
 #include "arch/stdio.h"
 
 
@@ -115,7 +117,129 @@ void syscall_getchar(FullTrapFrame *tf, uintptr_t pc) {
 }
 
 
-#define MAX_SYSCALLS 16
+void send_msg_to_process(struct CharMessage new_char_message, struct Proc *proc_receiver){
+
+    //TODO FIX: se suman mensjaes por cada caracter agregado
+
+    for (int i=0; i<proc_receiver->msg_count; i++){
+        struct ProcessMessage *actual_proc_receiver_msg = &proc_receiver->msg_queue[i];
+        if (actual_proc_receiver_msg->sender_pid == new_char_message.sender_pid && !actual_proc_receiver_msg->ready_to_read){
+
+            int index = actual_proc_receiver_msg->actual_content_size;
+            actual_proc_receiver_msg->content[index] = new_char_message.char_content;
+            actual_proc_receiver_msg->actual_content_size ++;
+            if (new_char_message.char_content == '\0'){
+                actual_proc_receiver_msg->ready_to_read = true;
+
+                if (proc_receiver->status == PROC_NOT_RUNNABLE) {
+                    proc_receiver->status = PROC_RUNNABLE;
+                }
+
+            }
+            return;
+        }
+    }
+
+    if (new_char_message.char_content == '\0') {
+        return;
+    }
+
+    struct ProcessMessage new_msg;
+    new_msg.sender_pid = new_char_message.sender_pid;
+    new_msg.content[0] = new_char_message.char_content;
+    new_msg.actual_content_size = 1;
+    //cambiar ready to read a true
+    new_msg.ready_to_read = false;
+    new_msg.reserved = true;
+
+    proc_receiver->msg_queue[proc_receiver->msg_count] = new_msg;
+    proc_receiver->msg_count++;
+
+    if (proc_receiver->status == PROC_NOT_RUNNABLE) {
+        printf("[KERNEL] Despertando proceso %d (nuevo mensaje)\n", proc_receiver->pid);
+        proc_receiver->status = PROC_RUNNABLE;
+    }
+}
+
+void syscall_send_char(FullTrapFrame *tf, uintptr_t pc){
+
+    uint32_t receiver_pid = SYSCALL_ARG0(tf);
+    char char_msg = SYSCALL_ARG1(tf);
+
+    struct Proc *proc_receiver = get_proc_by_pid(receiver_pid);
+    struct Proc *proc_sender = get_curr();
+
+    if (proc_receiver == NULL || proc_receiver->status == PROC_FREE) {
+        SET_SYSCALL_RET0(tf, DEF_ERR_CODE);
+        return;
+    }
+
+    struct CharMessage new_char_message;
+    new_char_message.char_content = char_msg;
+    new_char_message.sender_pid = proc_sender->pid;
+
+    if (proc_receiver == NULL || proc_receiver->status == PROC_FREE) {
+        SET_SYSCALL_RET0(tf, DEF_ERR_CODE);
+        return;
+    }
+
+    send_msg_to_process(new_char_message, proc_receiver);
+
+    SET_SYSCALL_RET0(tf, 0);
+}
+
+void syscall_recv_msg(FullTrapFrame *tf, uintptr_t pc) {
+
+    printf("[KERNEL] buscando caracter!\n");
+
+    struct Proc *current_proc = get_curr();
+
+    if (current_proc->msg_count == 0) {
+        save_curr_proc_state(tf, pc);
+        current_proc->status= PROC_NOT_RUNNABLE;
+        sched_yield();
+        return;
+    }
+    current_proc = get_curr();
+    printf("[KERNEL] antes del for!\n");
+    for (int i=0; i<current_proc->msg_count; i++){
+        if (current_proc->msg_queue[i].ready_to_read){
+
+
+            //char *user_buffer = (char *)SYSCALL_ARG1(tf);
+    
+            struct ProcessMessage *msg = &current_proc->msg_queue[i];
+            SET_SYSCALL_RET0(tf, (int)msg->content[0]);
+            //provisorio
+            msg->ready_to_read = false;
+            //*user_buffer = msg.content[0];
+
+            for (int j = i; j < current_proc->msg_count - 1; j++) {
+                current_proc->msg_queue[j] = current_proc->msg_queue[j + 1];
+            }
+
+            current_proc->msg_count--;
+
+            printf("[KERNEL] caracter! '%c' \n", msg->content[0]);
+
+            
+            return;
+        }   
+    }
+
+    save_curr_proc_state(tf, pc);
+    current_proc->status= PROC_NOT_RUNNABLE;
+    sched_yield();
+    return;
+}
+
+
+void syscall_send_msg(FullTrapFrame *tf, uintptr_t pc) {
+}
+
+
+#define MAX_SYSCALLS 32
+
 
 syscall_handler_t syscall_table[MAX_SYSCALLS] = {
     [SYS_PUTCHAR] = syscall_putchar,
@@ -125,6 +249,9 @@ syscall_handler_t syscall_table[MAX_SYSCALLS] = {
     [SYS_EXIT] = syscall_exit,
     [SYS_WAIT] = syscall_wait,
     [SYS_YIELD] = syscall_yield,
+    [SYS_SEND_MSG] = syscall_send_msg,
+    [SYS_RECV_MSG] = syscall_recv_msg,
+    [SYS_SENDCHAR] = syscall_send_char,
     // ... other handlers
 };
 

@@ -26,6 +26,6 @@ void set_proc_b(struct Proc * proc);
 // Tampoco deberia usarse!
 void set_curr(struct Proc * proc);
 struct Proc * get_curr();
-
+struct Proc * get_proc_by_pid(int receiver_pid);
 
 #endif

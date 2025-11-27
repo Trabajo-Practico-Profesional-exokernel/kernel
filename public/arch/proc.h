@@ -3,6 +3,7 @@
 #include "inc/types.h"
 #include "arch_inc/trapframe.h"
 #include "arch_inc/mem_constants.h"
+#include "communication.h"
 #include "mem.h"
 
 #define LOG2NPROC 10
@@ -14,6 +15,8 @@
 
 
 #define KERN_STACK_PAGES 2
+
+#define QUEUE_CAPACITY 32
 
 typedef int32_t procid_t;
 
@@ -31,6 +34,9 @@ struct Proc {
     int status;           // Process state: PROC_FREE or PROC_RUNNABLE,  PROC_DYING, PROC_RUNNABLE, PROC_RUNNING, PROC_NOT_RUNNABLE 
 
     int cpunum; // The CPU that the env is running on
+
+    struct ProcessMessage msg_queue[QUEUE_CAPACITY];
+    int msg_count;
 };
 
 #endif /* !*/

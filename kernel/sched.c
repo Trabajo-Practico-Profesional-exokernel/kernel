@@ -39,6 +39,15 @@ struct Proc * get_curr(){
 
 struct Proc procs[PROCS_MAX]; // All process control structures.
 
+struct Proc *get_proc_by_pid(int pid){
+    for (int i=0; i<PROCS_MAX; i++){
+        if (procs[i].pid == pid) {
+            return &procs[pid];
+        }
+    }
+    PANIC("Process does not exist");    
+}
+
 #define NUM_CPUS 4
 #define TRAMPOLINE_STACK_SIZE 4096 // 1 page essentially?
 uint8_t trampoline_stacks[NUM_CPUS][TRAMPOLINE_STACK_SIZE]; // All process control structures.

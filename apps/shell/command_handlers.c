@@ -1,7 +1,8 @@
 #include "lib.h"
 #include "std/string.h"
 
-
+#include "inc/types.h"
+#include "std/printf.h"
 #include "app_names.h"
 extern char* _app_names[];
 
@@ -44,11 +45,28 @@ int handle_exec(char* args){
 struct CommandEntry commands[] = {
     { "exec",  handle_exec},
     { "start",  start_program},
+    { "msg", send},
 };
 
-#define COMMAND_COUNT 2
+#define COMMAND_COUNT 3
 
+int send(char* content){
+    
+    char* msg_out;
 
+    int pid_proc = parse_num_and_msg(content, &msg_out);
+    if (pid_proc == -1){
+        return ERR_CODE;
+    }
+
+    for (int i=0; i<strlen(msg_out); i++){
+        sendchar(pid_proc, msg_out[i]);
+    }
+    sendchar(pid_proc, '\0');
+    //send_msg(pid_proc, &msg_out, strlen(msg_out));
+
+    return OK_CODE;
+}
 
 
 int exec_command(char * action, char* args){
