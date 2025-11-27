@@ -151,7 +151,7 @@ void send_msg_to_process(struct CharMessage new_char_message, struct Proc *proc_
     //cambiar ready to read a true
     new_msg.ready_to_read = false;
     new_msg.reserved = true;
-
+    new_msg.actual_index = 0;
     proc_receiver->msg_queue[proc_receiver->msg_count] = new_msg;
     proc_receiver->msg_count++;
 
@@ -190,8 +190,6 @@ void syscall_send_char(FullTrapFrame *tf, uintptr_t pc){
 
 void syscall_recv_msg(FullTrapFrame *tf, uintptr_t pc) {
 
-    printf("[KERNEL] buscando caracter!\n");
-
     struct Proc *current_proc = get_curr();
 
     if (current_proc->msg_count == 0) {
@@ -201,28 +199,23 @@ void syscall_recv_msg(FullTrapFrame *tf, uintptr_t pc) {
         return;
     }
     current_proc = get_curr();
-    printf("[KERNEL] antes del for!\n");
     for (int i=0; i<current_proc->msg_count; i++){
         if (current_proc->msg_queue[i].ready_to_read){
 
-
             //char *user_buffer = (char *)SYSCALL_ARG1(tf);
-    
             struct ProcessMessage *msg = &current_proc->msg_queue[i];
-            SET_SYSCALL_RET0(tf, (int)msg->content[0]);
+            SET_SYSCALL_RET0(tf, (int)msg->content[msg->actual_index]);
+            msg->actual_index ++;
             //provisorio
-            msg->ready_to_read = false;
-            //*user_buffer = msg.content[0];
-
-            for (int j = i; j < current_proc->msg_count - 1; j++) {
-                current_proc->msg_queue[j] = current_proc->msg_queue[j + 1];
+            if (msg->actual_index == msg->actual_content_size){
+                msg->ready_to_read = false;
+                for (int j = i; j < current_proc->msg_count - 1; j++) {
+                    current_proc->msg_queue[j] = current_proc->msg_queue[j + 1];
+                }
+                current_proc->msg_count--;
             }
 
-            current_proc->msg_count--;
-
-            printf("[KERNEL] caracter! '%c' \n", msg->content[0]);
-
-            
+            //*user_buffer = msg.content[0];
             return;
         }   
     }

@@ -16,6 +16,7 @@ struct ProcessMessage {
     size_t actual_content_size;
     bool ready_to_read;
     bool reserved;
+    uint32_t actual_index;
 };
 
 struct Message {

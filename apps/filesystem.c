@@ -1,12 +1,21 @@
 #include "lib.h"
 
 #define SLEEP_TIME 300000000
+#define MSG_SIZE_MAX 64
 
 void main() {
+    char buffer[MSG_SIZE_MAX];
+    int index = 0;
     while (1){
-        printf("esperando mensaje!");
-        char msg = recv_msg(); 
-        printf("Recibido en proceso: %c \n", msg);
+
+        char msg_char = recv_msg();
+        buffer[index] = msg_char;
+        index ++;
+        if (msg_char == '\0'){
+            printf("Mensaje recibido: %s \n", buffer);
+            break;
+        }
+
         sleep(SLEEP_TIME);
     }
     
