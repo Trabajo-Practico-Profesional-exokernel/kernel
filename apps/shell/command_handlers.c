@@ -60,9 +60,9 @@ int send(char* content){
     }
 
     for (int i=0; i<strlen(msg_out); i++){
-        sendchar(pid_proc, msg_out[i]);
+        sendbyte(pid_proc, (uint8_t)msg_out[i]);
     }
-    sendchar(pid_proc, '\0');
+    sendbyte((uint8_t)pid_proc, '\0');
     //send_msg(pid_proc, &msg_out, strlen(msg_out));
 
     return OK_CODE;

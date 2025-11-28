@@ -12,6 +12,8 @@ void send_msg(int pid_proc, char * msg_out, int len_msg_out);
 void sendchar(int proc_pid, char ch);
 void sys_yield(void);
 char recv_msg();
+char recvbyte();
+void sendbyte(int proc_pid, char ch);
 int wait(int pid);
 ////
 //// Calls syscall exit or so.

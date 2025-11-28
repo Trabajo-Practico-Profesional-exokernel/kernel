@@ -15,4 +15,7 @@
 #define SYS_SENDCHAR 8
 #define SYS_RECVCHAR 9
 
+#define SYS_SEND_BYTE 10
+#define SYS_RECV_BYTE 11
+
 #define DEF_ERR_CODE -1

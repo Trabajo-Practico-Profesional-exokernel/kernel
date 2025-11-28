@@ -7,8 +7,7 @@ void main() {
     char buffer[MSG_SIZE_MAX];
     int index = 0;
     while (1){
-
-        char msg_char = recv_msg();
+        char msg_char = recvbyte();
         buffer[index] = msg_char;
         index ++;
         if (msg_char == '\0'){

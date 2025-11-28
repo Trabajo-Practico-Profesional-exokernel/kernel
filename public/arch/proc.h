@@ -16,7 +16,6 @@
 
 #define KERN_STACK_PAGES 2
 
-#define QUEUE_CAPACITY 32
 
 typedef int32_t procid_t;
 
@@ -35,8 +34,7 @@ struct Proc {
 
     int cpunum; // The CPU that the env is running on
 
-    struct ProcessMessage msg_queue[QUEUE_CAPACITY];
-    int msg_count;
+    struct ProcMessageQueue proc_msg_queue;
 };
 
 #endif /* !*/

@@ -20,6 +20,14 @@ void sendchar(int proc_pid, char ch) {
     syscall(SYS_SENDCHAR, proc_pid, ch, 0);
 }
 
+void sendbyte(int proc_pid, char ch) {
+    syscall(SYS_SEND_BYTE, proc_pid, ch, 0);
+}
+
+char recvbyte() {
+    return syscall(SYS_RECV_BYTE, 0, 0, 0);
+}
+
 char recv_msg() {
     return (char)syscall(SYS_RECV_MSG, 0, 0, 0); 
 }

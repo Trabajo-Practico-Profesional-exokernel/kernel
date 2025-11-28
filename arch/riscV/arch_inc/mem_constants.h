@@ -13,6 +13,4 @@
 #define PAGE_X    (1 << 3)   // Executable
 #define PAGE_U    (1 << 4)   // User (accessible in user mode)
 
-
-
 #endif /* !*/
