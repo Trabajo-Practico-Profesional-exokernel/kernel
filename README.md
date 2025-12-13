@@ -9,6 +9,15 @@ Make
 ```bash
 sudo apt-get install make
 ```
+Clang
+```bash
+sudo apt-get install clang
+```
+
+lld
+```bash
+sudo apt-get install lld
+```
 
 Para compilacion de programas de usuario y hacer dump con llvm-objdump y para los programas de usuario se usa llvm-objcopy
 ```bash
@@ -93,7 +102,10 @@ se puede usar run.sh para correr/hacer cleanups
 ./run.sh [trg: riscv]
 ```
 compila el trg, ultimo parametro que no sea un flag. Como flags estan el
--c para hacer make clean antes, -uc para recompilar los programas de usuario.
+
+-c para hacer make clean antes, 
+-build_users para recompilar los programas de usuario.
+
 se puede usar -d para correr make debug y posteriormente correr el debugger.sh para conectar con gdb y empezar el debugeo.
 
 El uso del debugger es
