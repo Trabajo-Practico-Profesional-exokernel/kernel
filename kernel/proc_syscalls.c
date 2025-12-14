@@ -78,11 +78,11 @@ void syscall_exit(FullTrapFrame *tf, uintptr_t pc){
 void syscall_wait(FullTrapFrame *tf, uintptr_t pc){
     int waited_proc = SYSCALL_ARG0(tf);
     struct Proc * waiting_proc = get_curr();
-    printf("Process %d should wait blocked for %d exit!(For now just yield!)\n",waiting_proc->pid,  waited_proc);
+    printf("Process %d should wait pc: %x(ret to %x) blocked for %d exit !(For now just yield!)\n",waiting_proc->pid, pc, pc+4,  waited_proc);
     
     SET_SYSCALL_RET0(tf, 0) // On tf saved... save hardcoded ret code for waited proc
 
-    save_curr_proc_state(tf, pc);
+    save_curr_proc_state(tf, pc + 4);
     sched_yield();    
 }
 

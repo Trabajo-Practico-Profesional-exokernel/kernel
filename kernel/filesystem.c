@@ -62,6 +62,9 @@ void syscall_handle_ret(FullTrapFrame *tf, uintptr_t pc) {
 
     // SET_SYSCALL_RET0(curr_caller->tf, ret_code) // When returning it will have the ret code. That could aswell be fd or so
     save_curr_proc_state(tf, pc);
+    
+    struct TrapFrame* caller_tf = &curr_caller->tf;
+    SET_SYSCALL_RET0(caller_tf, ret_code);
 
     printf("Fs manager returned %d to caller %d \n",ret_code, curr_caller->pid);
     curr_caller = NULL;
@@ -91,7 +94,7 @@ void syscall_touch(FullTrapFrame *tf, uintptr_t pc) {
     fs_manager_proc->pc = (uintptr_t) fs_handler->on_touch; // Set where to jump back to
     printf("Handling... path '%s' .. jumping to %x\n", (char*) event_buffer, fs_manager_proc->pc);
     
-    save_curr_proc_state(tf, pc);
+    save_curr_proc_state(tf, pc + 4); // Skip this ins that called syscall
 
     switch_proc(fs_manager_proc);
 
@@ -118,7 +121,7 @@ void syscall_remove(FullTrapFrame *tf, uintptr_t pc) {
     fs_manager_proc->pc = (uintptr_t) fs_handler->on_rm; // Set where to jump back to
     printf("Handling... path '%s' .. jumping to %x\n", (char*) event_buffer, fs_manager_proc->pc);
     
-    save_curr_proc_state(tf, pc);
+    save_curr_proc_state(tf, pc + 4); // Skip this ins that called syscall
 
     switch_proc(fs_manager_proc);
 
@@ -145,7 +148,7 @@ void syscall_stat(FullTrapFrame *tf, uintptr_t pc) {
     fs_manager_proc->pc = (uintptr_t) fs_handler->on_stat; // Set where to jump back to
     printf("Handling... path '%s' .. jumping to %x\n", (char*) event_buffer, fs_manager_proc->pc);
     
-    save_curr_proc_state(tf, pc);
+    save_curr_proc_state(tf, pc + 4); // Skip this ins that called syscall
 
     switch_proc(fs_manager_proc);
 

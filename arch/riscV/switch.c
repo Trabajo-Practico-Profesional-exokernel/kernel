@@ -40,11 +40,22 @@ void switch_context(struct Proc* next) {
         "lw s9,  10 * 4(a0)\n"
         "lw s10, 11 * 4(a0)\n"
         "lw s11, 12 * 4(a0)\n"
-        "lw sp, 13 * 4(a0)\n" // Switch stack pointer (sp) here
-        "lw a1, 14 * 4(a0)\n" // Lets assume a1 is not being used or so. For now. And load the proc->pc there
-        "csrw sepc, a1\n" // Set sepc, where the sret jumps back to... for now to the proc->pc no trampoline
-        "li a0, %[sstatus]\n" // Set a0 value to sttatus used, now next proc param is not used anymore
-        "csrw sstatus, a0\n"
+
+        // Lets reserve a7 for kernel usage i.e it is not restored/saved for users , at least for now
+        "addi a7, a0, 0\n" // We will restore a0 so needed to back it up to a7 that is reserved for kernel usage. By design.
+        
+        "lw sp, 13 * 4(a7)\n" // Switch stack pointer (sp) here
+        "lw a0, 14 * 4(a7)\n" 
+        "lw a1, 15 * 4(a7)\n"
+        "lw a2, 16 * 4(a7)\n"
+        "lw a3, 17 * 4(a7)\n"
+
+        "lw a6, 18 * 4(a7)\n" // a6 could be restored afterwards but for now not added to tf of user proc.
+        "csrw sepc, a6\n" // Set sepc, where the sret jumps back to... for now to the proc->pc no trampoline
+        
+        "li a7, %[sstatus]\n" // Set a7 value to sttatus used, now next proc param is not used anymore
+        "csrw sstatus, a7\n"
+
         "sret\n"
         :
         : [sstatus] "i" (SSTATUS_USER)//(SSTATUS_KERNEL)
@@ -53,6 +64,8 @@ void switch_context(struct Proc* next) {
 }
 
 
+
+/// NOT USED , but have to check what purpose exactly it had, since could be for returning from traps?
 __attribute__((naked)) void user_entry(void) {
     __asm__ __volatile__(
         "csrw sepc, %[sepc]\n"
@@ -87,6 +100,13 @@ void init_trapframe(struct Proc * proc){
     proc->tf.sp = proc->kernel_sp; 
 
     proc->tf.ra = proc->pc; // For now ra setted to proc initial pc?    
+
+    // Registers for params/return values
+    proc->tf.a0 = 0;
+    proc->tf.a1 = 0;
+    proc->tf.a2 = 0;
+    proc->tf.a3 = 0;
+
 }
 
 
@@ -107,7 +127,12 @@ void update_trapframe(struct Proc *proc, FullTrapFrame *tf){
 
     // SET USER SP! Fulltf has the user one!
     proc->tf.sp = tf->sp;
-    // printf("OLD? SP? %x vs new sp %x \n", proc->tf.sp, tf->sp);
+
+    // Registers for params/return values
+    proc->tf.a0 = tf->a0;
+    proc->tf.a1 = tf->a1;
+    proc->tf.a2 = tf->a2;
+    proc->tf.a3 = tf->a3;
 }
 
 

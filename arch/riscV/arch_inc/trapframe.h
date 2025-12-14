@@ -56,6 +56,14 @@ struct TrapFrame {
     uint32_t s10;
     uint32_t s11;
     uint32_t sp;
+
+    // In riscv used for parameters for functions and more important for return values from syscalls and so on.
+    // added to the trapframe mainly to save what to return as sycall ret for the proc, when switched back after blocked 
+    uint32_t a0;
+    uint32_t a1;
+    uint32_t a2;
+    uint32_t a3;
+    
 } __attribute__((packed));
 
 

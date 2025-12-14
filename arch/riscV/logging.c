@@ -7,7 +7,10 @@ void printTrap(const struct TrapFrame * tf){
 	printf("s2: %x s3: %x s4: %x \n",tf->s2,tf->s3,tf->s4);
 	printf("s5: %x s6: %x s7: %x \n",tf->s5,tf->s6,tf->s7);
 	printf("s8: %x s9: %x s10: %x \n",tf->s8,tf->s9,tf->s10);
-	printf("s11: %x sp: %x \n",tf->s11,tf->sp);
+
+    printf("s11: %x a0: %x a1: %x\n",tf->s11,tf->a0,tf->a1);
+    printf("a2: %x a3: %x sp: %x \n",tf->a2, tf->a3, tf->sp);
+
 }
 
 void printTrapFull(const FullTrapFrame *tf){
