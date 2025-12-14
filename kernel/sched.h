@@ -5,6 +5,7 @@
 #include "arch/proc.h"
 
 struct Proc * get_first_free_proc();
+struct Proc * get_proc(procid_t proc_pid);
 
 void clock_yield(FullTrapFrame *tf, uintptr_t proc_pc);
 

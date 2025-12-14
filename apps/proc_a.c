@@ -3,7 +3,7 @@
 
 void main() {
     int count = 0;
-    while (1){
+    while (count < 26){
         printf("PROC A %d!\n", count);
         sleep(SLEEP_TIME);
         count+=1;

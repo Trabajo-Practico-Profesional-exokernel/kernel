@@ -39,6 +39,8 @@ struct Proc * get_curr(){
 
 struct Proc procs[PROCS_MAX]; // All process control structures.
 
+
+// Uneeded for!
 struct Proc *get_proc_by_pid(int pid){
     for (int i=0; i<PROCS_MAX; i++){
         if (procs[i].pid == pid) {
@@ -46,6 +48,10 @@ struct Proc *get_proc_by_pid(int pid){
         }
     }
     PANIC("Process does not exist");    
+}
+
+struct Proc * get_proc(procid_t proc_pid){
+    return &procs[PROCX(proc_pid)];
 }
 
 #define NUM_CPUS 4
@@ -68,6 +74,8 @@ struct Proc * get_first_free_proc(){
     // Or just rutn NULL... 
     PANIC("No free process slots at get first free proc");    
 }
+
+
 
 
 
