@@ -95,8 +95,18 @@ void syscall_exec(FullTrapFrame *tf, uintptr_t pc) {
     // Do switch to new proc? ... no?
     SET_SYSCALL_RET0(tf, proc->pid)
 
-    // Switch back to page table of user!
-    switch_page_table((uint32_t *)(get_curr()->pde_paddr));
+
+    // When a new process is to be executed, you reduce response time by running it first.
+    // Save parent proc state
+    struct Proc * parent_proc = get_curr();
+    save_curr_proc_state(tf, pc + 4);
+    parent_proc->status = PROC_RUNNABLE;
+    
+    switch_proc(proc);
+
+
+    // Another alternative would be to go back to parent proc!
+    // switch_page_table((uint32_t *)(get_curr()->pde_paddr));
     #else
 
     load_create_process_user(proc, &_binary_apps[prog_ind]);

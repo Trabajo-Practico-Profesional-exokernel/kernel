@@ -318,3 +318,39 @@ strtol(const char *s, char **endptr, int base)
 		*endptr = (char *) s;
 	return (neg ? -val : val);
 }
+
+
+// int atoi(const char *str) {
+//     int sign = 1;
+//     long long result = 0; // Use long long to handle intermediate sums and check for overflow
+//     int i = 0;
+
+//     // 1. Ignore leading whitespace
+//     while (str[i] == ' ' || str[i] == '\t' || str[i] == '\n') {
+//         i++;
+//     }
+
+//     // 2. Check for an optional sign character
+//     if (str[i] == '-' || str[i] == '+') {
+//         if (str[i] == '-') {
+//             sign = -1;
+//         }
+//         i++;
+//     }
+
+//     // 3. Convert the digits
+//     while (str[i] >= '0' && str[i] <= '9') {
+//         int digit = str[i] - '0';
+        
+//         // 4. Handle potential overflow/underflow
+//         if (result > INT_MAX / 10 || (result == INT_MAX / 10 && digit > INT_MAX % 10)) {
+//             return (sign == 1) ? INT_MAX : INT_MIN;
+//         }
+
+//         result = result * 10 + digit;
+//         i++;
+//     }
+
+//     // 5. Apply the sign and return the final result
+//     return (int)(result * sign);
+// }

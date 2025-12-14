@@ -16,7 +16,7 @@ void main() {
     static char input_buf[MAX_INPUT];
 
     printf("SHELL Started registered apps are:\n");
-    
+
     for (int i = 0; i < APP_COUNT; i++) {
         printf("Available runnable %d: %s\n", i, _app_names[i]);
     }

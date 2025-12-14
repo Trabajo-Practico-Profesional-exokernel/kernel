@@ -13,6 +13,4 @@ struct CommandEntry {
 int exec_command(char * action, char* args);
 int send(char* content);
 
-#define ERR_CODE -1
-#define OK_CODE 0
 #endif

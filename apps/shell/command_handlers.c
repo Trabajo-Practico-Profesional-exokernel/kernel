@@ -3,30 +3,17 @@
 
 #include "inc/types.h"
 #include "std/printf.h"
-#include "app_names.h"
-extern char* _app_names[];
+#include "default_executables.h"
 
 #include "command_handler.h"
+
 
 // Just one arg? the progam to exec.. maybe also the args for it .. not for now? 
 int start_program(char* program_name){
     char * args = NULL;
     split_by_once(program_name, &args, ' ');
+    return exec_program(program_name, args);
 
-
-    for (int ind_program = 0; ind_program < APP_COUNT; ind_program++) {
-        if (strncmp(program_name, _app_names[ind_program] , strlen(program_name)) == 0) {
-            printf("SHOULD RUN AT INDEX! %d: '%s' args '%s'\n", ind_program, program_name, args);
-            
-            int proc_pid= exec(ind_program, &args);
-
-            printf("Program %s started proc_id is ... %d\n", program_name, proc_pid);
-            return proc_pid;
-        }
-    }
-    
-    printf("At exec '%s' program not recognized\n", program_name);
-    return ERR_CODE;
 }
 
 int handle_exec(char* args){
@@ -36,9 +23,21 @@ int handle_exec(char* args){
         return ERR_CODE;
     }
     // Wait for the child!
-    // printf("Should wait for  proc %d end!\n", pid_child);
-    return wait(pid_child);
-    // return OK_CODE;
+    int ret_code= wait(pid_child);
+    printf("Waited for proc %d! exited with code %d\n", pid_child, ret_code);
+
+    return ret_code;
+}
+
+int handle_wait(char* args){
+
+    long pid_waited = strtol(args, NULL, 0);
+    int ret_code= 0;
+    // int ret_code= wait(pid_waited);
+    printf("Waited for proc %d! exited with code %d\n", pid_waited, ret_code);
+
+    return ret_code;
+    
 }
 
 
@@ -46,6 +45,7 @@ struct CommandEntry commands[] = {
     { "exec",  handle_exec},
     { "start",  start_program},
     { "msg", send},
+    { "wait", handle_wait},
 };
 
 #define COMMAND_COUNT 3
@@ -78,7 +78,13 @@ int exec_command(char * action, char* args){
         if (strncmp(action, commands[i].action_name, len_act) == 0) {
             return commands[i].handler(args);
         }
-    }        
+    }
+    int ret_code = ERR_CODE;
+
+    if (default_executable_check(action, args, &ret_code)){
+        return ret_code;
+    }
+    
     printf("\nUnknown Command: '%s' args '%s'\n", action, args);
-    return ERR_CODE;
+    return ret_code;
 }
