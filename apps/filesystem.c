@@ -9,21 +9,30 @@ char buffer[MSG_SIZE_MAX];
 struct FilesystemEventsHandler fs_events_handler;
 
 void handler_on_touch(int msg_len){
-    printf("USER FS on touch msg len %d\n", msg_len);
+    printf("USER FS on touch msg len %d path: ", msg_len);
+    printf("'%s'\n", &buffer[0]);
+    sys_fs_ret(5);
 }
 
 void handler_on_rm(int msg_len){
-    printf("USER FS on remove msg len %d\n", msg_len);    
+    printf("USER FS on remove msg len %d path: ", msg_len);
+    printf("'%s'\n", &buffer[0]);
+    
+    sys_fs_ret(5);
 }
 
 void handler_on_stat(int msg_len){
-    printf("USER FS on stat len %d\n", msg_len);        
+    printf("USER FS on stat msg len %d path: ", msg_len);
+    printf("'%s'\n", &buffer[0]);
+    sys_fs_ret(5);
 }
 
 void main() {
 
     fs_events_handler.buffer = &buffer;
-    fs_events_handler.buffer_len = MSG_SIZE_MAX;
+    fs_events_handler.buffer_len = MSG_SIZE_MAX-1; // Just in case have the last byte always 0!
+    buffer[MSG_SIZE_MAX -1] = 0; 
+
     
     fs_events_handler.on_touch = handler_on_touch;
     fs_events_handler.on_stat = handler_on_stat;

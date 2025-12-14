@@ -25,6 +25,7 @@ int wait(int pid);
 // Registers the handler that will receive on the buffer the content of requests.
 // It returns 0 If it suceeded, else If an error happened.
 int register_fs_handler(struct FilesystemEventsHandler* handler);
+void sys_fs_ret(int ret_code);
 
 
 int sys_touch(char* filepath);

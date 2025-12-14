@@ -19,6 +19,8 @@ paddr_t get_paddr_last_page();
 paddr_t get_paddr_kernel_start();
 paddr_t get_paddr_kernel_end();
 
+paddr_t get_paddr_for(uint32_t *table1, vaddr_t vaddr);
+
 #ifdef IS_RISC
 
 void switch_page_table(uint32_t *table_next);
@@ -33,6 +35,8 @@ void direct_map_all_pages(uint32_t *table1, paddr_t start, uint32_t flags);
 void map_page(uint32_t *table1, vaddr_t vaddr, paddr_t paddr, uint32_t flags);
 #else
 void switch_page_table(uint32_t pde_paddr);
+
+
 
 
 #endif

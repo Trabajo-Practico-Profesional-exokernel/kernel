@@ -55,7 +55,7 @@ void mem_init(void){
     );
 }
 void switch_to_kernel_tables(void){
-    printf("SHOULD SWITCH TO KENERL PAGES? IS THAT IT? %x\n", (uint32_t *) kernel_page_table);
+    // printf("SHOULD SWITCH TO KERNEL PAGES? IS THAT IT? %x\n", (uint32_t *) kernel_page_table);
 
     switch_page_table((uint32_t *) kernel_page_table);
 }
@@ -110,6 +110,35 @@ void map_page(uint32_t *table1, vaddr_t vaddr, paddr_t paddr, uint32_t flags) {
     uint32_t *table0 = (uint32_t *) ((table1[vpn1] >> 10) * PAGE_SIZE);
     table0[vpn0] = ((paddr / PAGE_SIZE) << 10) | flags | PAGE_V;
 }
+
+paddr_t get_paddr_for(uint32_t *table1, vaddr_t vaddr) {
+    uint32_t vpn1 = (vaddr >> 22) & 0x3ff;
+    uint32_t vpn0 = (vaddr >> 12) & 0x3ff;
+    uint32_t offset = vaddr & 0xfff; // Last 3 digits i.e 0 to 4095 offset in page
+
+    uint32_t pde = table1[vpn1];
+    if ((pde & PAGE_V) == 0) { // Directory page not mapped
+        return 0; // or PANIC / page fault
+    }
+
+    // Get second-level page table physical address
+    paddr_t table0_paddr = ((pde >> 10) * PAGE_SIZE);
+
+    // You must be able to access this page table in kernel VA space.
+    // But we have direct mapping in kernel pages.. where you should call this from.
+    uint32_t *table0 = (uint32_t *) table0_paddr;
+
+    uint32_t pte = table0[vpn0];
+    if ((pte & PAGE_V) == 0) { // Not mapped! second level page
+        return 0; // page fault
+    }
+    
+    paddr_t page_paddr = ((pte >> 10) * PAGE_SIZE);
+    return page_paddr + offset;
+}
+
+
+
 
 paddr_t direct_map_range(uint32_t *table1, paddr_t range_start, paddr_t range_end, uint32_t flags){
     paddr_t paddr = range_start;

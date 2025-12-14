@@ -74,6 +74,12 @@ int register_fs_handler(struct FilesystemEventsHandler* handler){
     return syscall(SYS_FS_REG_HANDLER, (int) handler, 0 , 0);
 }
 
+void sys_fs_ret(int ret_code){
+    syscall(SYS_FS_RET, ret_code, 0 , 0);
+}
+
+
+
 int sys_touch(char* filepath){
     return syscall(SYS_FS_TOUCH, (int) filepath, 0, 0);
 }

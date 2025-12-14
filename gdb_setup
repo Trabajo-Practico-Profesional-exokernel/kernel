@@ -1,1 +1,1 @@
-b syscall_exec
+b syscall_register_handler

@@ -73,6 +73,8 @@ struct Proc * get_first_free_proc(){
 
 void switch_proc(struct Proc* next) {
     curr = next;
+    curr_slices = 0; // Reset clock slices for new proc.
+    
     
     curr->status = PROC_RUNNING;
 
@@ -111,7 +113,6 @@ void clock_yield(FullTrapFrame *tf, uintptr_t proc_pc){
     if (curr_slices< MAX_TIME_SLICES){
         return;
     }
-    curr_slices = 0;
 
     curr->pc = proc_pc;
     update_trapframe(curr, tf);
