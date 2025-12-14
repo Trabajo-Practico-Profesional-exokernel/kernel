@@ -1,3 +1,6 @@
+#ifndef PUBLIC_INC_SYSCALLS
+#define PUBLIC_INC_SYSCALLS
+
 #define SYS_PUTCHAR 0
 #define SYS_GETCHAR 1
 
@@ -18,4 +21,11 @@
 #define SYS_SEND_BYTE 10
 #define SYS_RECV_BYTE 11
 
+#define SYS_TOUCH 12
+#define SYS_RM 13
+
 #define DEF_ERR_CODE -1
+
+
+
+#endif

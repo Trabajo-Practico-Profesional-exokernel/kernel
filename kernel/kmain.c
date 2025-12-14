@@ -5,6 +5,7 @@
 #include "arch/stdio.h"
 #include "arch/arch_init.h"
 #include "arch/mem.h"
+#include "arch/trap_handling.h"
 
 
 
@@ -31,7 +32,10 @@ void kmain()
     // Why not ... maybe not full needed at first but works.
     switch_to_kernel_tables();
 
-
+    init_syscalls_fs();
+    init_syscalls_ipc();
+    init_syscalls_proc();
+    
     #endif
 
     printf("\n\nHello World!\n");

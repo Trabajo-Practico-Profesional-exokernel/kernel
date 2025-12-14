@@ -34,7 +34,10 @@ struct Proc {
 
     int cpunum; // The CPU that the env is running on
 
-    struct ProcMessageQueue proc_msg_queue;
+    uintptr_t msgs_queue; // struct MessageNode*
 };
+
+// struct ProcMessageQueue*
+// struct ProcMessageQueue
 
 #endif /* !*/
