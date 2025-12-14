@@ -6,6 +6,8 @@ char * _app_names[] = {
 "periodic_yield",
 "proc_a",
 "proc_b",
+"rm",
+"stat",
 "touch",
 
 };
