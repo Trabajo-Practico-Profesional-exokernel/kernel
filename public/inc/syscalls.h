@@ -21,8 +21,11 @@
 #define SYS_SEND_BYTE 10
 #define SYS_RECV_BYTE 11
 
-#define SYS_TOUCH 12
-#define SYS_RM 13
+#define SYS_FS_TOUCH 12
+#define SYS_FS_RM 13
+#define SYS_FS_STAT 14
+
+#define SYS_FS_REG_HANDLER 15
 
 #define DEF_ERR_CODE -1
 

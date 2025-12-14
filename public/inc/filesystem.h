@@ -6,12 +6,12 @@
 typedef void (*fs_event_handler)(int msg_count);
 
 struct FilesystemEventsHandler {
-    uintptr_t events_buffer;
+    void * buffer;
     size_t buffer_len;
     
     fs_event_handler on_touch;
-    fs_event_handler on_rm;
     fs_event_handler on_stat;
+    fs_event_handler on_rm;
 };
 
 #endif

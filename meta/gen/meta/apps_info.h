@@ -18,6 +18,7 @@ struct AppBinaryInfo {
 #define APP_IND_PERIODIC_YIELD 4
 #define APP_IND_PROC_A 5
 #define APP_IND_PROC_B 6
-#define APP_COUNT 7
+#define APP_IND_TOUCH 7
+#define APP_COUNT 8
 
 #endif

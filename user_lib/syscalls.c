@@ -9,10 +9,10 @@ int exec(int prog_ind, char ** args){
 }
 
 
-void send_msg(int proc_pid, char *msg, int len_msg) {
-    printf("msg '%s'\n", *msg);
+void sys_send_msg(int proc_pid, char *msg, size_t len_msg) {
+    printf("to %d msg '%s' len? %u\n",proc_pid, *msg, len_msg);
 
-    syscall(SYS_SEND_MSG, proc_pid, (int)(msg), len_msg);
+    // syscall(SYS_SEND_MSG, proc_pid, (int)(msg), len_msg);
 }
 
 void sendchar(int proc_pid, char ch) {
@@ -61,4 +61,27 @@ __attribute__((noreturn)) void exit(int ret_code) {
     for(;;){
 
     }
+}
+
+
+
+
+///
+/// FILESYSTEM
+///
+
+int register_fs_handler(struct FilesystemEventsHandler* handler){
+    return syscall(SYS_FS_REG_HANDLER, (int) handler, 0 , 0);
+}
+
+int sys_touch(char* filepath){
+    return syscall(SYS_FS_TOUCH, (int) filepath, 0, 0);
+}
+
+int sys_rm(char* filepath){
+    return syscall(SYS_FS_RM, (int) filepath, 0, 0);
+}
+
+int sys_stat(char* filepath){
+    return syscall(SYS_FS_STAT, (int) filepath, 0, 0);
 }

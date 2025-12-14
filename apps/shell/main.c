@@ -25,7 +25,8 @@ void main() {
     while (1){
         printf("user> ");
         
-        int len = get_string(input_buf, MAX_INPUT);
+        // int len = 
+        get_string(input_buf, MAX_INPUT);
 
         char * args= NULL; 
         split_by_once(input_buf, &args, ' ');

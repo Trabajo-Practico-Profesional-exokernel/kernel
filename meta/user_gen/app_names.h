@@ -1,1 +1,1 @@
-#define APP_COUNT 7
+#define APP_COUNT 8
