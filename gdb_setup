@@ -1,1 +1,1 @@
-b syscall_register_handler
+b switch_context

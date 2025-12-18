@@ -57,12 +57,12 @@ void vmmngr_map_page (paddr_t phys, paddr_t virt) {
        //! configure permissions and set PDE to point to PT
        pd_entry_add_attrib (entry, I86_PDE_PRESENT);
        pd_entry_add_attrib (entry, I86_PDE_WRITABLE);
-       pd_entry_add_attrib (entry, I86_PDE_USER); // ADDED
+    //    pd_entry_add_attrib (entry, I86_PDE_USER); // TODO: SET PERMISSIONS
        pd_entry_set_frame (entry, pt_addr);
     }
  
     //! get table
-    struct ptable* table = (struct ptable*) PAGE_GET_PHYSICAL_ADDRESS ( e );
+    struct ptable* table = (struct ptable*) PAGE_GET_PHYSICAL_ADDRESS ( *e );
  
     //! get page
     pd_entry* page = &table->m_entries [ PAGE_TABLE_INDEX ( (uint32_t) virt) ];
@@ -165,7 +165,10 @@ inline void pd_entry_enable_global (pd_entry e) {
 // donde las direcciones virtuales se mapean a las mismas direcciones físicas.
 // Cuando tu kernel habilita la paginación (al setear el bit PG en CR0), 
 // la CPU está ejecutando código que reside en direcciones físicas bajas.
+// Si no se hace el identity map 1:1 hay triple fault (obligatorio en x86).
 
+// Incializa el manejador de memoria virtual
+// TODO: chequear. estamos mapeando va==pa. podriamos robar KADDR de JOS
 void vmmngr_initialize() {
 
     //! allocate default page table
@@ -183,6 +186,7 @@ void vmmngr_initialize() {
     memset(table2, 0, sizeof(struct ptable));
  
     //! First 4MB are idenitity mapped (kernel code)
+    // identity map: va == pa
     for (int i=0, frame=0x0, virt=0x00000000; i<1024; i++, frame+=PAGE_SIZE, virt+=PAGE_SIZE) {
  
        //! create a new page
@@ -194,7 +198,8 @@ void vmmngr_initialize() {
     }
  
     //! map 1mb to 3gb (where we are at)
-    for (int i=0, frame=0x100000, virt=0xc0000000; i<1024; i++, frame+=PAGE_SIZE, virt+=PAGE_SIZE) {
+    // El kernel se ejecuta virtualmente en 3 GB, pero físicamente vive desde 1 MB
+    for (int i=0, frame=0x100000, virt=VADDR_KERNEL_BASE; i<1024; i++, frame+=PAGE_SIZE, virt+=PAGE_SIZE) {
  
        if (frame >= 0x500000) break; // ADDED: Limitar a 4MB de kernel por ahora
 
@@ -209,6 +214,7 @@ void vmmngr_initialize() {
     paddr_t pa_free_ram_start = (paddr_t)__free_ram;
     paddr_t pa_free_ram_end = (paddr_t)__free_ram_end;
 
+    // La RAM libre queda identity-mapped
     for (paddr_t pa = pa_free_ram_start; pa < pa_free_ram_end; pa += PAGE_SIZE) {
         // Mapeo 1:1 (virtual = físico)
         // vmmngr_map_page [cite: 119-133] asignará PTs bajo demanda
@@ -226,7 +232,7 @@ void vmmngr_initialize() {
     memset (dir, 0, sizeof (struct pdirectory));
  
     //! get first entry in dir table and set it up to point to our table
-    pd_entry* entry = &dir->m_entries [PAGE_DIRECTORY_INDEX (0xc0000000) ];
+    pd_entry* entry = &dir->m_entries [PAGE_DIRECTORY_INDEX (VADDR_KERNEL_BASE) ];
     pd_entry_add_attrib (entry, I86_PDE_PRESENT);
     pd_entry_add_attrib (entry, I86_PDE_WRITABLE);
     pd_entry_set_frame (entry, p_table);
@@ -254,13 +260,13 @@ void vmmngr_initialize() {
 }
 
 // Mapea una pagina virtual a una fisica DENTRO de un Page Dir especifico.
-void vmmngr_map_page_to_dir(struct pdirectory* dir, paddr_t phys, vaddr_t virt, uint32_t flags) {
+void map_page(struct pdirectory* dir, vaddr_t virt, paddr_t phys, uint32_t flags) {
     pd_entry* e = &dir->m_entries[PAGE_DIRECTORY_INDEX((uint32_t)virt)];
 
     if ((*e & I86_PDE_PRESENT) != I86_PDE_PRESENT) {
         paddr_t pt_addr = alloc_pages(1);
         if (pt_addr == 0) {
-            PANIC("vmmngr_map_page_to_dir: out of memory alloc_pages");
+            PANIC("map_page: out of memory alloc_pages");
         }
 
         memset((void*)pt_addr, 0, sizeof(struct ptable));
@@ -275,7 +281,7 @@ void vmmngr_map_page_to_dir(struct pdirectory* dir, paddr_t phys, vaddr_t virt, 
         pd_entry_set_frame(e, pt_addr);
     }
 
-    struct ptable* table = (struct ptable*) PAGE_GET_PHYSICAL_ADDRESS(e);
+    struct ptable* table = (struct ptable*) PAGE_GET_PHYSICAL_ADDRESS(*e);
     pd_entry* page = &table->m_entries[PAGE_TABLE_INDEX((uint32_t)virt)];
 
     pt_entry_set_frame(page, phys);
@@ -283,7 +289,7 @@ void vmmngr_map_page_to_dir(struct pdirectory* dir, paddr_t phys, vaddr_t virt, 
 }
 
 
-// void vmmngr_map_page_to_dir(struct pdirectory* dir, paddr_t phys, vaddr_t virt, uint32_t flags) {
+// void map_page(struct pdirectory* dir, paddr_t phys, vaddr_t virt, uint32_t flags) {
 //     uint32_t pde_index = PAGE_DIRECTORY_INDEX(virt);
 //     pd_entry* pde = &dir->m_entries[pde_index];
 

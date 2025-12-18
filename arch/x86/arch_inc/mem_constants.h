@@ -2,6 +2,9 @@
 #define INC_MEM_CONSTANTS
 
 #include "inc/types.h"
+
+#define VADDR_KERNEL_BASE 0xC0000000
+
 #define PAGE_SIZE 4096
 /*
 * Constants for mapping pages/ virtual memory!

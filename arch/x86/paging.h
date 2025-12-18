@@ -10,7 +10,8 @@
 
 #define PAGE_DIRECTORY_INDEX(x) (((x) >> 22) & 0x3ff)
 #define PAGE_TABLE_INDEX(x) (((x) >> 12) & 0x3ff)
-#define PAGE_GET_PHYSICAL_ADDRESS(x) (*x & ~0xfff)
+// #define PAGE_GET_PHYSICAL_ADDRESS(x) (*x & ~0xfff)
+#define PAGE_GET_PHYSICAL_ADDRESS(x) ((x) & ~0xFFF)
 
 /*
 Each process (including the kernel) has a page directory.
@@ -98,6 +99,6 @@ void pt_entry_set_frame (pd_entry* e, paddr_t addr);
 void pd_entry_set_frame (pd_entry* e, paddr_t addr);
 void vmmngr_initialize();
 struct pdirectory* vm_manager_get_directory();
-void vmmngr_map_page_to_dir(struct pdirectory* dir, paddr_t phys, vaddr_t virt, uint32_t flags);
+void map_page(struct pdirectory* dir, paddr_t phys, vaddr_t virt, uint32_t flags);
 
 #endif /* PAGING_H */

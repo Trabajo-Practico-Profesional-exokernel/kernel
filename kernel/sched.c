@@ -82,8 +82,6 @@ struct Proc * get_first_free_proc(){
 void switch_proc(struct Proc* next) {
     curr = next;
     curr_slices = 0; // Reset clock slices for new proc.
-    
-    
     curr->status = PROC_RUNNING;
 
     #ifdef IS_RISC
@@ -104,13 +102,8 @@ void switch_proc(struct Proc* next) {
     printf("[NEXT PROC BEFORE SWITCH_CONTEXT] ");
     printProc(next);
     printf("\n\n");
-
-    // TODO: llamar switch_page_table para lo de cr3
     switch_page_table(curr->pde_paddr);
-
     #endif
-
-
 
     switch_context(curr);
 }

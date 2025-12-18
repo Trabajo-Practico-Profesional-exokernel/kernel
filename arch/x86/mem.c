@@ -4,8 +4,35 @@
 #include "paging.h" // Aporta page_info y page_manager
 #include "std/string.h"
 
-// EN TEORIA ES LO MISMO QUE EN RISCV
+/*
+Primera seccion no se mapea por seguridad, deteccion de bugs y simplicidad del kernel.
+
+0x00000000 ──────────────────────────────
+            (no mapeado / reservado)
+
+0x01000000 ──────────────────────────────  <- VADDR_USER_BASE
+            Codigo de usuario
+            Datos
+            BSS
+            Heap (TODO:?)
+            Stack de usuario
+
+            ...
+            (espacio usuario)
+
+0xC0000000 ──────────────────────────────  <- VADDR_KERNEL_BASE
+            Kernel text
+            Kernel data
+            Kernel stacks
+            Page tables
+            Dispositivos (framebuffer, etc.)
+
+0xFFFFFFFF ──────────────────────────────
+*/
+
+
 extern char __free_ram[], __free_ram_end[], __kernel_base[], __kernel_base_end[];
+
 
 struct page_info* free_pages;
 struct page_manager main_page_table;
@@ -148,4 +175,27 @@ paddr_t get_paddr_kernel_start(){
 
 paddr_t get_paddr_kernel_end(){
     return (paddr_t) __kernel_base_end;
+}
+
+// TODO: added para que compile, chequear si funciona bien
+paddr_t get_paddr_for(uint32_t *page_directory, vaddr_t vaddr) {
+    uint32_t pde_index = PAGE_DIRECTORY_INDEX(vaddr);
+    uint32_t pte_index = PAGE_TABLE_INDEX(vaddr);
+    uint32_t offset    = vaddr & 0xFFF;
+
+    pd_entry pde = page_directory[pde_index];
+    if (!(pde & I86_PDE_PRESENT)) {
+        return 0; // page fault
+    }
+
+    struct ptable *pt = (struct ptable *)
+        PAGE_GET_PHYSICAL_ADDRESS(pde);
+
+    pd_entry pte = pt->m_entries[pte_index];
+    if (!(pte & I86_PTE_PRESENT)) {
+        return 0; // page fault
+    }
+
+    paddr_t phys_base = PAGE_GET_PHYSICAL_ADDRESS(pte);
+    return phys_base + offset;
 }

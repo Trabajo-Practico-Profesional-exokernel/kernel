@@ -86,34 +86,26 @@ void create_process(struct Proc * proc, uint32_t pc) { // pc == entry point == s
     if (!pde_paddr) PANIC("create_process: out of memory (page_dir)");
     memset((void*)pde_paddr, 0, PAGE_SIZE);
 
-    // 2. Obtener punteros virtuales al PD nuevo y al del kernel
-    // (Asumimos mapeo 1:1 de la RAM física donde se alojan los PDs)
     struct pdirectory *new_dir = (struct pdirectory*) pde_paddr; 
     struct pdirectory *kernel_dir = vm_manager_get_directory(); // Obtiene el PD actual (del kernel)
 
-    // 3. Copiar los mapeos del kernel
     if (kernel_dir) { 
-
-        // Copiar el mapeo de identidad (0x0-0x400000)
         new_dir->m_entries[PAGE_DIRECTORY_INDEX(0x00000000)] = kernel_dir->m_entries[PAGE_DIRECTORY_INDEX(0x00000000)];
 
-        for (int i = PAGE_DIRECTORY_INDEX(0xC0000000); i < 1024; i++) {
+        for (int i = PAGE_DIRECTORY_INDEX(VADDR_KERNEL_BASE); i < 1024; i++) {
             new_dir->m_entries[i] = kernel_dir->m_entries[i];
         }
     } else {
         PANIC("create_process: kernel_dir es NULL");
     }
 
-    // 4. Mapear el stack de kernel del *nuevo* proceso en su *propio* PD
     printf("FOR PROC %u MAP KERNEL STACK %x to %x\n", proc->pid, sp_base, proc->kernel_sp);
     vaddr_t v_stack = sp_base;
     while (v_stack < proc->kernel_sp) {
-        // Mapeo 1:1 del stack (v_stack -> v_stack)
-        vmmngr_map_page_to_dir(new_dir, v_stack, v_stack, KERNEL_PERMISSIONS_RW); 
+        map_page(new_dir, v_stack, v_stack, KERNEL_PERMISSIONS_RW); 
         v_stack += PAGE_SIZE;
     }
 
-    // 5. Guardar la dirección física del Page Directory
     proc->pde_paddr = pde_paddr; 
     printf("[DBG] `proc->pde_paddr` CREADO: paddr=%x\n",
        (uint32_t)proc->pde_paddr);
@@ -143,7 +135,7 @@ void create_process_user(struct Proc * proc, uint32_t proc_entry,
 
     while (p_user < user_space_end) {
         // Mapeo 1:1 (p_user -> v_user, que son iguales)
-        vmmngr_map_page_to_dir(new_dir, p_user, v_user, USER_PERMISSIONS_ALL);
+        map_page(new_dir, p_user, v_user, USER_PERMISSIONS_ALL);
         v_user += PAGE_SIZE;
         p_user += PAGE_SIZE;
     }
@@ -156,7 +148,7 @@ void load_create_process_user(struct Proc * proc, const struct AppBinaryInfo * a
     #ifdef IS_RISC
     uint32_t *page_table = (uint32_t *) proc->pde_paddr;
     #else
-    struct pdirectory *new_dir = (struct pdirectory*) proc->pde_paddr;
+    struct pdirectory *page_table = (struct pdirectory*) proc->pde_paddr;
     #endif
 
     // Mapear paginas de usuario y copiar la imagen
@@ -174,12 +166,7 @@ void load_create_process_user(struct Proc * proc, const struct AppBinaryInfo * a
         memcpy((void *) page, app_info->start + off, copy_size);
 
         // Mapear la página física en el espacio de direcciones virtual del proceso
-        #ifdef IS_RISC
         map_page(page_table, VADDR_USER_BASE + off, page,
                  USER_PERMISSIONS_ALL);
-        #else
-        vmmngr_map_page_to_dir(new_dir, page, VADDR_USER_BASE + off, 
-                 USER_PERMISSIONS_ALL);
-        #endif
     }
 }
