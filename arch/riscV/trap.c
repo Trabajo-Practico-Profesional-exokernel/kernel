@@ -10,7 +10,7 @@
 #include "arch/trap_handling.h"
 
 // Assume its defined somewhere
-void sched_yield(FullTrapFrame *tf, uintptr_t pc);
+void clock_yield(FullTrapFrame *tf, uintptr_t pc);
 
 /*
 Initing superviser mode/enable clock?! 
@@ -180,17 +180,20 @@ void handle_trap(FullTrapFrame *tf) {
         //WRITE_CSR(user_pc, new_pc); // Redirect execution
         user_pc = handle_syscall(tf, user_pc);
         //user_pc += 4;  // Skip ins
-        WRITE_CSR(sepc, user_pc);        
+        WRITE_CSR(sepc, user_pc);      
+
     } else if(scause == 2) {
         // Just for testing purpose? skip this instruction
-        printf("ignore trap illegal ins scause=%x, stval=%x, sepc=%x\n", scause, stval, user_pc);
+        //printf("ignore trap illegal ins scause=%x, stval=%x, sepc=%x\n", scause, stval, user_pc);
+        PANIC("DO NOT IGNORE trap illegal ins scause=%x, stval=%x, sepc=%x\n", scause, stval, user_pc);
+        
         user_pc += 4;  // Skip illegal instruction
         WRITE_CSR(sepc, user_pc);
     } else if(IS_CLOCK_INTERRUPT(scause)) {
         
         // printf("Clock interrupt ins scause=%x, stval=%x, sepc=%x\n", scause, stval, user_pc);
         SET_NEXT_INTERRUPT(DELAY_INTERRUPT);
-        sched_yield(tf, user_pc);
+        clock_yield(tf, user_pc);
     } else {
         PANIC("unexpected trap scause=%u, stval=%x, sepc=%x\n", scause, stval, user_pc);
     }

@@ -1,6 +1,60 @@
 ## Kernel
 
-### Dependencies:
+
+## Dependencies:
+
+Dependencias basicas 
+
+Make
+```bash
+sudo apt-get install make
+```
+Clang
+```bash
+sudo apt-get install clang
+```
+
+lld
+```bash
+sudo apt-get install lld
+```
+
+Para compilacion de programas de usuario y hacer dump con llvm-objdump y para los programas de usuario se usa llvm-objcopy
+```bash
+sudo apt-get install llvm
+```
+
+### X86:
+
+Build essential installs make
+[GenISOImage](https://wiki.debian.org/genisoimage)
+
+```bash
+sudo apt-get install build-essential nasm genisoimage bochs bochs-sdl
+```
+
+Para debugging
+```bash
+sudo apt-get install gdb
+```
+
+Qemu 
+```bash
+sudo apt-get install qemu-system-x86
+```
+
+
+### Riscv
+
+Required for debugging with riscv
+```bash
+sudo apt-get install gdb-multiarch
+```
+Qemu 
+```bash
+sudo apt-get install qemu-system-misc
+```
+
 
 [OpenSBI](https://github.com/riscv-software-src/opensbi)
 
@@ -8,11 +62,11 @@
 curl -LO https://github.com/qemu/qemu/raw/v8.0.4/pc-bios/opensbi-riscv32-generic-fw_dynamic.bin
 ```
 
-[GenISOImage](https://wiki.debian.org/genisoimage)
 
-```bash
-sudo apt-get install build-essential nasm genisoimage bochs bochs-sdl
-```
+You can run install_dep.sh to install dependencies, except the OpenSBI binaries.
+
+
+
 
 ### How to Run:
 
@@ -48,7 +102,10 @@ se puede usar run.sh para correr/hacer cleanups
 ./run.sh [trg: riscv]
 ```
 compila el trg, ultimo parametro que no sea un flag. Como flags estan el
--c para hacer make clean antes, -uc para recompilar los programas de usuario.
+
+-c para hacer make clean antes, 
+-build_users para recompilar los programas de usuario.
+
 se puede usar -d para correr make debug y posteriormente correr el debugger.sh para conectar con gdb y empezar el debugeo.
 
 El uso del debugger es
@@ -60,7 +117,6 @@ Por default asume el target es riscv y el setup file, comandos setup de breakpoi
 
 Para el debugger para riscv se necesita gdb-multiarch
 ```bash
-sudo apt install gdb-multiarch
 ```
 
 ```bash

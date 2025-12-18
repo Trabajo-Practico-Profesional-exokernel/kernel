@@ -56,6 +56,14 @@ struct TrapFrame {
     uint32_t s10;
     uint32_t s11;
     uint32_t sp;
+
+    // In riscv used for parameters for functions and more important for return values from syscalls and so on.
+    // added to the trapframe mainly to save what to return as sycall ret for the proc, when switched back after blocked 
+    uint32_t a0;
+    uint32_t a1;
+    uint32_t a2;
+    uint32_t a3;
+    
 } __attribute__((packed));
 
 
@@ -63,6 +71,12 @@ struct TrapFrame {
 // Macros for stack pointer/switching
 #define SWITCH_TO_STACK(stack_top) \
     __asm__ volatile("mv sp, %0" :: "r"(stack_top) :);
+
+#define SSCRATCH_STACK() \
+    __asm__ volatile("csrw sscratch, sp" :: :);
+
+#define SSCRATCH_NEW_STACK(stack_top) \
+    __asm__ volatile("csrw sscratch, %0" :: "r"(stack_top) :);
 
 // Macros for syscalls For syscalls param and return handling
 #define SYSCALL_ARG0(tf) tf->a0

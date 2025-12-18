@@ -25,7 +25,7 @@ if [[ $is_user_app -eq 1 ]]; then
 		./compile_user.sh
 	fi
 	
-	llvm-objdump -d apps/build/$trg.elf
+	llvm-objdump -d apps/build/$trg/app.elf
 
 else
 	if [[ "$trg" == "" ]]; then

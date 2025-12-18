@@ -1,10 +1,10 @@
 #include "lib.h"
-#include "inc/syscalls.h"
 
 extern char __stack_top[];
 
-__attribute__((noreturn)) void exit(void) {
-    for (;;);
+__attribute__((noreturn)) void do_exit(void) {
+    printf("-------> PROCESS EXITED NORMALLY!\n");
+    exit(0); // Syscall exit!
 }
 
 //__attribute__((section(".user_func")))
@@ -22,15 +22,6 @@ int syscall(int sysno, int arg0, int arg1, int arg2) {
     return a0;
 }
 
-void putchar(char ch) {
-    syscall(SYS_PUTCHAR, ch, 0, 0);
-}
-
-int getchar(void) {
-    return syscall(SYS_GETCHAR, 0, 0, 0);
-}
-
-
 void sleep(int delay) {
     for (int i = 0; i < delay; i++)
         __asm__ __volatile__("nop"); // do nothing
@@ -42,7 +33,7 @@ void start(void) {
     __asm__ __volatile__(
         "mv sp, %[stack_top] \n"
         "call main           \n"
-        "call exit           \n"
+        "call do_exit           \n"
         :: [stack_top] "r" (__stack_top)
     );
 }

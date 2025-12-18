@@ -31,8 +31,28 @@ void set_curr(struct Proc * proc){
     curr = proc;    
 }
 
+struct Proc * get_curr(){
+    return curr;
+}
+
+
 
 struct Proc procs[PROCS_MAX]; // All process control structures.
+
+
+// Uneeded for!
+struct Proc *get_proc_by_pid(int pid){
+    for (int i=0; i<PROCS_MAX; i++){
+        if (procs[i].pid == pid) {
+            return &procs[pid];
+        }
+    }
+    PANIC("Process does not exist");    
+}
+
+struct Proc * get_proc(procid_t proc_pid){
+    return &procs[PROCX(proc_pid)];
+}
 
 #define NUM_CPUS 4
 #define TRAMPOLINE_STACK_SIZE 4096 // 1 page essentially?
@@ -56,49 +76,122 @@ struct Proc * get_first_free_proc(){
 }
 
 
+
+
+
 void switch_proc(struct Proc* next) {
     curr = next;
-    
+    curr_slices = 0; // Reset clock slices for new proc.
     curr->status = PROC_RUNNING;
 
-
-    printf("[SWITCH PROC]\n");
-    printProc(next);
-
     #ifdef IS_RISC
-    SWITCH_TO_STACK(&trampoline_stacks[curr->cpunum][TRAMPOLINE_STACK_SIZE])
+
+    // Now we are not using kernel stack pointers of process at this point... so no need to switch stack
+    // SWITCH_TO_STACK(&trampoline_stacks[curr->cpunum][TRAMPOLINE_STACK_SIZE])
+    // SSCRATCH_STACK() // Save for next trap to use this stack pointer i.e trampoline
+    // printf("----> trampoline sscratch stack top %p \n", &trampoline_stacks[curr->cpunum][TRAMPOLINE_STACK_SIZE]);
+    // BUUT you have to sscratch it for next trap since its not being restored like the end of trapentry would.
+    printf("--------------------------- SWITCH TO PROC %u \n", curr->pid);
     
-    switch_page_table(curr->page_table, (uint8_t *) curr->kernel_sp);
+    SSCRATCH_NEW_STACK(&trampoline_stacks[curr->cpunum][TRAMPOLINE_STACK_SIZE])
+
+    // switch_page_table((uint32_t *)curr->pde_paddr, (uint8_t *) curr->kernel_sp);
+    switch_page_table((uint32_t *)curr->pde_paddr);
+
+    #else
+    printf("[NEXT PROC BEFORE SWITCH_CONTEXT] ");
+    printProc(next);
+    printf("\n\n");
+    switch_page_table(curr->pde_paddr);
     #endif
 
     switch_context(curr);
 }
 
-void sched_yield(FullTrapFrame *tf, uintptr_t proc_pc) {
+void clock_yield(FullTrapFrame *tf, uintptr_t proc_pc){
     curr_slices+=1;
+    
     if (curr_slices< MAX_TIME_SLICES){
         return;
     }
+
+    curr->pc = proc_pc;
     update_trapframe(curr, tf);
+
+    sched_yield();
+}
+
+void save_curr_proc_state(FullTrapFrame *tf, uintptr_t proc_pc){
+    curr->pc = proc_pc;
+    update_trapframe(curr, tf);    
+}
+
+
+void sched_yield(void) {
     #ifdef IS_RISC
-    curr_slices = 0;
-    
-    //printf("Should preemptive sched! But for now just update curr proc\n");
-    //printProc(curr);
+    ////
+    //// Round robin!
+    ////
 
-    curr->status = PROC_RUNNABLE;
+    int currind = -1;
 
-    if (curr == proc_a){
-        printf("Should switch to PROC SHELL\n");
-        switch_proc(proc_b);
-    } else{
-        printf("Should switch to PROC A\n");
-        switch_proc(proc_a);
+    if (curr){
+        // If it was preemted, not in blocked state or so... then set it as runnable
+        if (curr->status == PROC_RUNNING) {
+            curr->status = PROC_RUNNABLE;  
+        }
+
+        currind= PROCX(curr->pid);
+
     }
-    #else // IS X86
+
+    int ind = currind + 1;
+
+    // Look for next in range [curr+1 ; end] 
+    while (ind < PROCS_MAX &&
+           procs[ind].status !=
+                   PROC_RUNNABLE) {  
+        ind++;
+    }
+    if (ind < PROCS_MAX) { 
+        switch_proc(&procs[ind]);
+    }
+
+    // Now circular loop!
+    // Look for next in range [0; curr] 
+    ind = 0;
+    while (ind < currind &&
+           procs[ind].status !=
+                   PROC_RUNNABLE) {  
+        ind++;
+    }
+
+
+    if (ind < currind) {
+        switch_proc(&procs[ind]);
+    }
+
+    // Found nothing , if curr is blocked or dead.. then reset it 
+    if (curr && curr->status != PROC_RUNNABLE) {
+        curr = NULL;
+    }
+
+    // keep runing the last proc while it exists
+    if (curr) {
+        switch_proc(curr);
+    }
+
+    PANIC("+++++++++++++++++++++ Nothing to run at sched yield!?");
     
+    #else 
+    
+    /////
+    ///// IS X86
+    /////
     curr->status = PROC_RUNNABLE;
-    curr_slices = 0;
+
+    printf("[PROC RUNNING] ");
+    printProc(curr);
 
     if (curr == proc_a){
         printf("Should switch to PROC B\n");

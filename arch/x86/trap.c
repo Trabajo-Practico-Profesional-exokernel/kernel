@@ -5,7 +5,7 @@
 #include "inc/common.h"
 
 extern void isr32(void);
-void sched_yield(struct FullTrapFrame *tf);
+void clock_yield(FullTrapFrame *tf);
 
 /*
 ==================================================
@@ -33,10 +33,10 @@ static void pic_remap(void) {
 void init_trap(void) {
     printf("[TRAP] Initializing IDT and PIC...\n");
 
-    idt_init();
+    //idt_init();
     pic_remap();
 
-    __asm__ __volatile__("sti");
+    __asm__ __volatile__("sti"); // CHECK: if doesn't need to be here, only in switch_context
     printf("[TRAP] Interrupts enabled\n");
 }
 
@@ -47,12 +47,12 @@ void init_trap(void) {
 */
 
 //No toca sti (eso se hace en el stub después del iret)
-void handle_trap(struct FullTrapFrame *tf) {
+void handle_trap(FullTrapFrame *tf) {
     switch (tf->int_no) {
         case 32: // Timer IRQ
             // End of interrupt (solo master, IRQ0)
             outb(0x20, 0x20);
-            sched_yield(tf);
+            clock_yield(tf);
             break;
         default:
             printf("[TRAP] Unhandled interrupt %d\n", tf->int_no);

@@ -12,7 +12,7 @@ while [[ $# -gt 0 ]]; do
 	        -c) clean_build=1; shift ;;
 	        -v) verbose=1; shift ;;
 	        -d) debug=1; shift ;;
-	        -uc) clean_user_apps=1; shift ;;
+	        -build_users) clean_user_apps=1; shift ;;
 	        #-*) echo "Got flag $1 after - :${1#-}" ; shift;;  	
 	*) trg=$1 ; shift ;;
 	esac

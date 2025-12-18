@@ -1,43 +1,6 @@
-#include "inc/common.h"
-#include "arch/stdio.h"
+#include "std/printf.h"
 
 static char digits[] = "0123456789ABCDEF";
-
-void *memcpy(void *dst, const void *src, size_t n) {
-    uint8_t *d = (uint8_t *) dst;
-    const uint8_t *s = (const uint8_t *) src;
-    while (n--)
-        *d++ = *s++;
-    return dst;
-}
-
-void *memset(void *buf, char c, size_t n) {
-    uint8_t *p = (uint8_t *) buf;
-    while (n--)
-        *p++ = c;
-    return buf;
-}
-
-char *strcpy(char *dst, const char *src) {
-    char *d = dst;
-    while (*src)
-        *d++ = *src++;
-    *d = '\0';
-    return dst;
-}
-
-int strcmp(const char *s1, const char *s2) {
-    while (*s1 && *s2) {
-        if (*s1 != *s2)
-            break;
-        s1++;
-        s2++;
-    }
-
-    return *(unsigned char *)s1 - *(unsigned char *)s2;
-}
-
-
 
 void putchar(char ch);
 
@@ -119,7 +82,7 @@ vprintf(const char *fmt, va_list ap)
         printint(va_arg(ap, uint64_t), 16, 0);
         i += 2;
       } else if(c0 == 'p'){
-        printptr(va_arg(ap, uint64_t));
+        printptr(va_arg(ap, uint32_t)); //////////// ADDED: CHANGED FROM 64 TO 32
       } else if(c0 == 'c'){
         putchar(va_arg(ap, uint32_t));
       } else if(c0 == 's'){
@@ -146,11 +109,4 @@ void printf(const char *fmt, ...) {
     va_start(vargs, fmt);
     vprintf(fmt, vargs);
     va_end(vargs);
-}
-
-
-void log(const char *s){
-    for (int i = 0; s[i] != '\0'; i++) {
-        putchar(s[i]);
-    }
 }

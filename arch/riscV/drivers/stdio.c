@@ -3,14 +3,18 @@
 #include "arch/arch_init.h"
 #include "inc/types.h"
 #include "inc/common.h"
+#include "std/string.h"
 
 #include "drivers/opensbi.h"
+#include "arch/mem.h"
 
-extern char __bss[], __bss_end[], __stack_top[];
+extern char __bss[], __bss_end[], __stack_top[], __trap_stack_top[];
 
 void init_arch(void){
     // bss supposed to be 0s but just in case
     memset(__bss, 0, (size_t) __bss_end - (size_t) __bss);    
+
+    printf("SOME EXTRA LOG? end bss: %x stack top: %x trap stack top : %x \n", (size_t) __bss_end, (size_t) __stack_top, (size_t) __trap_stack_top);
 }
 
 #define SBI_PUTCHAR 1
@@ -60,9 +64,11 @@ __attribute__((naked))
 void boot(void) {
     __asm__ __volatile__(
         "mv sp, %[stack_top]\n" // Set the stack pointer
+        "csrw sscratch, %[trap_stack_top]\n" // ON sscratch we save the stack pointer to use on trapentry ... set it as stack top in case for exceptions on init
         "j kmain\n"       // Jump to the kernel main function
         :
-        : [stack_top] "r" (__stack_top) // Pass the stack top address as %[stack_top]
+        : [stack_top] "r" (__stack_top), // Pass the stack top address as %[stack_top]
+          [trap_stack_top] "r" (__trap_stack_top)
     );
 }
 
