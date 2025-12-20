@@ -39,4 +39,7 @@ SECTIONS {
     __free_ram = .; /* add heap ram, hardcoded... its the same as base end but more descriptive? */
     . += 64 * 1024 * 1024; /* 64MB */
     __free_ram_end = .;
+    
+    . += 1 * 4096 ; /* 1 for safeness If ram is not well managed*/
+    /* __user_bin_start = .; */ /*In the future! If we load binaries at runtime, for now saved on heap */
 }

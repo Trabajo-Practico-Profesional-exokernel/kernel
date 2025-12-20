@@ -6,6 +6,7 @@ ARCH        ?= x86                        # o riscv
 BUILD_DIR   = build/$(ARCH)
 DEF_INCS     = -Ipublic -Istd
 
+KERNEL_DISK_PATH=.kernel_disk/lorem.txt
 # ----------------------------
 # Compiladores por arquitectura
 # ----------------------------
@@ -29,7 +30,9 @@ else ifeq ($(ARCH),riscv)
 	# If riscv then add -DIS_RISC that deifines the constant IS_RISC for conditional compiling
 	
 	LDFLAGS = -T arch/riscV/linker/link.ld
-	QEMU    = qemu-system-riscv32 -machine virt -bios default -nographic -serial mon:stdio --no-reboot -kernel $(BUILD_DIR)/kernel.elf
+	QEMU    = qemu-system-riscv32 -machine virt -bios default -nographic -serial mon:stdio --no-reboot -kernel $(BUILD_DIR)/kernel.elf \
+								-drive id=drive0,file=$(KERNEL_DISK_PATH),format=raw,if=none \
+							    -device virtio-blk-device,drive=drive0,bus=virtio-mmio-bus.0	
 endif
 
 # ============================

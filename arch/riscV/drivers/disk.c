@@ -5,6 +5,16 @@
 #include "inc/common.h"
 #include "std/string.h"
 
+#include "arch_inc/virtio_blk.h"
+#include "arch_inc/virtio.h"
+
+// char buf[SECTOR_SIZE];
+// read_write_disk(buf, 0, false /* read from the disk */);
+// printf("first sector: %s\n", buf);
+
+// strcpy(buf, "hello from kernel!!!\n");
+// read_write_disk(buf, 0, true /* write to the disk */);
+
 
 void syscall_disk_read(FullTrapFrame *tf, uintptr_t pc) {
     paddr_t src_disk_addr = SYSCALL_ARG0(tf);
@@ -27,12 +37,15 @@ void syscall_disk_write(FullTrapFrame *tf, uintptr_t pc) {
 }
 
 void init_disk(void){
-    printf("INITING DISK DRIVER\n");
+    printf("INITING VIRTIO\n");
+    virtio_init();
+
+    printf("INITING VIRTIO BLK data\n");
+    virtio_blk_init();
 
 
     printf("INITING RISCV SYSCALLS READ/WRITE\n");
 
-    
     register_syscall(SYS_DISK_READ, syscall_disk_read);
     register_syscall(SYS_DISK_WRITE, syscall_disk_write);
 

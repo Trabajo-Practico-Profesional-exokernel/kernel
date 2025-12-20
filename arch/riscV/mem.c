@@ -2,6 +2,7 @@
 #include "arch_inc/mem_constants.h"
 #include "arch/mem.h"
 #include "std/string.h"
+#include "arch_inc/virtio.h"
 
 extern char __free_ram[], __free_ram_end[], __kernel_base[], __kernel_base_end[];
 
@@ -53,6 +54,9 @@ void mem_init(void){
             (paddr_t) __free_ram_end,
             KERNEL_PERMISSIONS_ALL
     );
+
+    map_page(page_table, VIRTIO_BLK_PADDR, VIRTIO_BLK_PADDR, PAGE_R | PAGE_W); 
+
 }
 void switch_to_kernel_tables(void){
     // printf("SHOULD SWITCH TO KERNEL PAGES? IS THAT IT? %x\n", (uint32_t *) kernel_page_table);
