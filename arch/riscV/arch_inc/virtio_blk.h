@@ -13,6 +13,7 @@ void virt_blk_queues_init(void);
 void virtio_blk_init(void);
 
 
-void read_write_disk(void *buf, virt_blk_addr_t blk_addr, int is_write);
+// int read_write_disk(void *buf, virt_blk_addr_t blk_addr, int is_write);
+int read_write_disk(void *buf, virt_blk_sector_t blk_sector, int is_write);
 
 #endif

@@ -44,13 +44,12 @@ void virtio_blk_init(void){
     6. Check the response from the device.
 */
 
-void read_write_disk(void *buf, virt_blk_addr_t blk_addr, int is_write){
-	virt_blk_sector_t sector = blk_addr / SECTOR_SIZE; 
-    
+int read_write_disk(void *buf, virt_blk_sector_t sector, int is_write){
+
     if (sector >= blk_capacity / SECTOR_SIZE) {
         printf("virtio: tried to read/write sector=%d, but capacity is %d\n",
               sector, blk_capacity / SECTOR_SIZE);
-        return;
+        return -1;
     }
 
     // Construct the request according to the virtio-blk specification.
@@ -92,11 +91,11 @@ void read_write_disk(void *buf, virt_blk_addr_t blk_addr, int is_write){
     if (blk_req->status != 0) {
         printf("virtio: warn: failed to read/write sector=%d status=%d\n",
                sector, blk_req->status);
-        return;
+        return -2;
     }
 
     // For read operations, copy the data into the buffer.
     if (!is_write)
         memcpy(buf, blk_req->data, SECTOR_SIZE);
-
+    return 0;
 }

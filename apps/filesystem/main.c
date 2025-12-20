@@ -6,6 +6,7 @@
 
 #define SLEEP_TIME 300000000
 #define MSG_SIZE_MAX 64
+#define DISK_SECTOR_SIZE 512
 
 char buffer[MSG_SIZE_MAX];
 struct FilesystemEventsHandler fs_events_handler;
@@ -39,12 +40,21 @@ void main() {
     fs_events_handler.on_touch = handler_on_touch;
     fs_events_handler.on_stat = handler_on_stat;
     fs_events_handler.on_rm = handler_on_rm;
+
+    char buff_write[DISK_SECTOR_SIZE];
     char* VALUE = "SOME MESSAGE VALUE";
-    int write_superblock_ret = disk_write(VALUE, 0, strlen(VALUE));
+    strcpy(&buff_write[0], VALUE);
+    
+    printf("=====> USER FS WRITING TO DISK 0 => '%s'\n", VALUE);
+    int write_superblock_ret = disk_write(VALUE, 0, DISK_SECTOR_SIZE);
+
+    printf("=====> WRITE RET %d\n", write_superblock_ret);
 
     char ret[100];
 
     int read_superblock_ret = disk_read(0, &ret[0], strlen(VALUE));
+
+    printf("USER FS READ disk READ RESULT %d  CONTENT => '%s'\n",read_superblock_ret, &ret[0]);
 
     int err = register_fs_handler(&fs_events_handler);
     if (err != 0) {
