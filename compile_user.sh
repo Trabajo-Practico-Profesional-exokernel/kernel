@@ -21,6 +21,8 @@ COMMON_SRC_FILES="$ARCH_FOLDER/user/entry_point.c"
 COMMON_SRC_FILES+=" $(find "user_lib" -name "*.c")"
 COMMON_SRC_FILES+=" $(find "std" -name "*.c")"
 
+echo "COMMON SRC FILES $COMMON_SRC_FILES"
+
 # first build apps that have many .c files i.e have their own folder....
 for app_dir in apps/*/; do
 

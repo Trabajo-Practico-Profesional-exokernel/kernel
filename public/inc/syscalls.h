@@ -28,6 +28,10 @@
 #define SYS_FS_REG_HANDLER 15
 #define SYS_FS_RET 16
 
+
+#define SYS_DISK_READ 17
+#define SYS_DISK_WRITE 18
+
 #define DEF_ERR_CODE -1
 
 

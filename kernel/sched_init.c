@@ -26,12 +26,14 @@ void init_sched(void) {
     // Main user process
     struct Proc * proc_shell = get_first_free_proc();
     // load_create_process_user(proc_shell, &_binary_apps[APP_IND_PROC_A]);
-    load_create_process_user(proc_shell, &_binary_apps[APP_IND_SHELL]);
+    // load_create_process_user(proc_shell, &_binary_apps[APP_IND_SHELL]);
+    load_create_process_user(proc_shell, &_binary_apps[APP_IND_FILESYSTEM]);
+    
     // load_create_process_user(proc_shell, &_binary_apps[APP_IND_TESTS_SHELL]);
 
     // Extra initial processes....
-    load_create_process_user(get_first_free_proc(), 
-                        &_binary_apps[APP_IND_PROC_B]);
+    // load_create_process_user(get_first_free_proc(), 
+    //                     &_binary_apps[APP_IND_FILESYSTEM]);
 
     
     printf("AT CREATE PROCESS SHELL expected pc= %x, ", (uint32_t)VADDR_USER_BASE);

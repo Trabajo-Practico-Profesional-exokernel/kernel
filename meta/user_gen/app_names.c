@@ -1,7 +1,7 @@
 char * _app_names[] = {
+"filesystem",
 "shell",
 "tests_shell",
-"filesystem",
 "hello_world",
 "periodic_yield",
 "proc_a",
