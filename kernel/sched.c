@@ -104,20 +104,22 @@ void switch_proc(struct Proc* next) {
     printf("\n\n");
     switch_page_table(curr->pde_paddr);
     #endif
-
+    printf("[DEBUG] Target EIP: %x | Target ESP: %x\n", curr->tf.eip, curr->tf.esp);
     switch_context(curr);
 }
 
-void clock_yield(FullTrapFrame *tf, uintptr_t proc_pc){
-    curr_slices+=1;
+// Cambia la firma y el cuerpo:
+void clock_yield(FullTrapFrame *tf, uintptr_t proc_pc) {  // Quitamos uintptr_t proc_pc
+    curr_slices += 1;
     
-    if (curr_slices< MAX_TIME_SLICES){
+    if (curr_slices < MAX_TIME_SLICES){
         return;
     }
 
-    curr->pc = proc_pc;
+    // Usamos el EIP guardado en el trapframe como el PC actual
+    curr->pc = tf->eip; 
+    
     update_trapframe(curr, tf);
-
     sched_yield();
 }
 

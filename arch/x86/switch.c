@@ -33,24 +33,57 @@
 
 __attribute__((naked))
 void switch_context(struct Proc *next) {
-    __asm__ __volatile__ (        
-        // "pop %ecx\n"        // return address (ignore)
-        "mov 4(%esp), %esp\n"
-        // "pop %eax\n"        // eax = struct Proc* next -> tf
+    __asm__ __volatile__ (
+        "mov 4(%esp), %eax\n"      // EAX = next
 
-        "pop %gs\n"
-        "pop %fs\n"
-        "pop %es\n"
-	    "pop %ds\n"
-        // cambiarnos tf->regs
+        // Restaurar segmentos manualmente desde EAX
+        "mov 0(%eax), %gs\n"
+        "mov 4(%eax), %fs\n"
+        "mov 8(%eax), %es\n"
+        "mov 12(%eax), %ds\n"
 
+        // Chequear Ring
+        "mov 60(%eax), %ecx\n"     // CS
+        "test $3, %ecx\n"
+        "jz .kernel_restore\n"
+
+    ".user_restore:\n"
+        // Para usuario usamos el truco de ESP = struct
+        "mov %eax, %esp\n"
+        "add $16, %esp\n"          // Saltar gs..ds
         "popa\n"
+        "add $8, %esp\n"           // Saltar int/err
+        "iret\n"
 
-        "add $4, %esp\n" 	   // Descarto valor 'int_no'
-	    "add $4, %esp\n"     // Descarto valor 'err_code'
+    ".kernel_restore:\n"
+        // Para kernel restauramos MANUALMENTE para no perder el control del stack
+        "mov 68(%eax), %edx\n"     // EDX = tf->esp (Stack destino)
+        
+        // Copiar EFLAGS, CS, EIP al stack destino
+        "mov 64(%eax), %ecx\n"     // EFLAGS
+        "mov %ecx, -4(%edx)\n"
+        "mov 60(%eax), %ecx\n"     // CS
+        "mov %ecx, -8(%edx)\n"
+        "mov 56(%eax), %ecx\n"     // EIP
+        "mov %ecx, -12(%edx)\n"
 
-        "sti\n"
-        "iret\n"           // eip = tf->eip
+        // Restaurar GPRs desde la memoria (EAX)
+        "mov 16(%eax), %edi\n"
+        "mov 20(%eax), %esi\n"
+        "mov 24(%eax), %ebp\n"
+        // saltamos oesp (28)
+        "mov 32(%eax), %ebx\n"
+        "mov 36(%eax), %edx\n"     // Restauramos EDX real
+        "mov 40(%eax), %ecx\n"     // Restauramos ECX real
+
+        // Cambiar al stack destino preparado
+        "mov 68(%eax), %esp\n"     // Cargar ESP
+        "sub $12, %esp\n"          // Ajustar para los 3 pushes manuales
+
+        // Finalmente restaurar EAX
+        "mov 44(%eax), %eax\n"
+        
+        "iret\n"
     );
 }
 
@@ -113,11 +146,6 @@ void init_trapframe(struct Proc *proc) {
     tf->regs.ecx = 0;
     tf->regs.eax = 0;
 
-    tf->ds = GD_UD | 3;
-	tf->es = GD_UD | 3;
-	tf->ss = GD_UD | 3;
-	tf->cs = GD_UT | 3;
-
     tf->eflags = FL_IF;
 
     // Configura punto de inicio (eip)
@@ -127,6 +155,25 @@ void init_trapframe(struct Proc *proc) {
     tf->regs.ebp = proc->kernel_sp; // == esp inicialmente? dsps el esp crece hacia abajo
     // For now? not good? lol at least it should not be 0 or so.. should be virtual addr
 
+    if (proc->pc < 0x01000000) { 
+        // Es código del Kernel (proc_a_entry, proc_b_entry están en ~1MB)
+        // Debe correr en Ring 0
+        tf->ds = GD_KD; 
+        tf->es = GD_KD;
+        tf->ss = GD_KD;
+        tf->cs = GD_KT; 
+    } else {
+        // Es un programa de usuario (cargado en 16MB+)
+        // Debe correr en Ring 3
+        tf->ds = GD_UD | 3; 
+        tf->es = GD_UD | 3;
+        tf->ss = GD_UD | 3;
+        tf->cs = GD_UT | 3; 
+    }
+    
+    printf("[INIT TF] pid=%d eip=%x -> Ring %s\n", 
+           proc->pid, tf->eip, (tf->cs & 3) == 0 ? "0 (Kernel)" : "3 (User)");
+
     printf("[INIT TRAPFRAME] entry_point = 0x%x, esp = 0x%x\n",tf->eip, tf->esp);
 }
 
@@ -135,15 +182,23 @@ void init_trapframe(struct Proc *proc) {
  * Actualiza el trapframe de un proceso con el contexto actual (por ejemplo, desde un trap).
  */
 void update_trapframe(struct Proc *proc, FullTrapFrame *tf) {
-    proc->tf.regs.eax = tf->regs.eax;
-    proc->tf.regs.ebx = tf->regs.ebx;
-    proc->tf.regs.ecx = tf->regs.ecx;
-    proc->tf.regs.edx = tf->regs.edx;
-    proc->tf.regs.esi = tf->regs.esi;
-    proc->tf.regs.edi = tf->regs.edi;
-    proc->tf.regs.ebp = tf->regs.ebp;
+    proc->tf.regs = tf->regs;
     proc->tf.eip = tf->eip;
+    proc->tf.cs = tf->cs;
+    proc->tf.eflags = tf->eflags;
 
-    proc->tf.regs.oesp = tf->regs.oesp; // TODO: porlas, ver si sacar
-    proc->tf.esp = tf->esp;
+    if ((tf->cs & 3) == 0) { 
+        // --- CORRECCIÓN CRÍTICA ---
+        // Estamos en Kernel Mode. 
+        // tf->regs.oesp apunta a 'int_no' en el stack.
+        // Debemos saltar: int_no (4) + err_code (4) + EIP (4) + CS (4) + EFLAGS (4) = 20 bytes
+        // para recuperar el ESP original antes de que ocurriera NADA de la interrupción.
+        
+        proc->tf.esp = tf->regs.oesp + 20; 
+        
+    } else {
+        // En User Mode, la CPU guarda el ESP y SS viejos al final del frame.
+        proc->tf.esp = tf->esp;
+        proc->tf.ss = tf->ss;
+    }
 }

@@ -25,9 +25,8 @@ void kmain()
 
     init_trap();
 
-    init_disk(); 
-
     #ifdef IS_RISC
+    init_disk(); 
     //Doing it after init_trap just to be able to see a trap/panic if something fails!
     // Mem init for riscv == setup pagetable for kernel.
     mem_init();
