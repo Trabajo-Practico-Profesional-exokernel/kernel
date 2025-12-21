@@ -4,7 +4,7 @@
 #include "std/string.h"
 #include "arch_inc/virtio.h"
 
-extern char __free_ram[], __free_ram_end[], __kernel_base[], __kernel_base_end[], __user_ram_end[];
+extern char __free_ram[], __free_ram_end[], __kernel_base[], __kernel_base_end[], __trampoline_end[];
 
 paddr_t alloc_pages(uint32_t n) {
     // next_paddr === last allocated mem end
@@ -50,8 +50,7 @@ void mem_init(void){
     printf("MAP IN KERNEL from kernel base to ram end: %x to %x\n", (paddr_t) __kernel_base, (paddr_t) __free_ram_end);
     direct_map_range(page_table, 
             (paddr_t) __kernel_base,
-            // (paddr_t) __kernel_base_end,
-            (paddr_t) __user_ram_end, // User ram end is the last mem used
+            (paddr_t) __trampoline_end, // User trampoline is the last thing in physical mem
             KERNEL_PERMISSIONS_ALL
     );
 

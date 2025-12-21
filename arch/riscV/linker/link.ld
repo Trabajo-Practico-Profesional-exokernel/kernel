@@ -45,4 +45,12 @@ SECTIONS {
     . += 64 * 1024 * 1024; /* 64 MB */
     __user_ram_end = .;
 
+    . = ALIGN(4096); /* align to page size */
+
+    __trampoline_start = .;
+    . += 2 * 4096; /* 2* 4096 == 8KB for trampoline */
+    . = ALIGN(4096); /* align to page size */
+    __trampoline_end = .;
+    
+
 }
