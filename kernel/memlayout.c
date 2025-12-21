@@ -7,6 +7,8 @@
 #include "std/string.h"
 #include "arch/switch.h"// Declares the swtich context to new Proc and sleep method.
 
+#include "proc_syscalls.h"
+
 extern char __trampoline_start[], __trampoline_end[];
 
 #ifdef IS_RISC
@@ -17,10 +19,57 @@ extern char __trampoline_start[], __trampoline_end[];
     #define USER_PERMISSIONS_ALL (I86_PTE_WRITABLE | I86_PTE_USER)
 #endif
 
+int copy_argv_pointers_from_user(struct Proc * proc, paddr_t* argv_pointers, vaddr_t vaddr_argv){
+    paddr_t src_argv_paddr = get_paddr_for(
+                                    (uint32_t *) proc->pde_paddr,
+                                    vaddr_argv);
+    
+    if (src_argv_paddr == 0){
+        printf("Invalid vaddr for argv error!!\n");
+        return -2;
+    }
+    vaddr_t* src_argv = (vaddr_t*) src_argv_paddr;
+    int argc;
+
+    for(argc = 0; src_argv[argc]; argc++) { // While argv[ind] != 0
+        if(argc >= MAXARG) {
+            printf("MORE THAN MAX PARAMS!\n");
+            return -1;
+        }
+
+        vaddr_t vaddr_arg = src_argv[argc];
+        
+        paddr_t paddr_arg = get_paddr_for(
+                                        (uint32_t *) proc->pde_paddr,
+                                        vaddr_arg);
+        if (paddr_arg == 0){
+            printf("Invalid vaddr for arg error!!\n");
+            return -2;
+        }
+
+        // Just for validation... by the way.. this is wrong since arg parameter could be in multiple pages
+        // that are not contiguous.. not now though since kalloc does not exist.
+        size_t arg_len = strlen((char* ) paddr_arg) + 1; 
+        
+        if (arg_len > MAX_ARG_LEN){
+            printf("ARG LONGER THAN ALLOWED!\n");
+            return -1;            
+        }
+
+        printf("MAPPED PARAM FOR PROGRAM pointer at %x!\n", paddr_arg);
+        
+        argv_pointers[argc] = paddr_arg;
+    }
+    
+
+    return argc;
+}
 
 
-char *DEF_ARGV[] = { "sh_prog","parameter1", 0 };
-#define MAXARG 4
+
+
+
+
 int set_init_parameters_for_proc(struct Proc * proc, char ** argv, paddr_t* sp_out){
     // Copy arguments to the stack of the proc
     // In the future it could be we use instead dynamically allocated pages
@@ -38,6 +87,11 @@ int set_init_parameters_for_proc(struct Proc * proc, char ** argv, paddr_t* sp_o
         }
 
         size_t arg_len = strlen(argv[argc]) + 1; 
+
+        if (arg_len > MAX_ARG_LEN){
+            printf("ARG LONGER THAN ALLOWED!\n");
+            return -1;            
+        }
         sp -= arg_len;
         sp -= sp % 16; // riscv sp must be 16-byte aligned
 
@@ -74,8 +128,7 @@ int set_init_parameters_for_proc(struct Proc * proc, char ** argv, paddr_t* sp_o
 
 
 
-
-void load_create_process_user(struct Proc * proc, const struct AppBinaryInfo * app_info) {    
+void load_create_process_user(struct Proc * proc, const struct AppBinaryInfo * app_info, char ** argv) {    
     proc->pc = VADDR_USER_BASE; // Entry point is setted to the vaddr, here it could be the trampoline but for now is the code of prog
     
     //
@@ -154,7 +207,7 @@ void load_create_process_user(struct Proc * proc, const struct AppBinaryInfo * a
 
     // Setup simple parameters?
     paddr_t final_user_sp_top;
-    int argc= set_init_parameters_for_proc(proc, DEF_ARGV, &final_user_sp_top);
+    int argc= set_init_parameters_for_proc(proc, argv, &final_user_sp_top);
     if (argc < 0){
         PANIC("ERROR When allocating params for proc!");
     }

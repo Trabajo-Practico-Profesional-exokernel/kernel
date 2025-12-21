@@ -16,6 +16,10 @@
 
 #define PROCX(procid) ((procid) & (PROCS_MAX - 1))
 
+// Just 256 bytes .. so that 4* 256 = 1KB + some bytes for pointers .. args can be passed through 1 page of 4096.. in the user stack..
+#define MAXARG 4
+#define MAX_ARG_LEN 256 
+
 
 
 typedef int32_t procid_t;
