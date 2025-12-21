@@ -97,7 +97,7 @@ void init_trapframe(struct Proc * proc){
     proc->tf.s1 = 0;
     proc->tf.s0 = 0;
 
-    proc->tf.sp = proc->kernel_sp; 
+    proc->tf.sp = VADDR_USER_STACK_HARD_END;  // Set to the predefined vaddr of stackpointer.
 
     proc->tf.ra = proc->pc; // For now ra setted to proc initial pc?    
 

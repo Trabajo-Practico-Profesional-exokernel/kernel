@@ -1,6 +1,10 @@
 #include "lib.h"
 
-extern char __stack_top[];
+// extern char __stack_top[];
+
+#define VADDR_USER_STACK_SIZE 2* 4096 // 8kb
+#define VADDR_USER_STACK_BASE 0x1800000 + VADDR_USER_STACK_SIZE
+#define VADDR_USER_STACK_TOP VADDR_USER_STACK_BASE
 
 __attribute__((noreturn)) void do_exit(void) {
     printf("-------> PROCESS EXITED NORMALLY!\n");
@@ -29,7 +33,7 @@ void sleep(int delay) {
 
 __attribute__((section(".text.start")))
 __attribute__((naked))
-void start(void) {
+void start(uint32_t __stack_top) {
     __asm__ __volatile__(
         "mv sp, %[stack_top] \n"
         "call main           \n"

@@ -145,24 +145,23 @@ paddr_t get_paddr_for(uint32_t *pd_table, vaddr_t vaddr) {
 
 
 
-paddr_t direct_map_range(uint32_t *table1, paddr_t range_start, paddr_t range_end, uint32_t flags){
+paddr_t direct_map_range(uint32_t *pde_table, paddr_t range_start, paddr_t range_end, uint32_t permissions){
     paddr_t paddr = range_start;
     while (paddr < range_end){
         // printf("MAPPING PAGE %x < %x\n", paddr, range_end);
-        map_page(table1, paddr, paddr, flags); // Direct map        
+        map_page(pde_table, paddr, paddr, permissions); // Direct map        
         paddr += PAGE_SIZE;
     }
     
     return paddr;
 }
 
-paddr_t offset_map_range(uint32_t *table1, paddr_t range_start, paddr_t range_end, 
-                        vaddr_t mapped_vstart, uint32_t flags){
+paddr_t offset_map_range(uint32_t *pde_table, paddr_t range_start, paddr_t range_end, uint32_t permissions, vaddr_t mapped_vstart){
     paddr_t paddr = range_start;
     paddr_t vaddr = mapped_vstart;
 
     while (paddr < range_end){
-        map_page(table1, vaddr, paddr, flags); // Map offseted to there        
+        map_page(pde_table, vaddr, paddr, permissions); // Map offseted to there        
         paddr += PAGE_SIZE;
         vaddr += PAGE_SIZE;
     }

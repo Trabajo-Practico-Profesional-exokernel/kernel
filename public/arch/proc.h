@@ -6,6 +6,9 @@
 #include "communication.h"
 #include "mem.h"
 
+// Include constants defining positions in memory, for the utility of whom includes proc.h
+#include "arch/mem_layout.h"
+
 #define LOG2NPROC 10
 #define NPROC (1 << LOG2NPROC)
 
@@ -13,8 +16,6 @@
 
 #define PROCX(procid) ((procid) & (PROCS_MAX - 1))
 
-
-#define KERN_STACK_PAGES 2
 
 
 typedef int32_t procid_t;
@@ -27,7 +28,10 @@ struct Proc {
     struct TrapFrame tf;
     uintptr_t pc; // process current ins
     paddr_t pde_paddr;      // Physical address for Page Directory: C3 for x86 or SATP for RISCV
-    vaddr_t kernel_sp;          // Stack pointer
+
+    // Pointer to the physical address of the user stack start... i.e min paddr
+    // user stack goes from [user_sp_start ..USER_STACK_PAGE_COUNT .. initial_user_stack_top] .. user stack grows up to sp_start.
+    paddr_t user_sp_start; 
 
     procid_t pid;             // Process ID
     int status;           // Process state: PROC_FREE or PROC_RUNNABLE,  PROC_DYING, PROC_RUNNABLE, PROC_RUNNING, PROC_NOT_RUNNABLE 

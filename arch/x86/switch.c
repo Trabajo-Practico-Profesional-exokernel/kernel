@@ -123,8 +123,8 @@ void init_trapframe(struct Proc *proc) {
     // Configura punto de inicio (eip)
     tf->eip = proc->pc;
 
-    tf->esp = proc->kernel_sp; 
-    tf->regs.ebp = proc->kernel_sp; // == esp inicialmente? dsps el esp crece hacia abajo
+    tf->esp = proc->user_sp_base; 
+    tf->regs.ebp = proc->user_sp_base; // == esp inicialmente? dsps el esp crece hacia abajo
     // For now? not good? lol at least it should not be 0 or so.. should be virtual addr
 
     printf("[INIT TRAPFRAME] entry_point = 0x%x, esp = 0x%x\n",tf->eip, tf->esp);

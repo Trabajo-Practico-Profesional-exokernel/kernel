@@ -26,7 +26,8 @@
 void free_process(struct Proc * proc){
     // TODO !!!!
     // SHOULD FREE PAGES ALLOCATED! BUT IT DOES NOT DO IT YET SINCE ALLOC PAGES IS NOT A LINKED LIST EITHER!
-    proc->kernel_sp = 0;
+    // proc->kernel_sp = 0;
+    proc->user_sp_start = 0;
     proc->pde_paddr = 0;
 
     proc->pc = 0; // Or some default one If so you want!
@@ -40,19 +41,6 @@ void free_process(struct Proc * proc){
 void create_process(struct Proc * proc, uint32_t pc) { // pc == entry point == start instruction
     // Save initial pc on proc.
     printf("#####################################\n"); 
-    proc->pc = pc;
-
-
-
-    //
-    // ALLOC OF Process stack
-    //
-
-    paddr_t sp_base = alloc_pages(KERN_STACK_PAGES);
-    printf("FOR PROC %u SP_BASE IS %x \n", proc->pid, sp_base);
-    proc->kernel_sp =  sp_base + KERN_STACK_PAGES * PAGE_SIZE;
-
-    printf("FOR PROC %u MAP KERNEL STACK %x to %x\n", proc->pid, sp_base, proc->kernel_sp);
 
     // Stack callee-saved registers. These register values will be restored in
     // the first context switch in switch_context. ... init registers basically?
