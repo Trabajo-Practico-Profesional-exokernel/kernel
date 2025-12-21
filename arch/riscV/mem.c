@@ -92,7 +92,7 @@ void switch_page_table(uint32_t *table_next, uint8_t* next_stack){
 }
 */
 
-void map_page(uint32_t *table1, vaddr_t vaddr, paddr_t paddr, uint32_t flags) {
+void map_page(uint32_t *pd_table, vaddr_t vaddr, paddr_t paddr, uint32_t permissions) {
     if (!is_aligned(vaddr, PAGE_SIZE))
         PANIC("unaligned vaddr %x", vaddr);
 
@@ -100,45 +100,47 @@ void map_page(uint32_t *table1, vaddr_t vaddr, paddr_t paddr, uint32_t flags) {
         PANIC("unaligned paddr %x", paddr);
 
 
-    // YO ESTO LO CAMBIARIA A QUE USE LA PDE EN VEZ DE HARDCODEARLO
-    uint32_t vpn1 = (vaddr >> 22) & 0x3ff;
-    if ((table1[vpn1] & PAGE_V) == 0) {
-        // Create the 1st level page table if it doesn't exist.
-        uint32_t pt_paddr = alloc_pages(1);
-        table1[vpn1] = ((pt_paddr / PAGE_SIZE) << 10) | PAGE_V;
+    uint32_t pd_index = GET_INDEX_IN_PAGE_DIRECTORY(vaddr);
+
+    if (IS_NOT_PRESENT(pd_table[pd_index])) {
+
+        // Alloc/Create the table for pages, i.e the page table at this index.
+        // The page table is 1024 page table entries , of 32 bits each. i.e 4KB == 1 PAGE 
+        paddr_t pt_paddr = alloc_pages(1);
+        
+        pd_table[pd_index] = SET_ENTRY_OFFSET(pt_paddr);
     }
 
-    // ACA HARIA LA PTE
-    // Set the 2nd level page table entry to map the physical page.
-    uint32_t vpn0 = (vaddr >> 12) & 0x3ff;
-    uint32_t *table0 = (uint32_t *) ((table1[vpn1] >> 10) * PAGE_SIZE);
-    table0[vpn0] = ((paddr / PAGE_SIZE) << 10) | flags | PAGE_V;
+    // 
+    uint32_t pt_index = GET_INDEX_IN_PAGE_TABLE(vaddr);
+    
+    uint32_t* pt_table = (uint32_t *) GET_ENTRY_OFFSET(pd_table[pd_index]); 
+    
+    pt_table[pt_index] = SET_ENTRY_OFFSET(paddr) | permissions;
+
 }
 
-paddr_t get_paddr_for(uint32_t *table1, vaddr_t vaddr) {
-    uint32_t vpn1 = (vaddr >> 22) & 0x3ff;
-    uint32_t vpn0 = (vaddr >> 12) & 0x3ff;
-    uint32_t offset = vaddr & 0xfff; // Last 3 digits i.e 0 to 4095 offset in page
-
-    uint32_t pde = table1[vpn1];
-    if ((pde & PAGE_V) == 0) { // Directory page not mapped
+paddr_t get_paddr_for(uint32_t *pd_table, vaddr_t vaddr) {
+    uint32_t pd_index = GET_INDEX_IN_PAGE_DIRECTORY(vaddr); // bits 0 to 9
+    uint32_t pt_index = GET_INDEX_IN_PAGE_TABLE(vaddr); // bits 10 to 19
+    uint32_t pt_offset = GET_VADDR_OFFSET(vaddr);  // bits 20 to 31
+    
+    uint32_t page_table_config = pd_table[pd_index];
+    
+    // Directory page not mapped
+    if (IS_NOT_PRESENT(page_table_config)) { 
         return 0; // or PANIC / page fault
     }
+    
+    uint32_t* pt_table = (uint32_t*) GET_ENTRY_OFFSET(page_table_config); 
 
-    // Get second-level page table physical address
-    paddr_t table0_paddr = ((pde >> 10) * PAGE_SIZE);
-
-    // You must be able to access this page table in kernel VA space.
-    // But we have direct mapping in kernel pages.. where you should call this from.
-    uint32_t *table0 = (uint32_t *) table0_paddr;
-
-    uint32_t pte = table0[vpn0];
-    if ((pte & PAGE_V) == 0) { // Not mapped! second level page
+    uint32_t pte_config = pt_table[pt_index];
+    if (IS_NOT_PRESENT(pte_config)) { // Not mapped! second level page
         return 0; // page fault
     }
     
-    paddr_t page_paddr = ((pte >> 10) * PAGE_SIZE);
-    return page_paddr + offset;
+    paddr_t page_paddr = (paddr_t) GET_ENTRY_OFFSET(pte_config);
+    return page_paddr + pt_offset;
 }
 
 
