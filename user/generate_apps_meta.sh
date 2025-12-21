@@ -7,24 +7,20 @@ res_imports=""
 res_arr_entry=""
 defines_index=""
 apps_names=""
-def_app_names=""
+def_executables=""
 
 count=0
 
 COUNT_DEF_APPS="$1"
 shift   # remove COUNT_DEF_APPS from $@
+# COUNT_DEF_APPS="0"
 
 REGISTERED_APPS=("$@")   # array of app names
 
-## ADD DEFAULT APPS
-REGISTERED_APPS+=("shell")
-REGISTERED_APPS+=("tests_shell")
-
-echo "Generate metadata with $COUNT_DEF_APPS def apps"
-# REGISTERED_APPS="${REGISTERED_APPS:1}"
+echo "Generate metadata with $COUNT_DEF_APPS def executables"
 
 for app_name in "${REGISTERED_APPS[@]}";do
-    prefix="_binary_apps_build_${app_name}_app_bin"
+    prefix="_binary_user_build_${app_name}_app_bin"
 
     res_imports+="extern char ${prefix}_start[],${prefix}_size[];\n"
     res_arr_entry+="    {${prefix}_start, (size_t) ${prefix}_size},\n"
@@ -38,7 +34,7 @@ for app_name in "${REGISTERED_APPS[@]}";do
     # -------------------------
 
     if (( count < COUNT_DEF_APPS )); then
-        def_app_names+="\"$app_name\",\n"
+        def_executables+="\"$app_name\",\n"
         echo "ADD META FOR ind: $count DEF APP '$app_name'"
     else
         echo "ADD META FOR ind: $count APP '$app_name'"
@@ -102,7 +98,7 @@ template=$(<"$TEMPLATE_FILE")
 # Replace the placeholders with the dynamically generated content
 template=$(echo "$template" | sed "s|{APP_NAMES}|$apps_names|g")
 
-template=$(echo "$template" | sed "s|{NAMES_DEF_APPS}|$def_app_names|g")
+template=$(echo "$template" | sed "s|{DEF_EXECUTABLES}|$def_executables|g")
 
 
 # Write the final result to the output file
