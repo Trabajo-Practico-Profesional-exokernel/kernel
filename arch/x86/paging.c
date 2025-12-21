@@ -192,7 +192,7 @@ void vmmngr_initialize() {
        //! create a new page
        pd_entry page=0;
        pt_entry_add_attrib (&page, I86_PTE_PRESENT); 
-       pt_entry_add_attrib(&page, I86_PTE_WRITABLE); //ADDED
+       pt_entry_add_attrib(&page, I86_PTE_USER);
        pt_entry_set_frame (&page, frame);
        table2->m_entries [PAGE_TABLE_INDEX (virt) ] = page;
     }
@@ -206,6 +206,7 @@ void vmmngr_initialize() {
        //! create a new page
        pd_entry page=0;
        pt_entry_add_attrib (&page, I86_PTE_PRESENT);
+       pt_entry_add_attrib(&page, I86_PTE_USER);
        pt_entry_add_attrib(&page, I86_PTE_WRITABLE); //ADDED
        pt_entry_set_frame (&page, frame);
        table->m_entries [PAGE_TABLE_INDEX (virt) ] = page;
@@ -234,11 +235,13 @@ void vmmngr_initialize() {
     //! get first entry in dir table and set it up to point to our table
     pd_entry* entry = &dir->m_entries [PAGE_DIRECTORY_INDEX (VADDR_KERNEL_BASE) ];
     pd_entry_add_attrib (entry, I86_PDE_PRESENT);
+    pt_entry_add_attrib(entry, I86_PTE_USER);
     pd_entry_add_attrib (entry, I86_PDE_WRITABLE);
     pd_entry_set_frame (entry, p_table);
  
     pd_entry* entry2 = &dir->m_entries [PAGE_DIRECTORY_INDEX (0x00000000) ];
     pd_entry_add_attrib (entry2, I86_PDE_PRESENT);
+    pt_entry_add_attrib(entry2, I86_PTE_USER);
     pd_entry_add_attrib (entry2, I86_PDE_WRITABLE);
     pd_entry_set_frame (entry2, p_table2);
  
