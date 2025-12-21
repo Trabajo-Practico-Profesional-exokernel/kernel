@@ -45,10 +45,10 @@ void create_process(struct Proc * proc, uint32_t pc) { // pc == entry point == s
     // Stack callee-saved registers. These register values will be restored in
     // the first context switch in switch_context. ... init registers basically?
     // After proc->kernel_sp and proc->pc setted up so that they can be included on trapframe if needed
-    init_trapframe(proc);
 
     #ifdef IS_RISC    
     #else //x86
+    init_trapframe(proc);
 
     paddr_t pde_paddr = alloc_pages(1);
     if (!pde_paddr) PANIC("create_process: out of memory (page_dir)");

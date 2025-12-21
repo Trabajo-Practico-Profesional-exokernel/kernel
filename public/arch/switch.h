@@ -11,7 +11,7 @@ void sleep(int delay); // Just to able to sleep basically
 
 
 void update_trapframe(struct Proc * proc, FullTrapFrame *tf);
-void init_trapframe(struct Proc * proc);
+void init_trapframe(struct Proc * proc, vaddr_t user_sp);
 
 // void reset_trapframe(struct Proc * proc);
 __attribute__((naked)) void user_entry(void);

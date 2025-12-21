@@ -19,6 +19,62 @@ extern char __trampoline_start[], __trampoline_end[];
 
 
 
+char *DEF_ARGV[] = { "sh_prog","parameter1", 0 };
+#define MAXARG 4
+int set_init_parameters_for_proc(struct Proc * proc, char ** argv, paddr_t* sp_out){
+    // Copy arguments to the stack of the proc
+    // In the future it could be we use instead dynamically allocated pages
+    // Not needed for now.
+    paddr_t paddr_sp_end= proc->user_sp_start + USER_STACK_PAGE_COUNT * PAGE_SIZE; // Start at the stack top
+    paddr_t sp = paddr_sp_end;
+    
+    uint32_t argc;
+    paddr_t argv_pointers[MAXARG];
+    for(argc = 0; argv[argc]; argc++) { // While argv[ind] != 0
+
+        if(argc >= MAXARG) {
+            printf("MORE THAN MAX PARAMS!\n");
+            return -1;
+        }
+
+        size_t arg_len = strlen(argv[argc]) + 1; 
+        sp -= arg_len;
+        sp -= sp % 16; // riscv sp must be 16-byte aligned
+
+        if(sp < proc->user_sp_start){
+            printf("STACK OVERFLOW!!\n");
+            return -2;
+        }
+
+        memcpy( (void *) sp, (void *) argv[argc], arg_len);
+
+        argv_pointers[argc] = VADDR_USER_STACK_HARD_END- (paddr_sp_end- sp);
+        
+    }
+    argv_pointers[argc] = 0;
+
+    // Finally push to the stack.. the actually array of pointer i.e argv_pointers
+    size_t argv_bytes_size = (argc+1) * sizeof(paddr_t); 
+    sp -= argv_bytes_size; // +1 for the extra 0
+    sp -= sp % 16;
+
+    if(sp < proc->user_sp_start){
+        printf("STACK OVERFLOW!!\n");
+        return -2;
+    }
+
+    memcpy((void *) sp, (void *) &argv_pointers[0], argv_bytes_size);
+    
+    *sp_out = sp;
+    return argc;
+}
+
+
+
+
+
+
+
 void load_create_process_user(struct Proc * proc, const struct AppBinaryInfo * app_info) {    
     proc->pc = VADDR_USER_BASE; // Entry point is setted to the vaddr, here it could be the trampoline but for now is the code of prog
     
@@ -95,15 +151,26 @@ void load_create_process_user(struct Proc * proc, const struct AppBinaryInfo * a
     }
 
 
-    // Sets on the trapframe th pc to the right vl
-    // Sets sp to the value.. and resets registers
-    init_trapframe(proc);
 
     // Setup simple parameters?
+    paddr_t final_user_sp_top;
+    int argc= set_init_parameters_for_proc(proc, DEF_ARGV, &final_user_sp_top);
+    if (argc < 0){
+        PANIC("ERROR When allocating params for proc!");
+    }
+    paddr_t params_total_len = paddr_sp_end - final_user_sp_top; // How many bytes does this ocuppy
+    // Sets on the trapframe th pc to the right vl
+
+    vaddr_t params_vaddr = VADDR_USER_STACK_HARD_END - params_total_len;
+    printf("Proc has sp top 0x%x after params at: 0x%x, len: %u so vaddr 0x%x\n", paddr_sp_end, final_user_sp_top, params_total_len, params_vaddr);
+    // Sets sp to the virtual stack end - len of params.. params start vaddr, so that it does not use it for the proc
+    init_trapframe(proc, params_vaddr); 
+
     struct TrapFrame * proc_tf = &proc->tf;
-    
-    SET_SYSCALL_RET0(proc_tf, 12);
-    SET_SYSCALL_RET1(proc_tf, 21);
+
+
+    SET_SYSCALL_RET0(proc_tf, argc);
+    SET_SYSCALL_RET1(proc_tf, params_vaddr);
 
 }
 
