@@ -1,12 +1,12 @@
 #include "arch/stdio.h"
 #include "arch/arch_init.h"
+#include "arch/mem.h"
 #include "inc/types.h"
 #include "inc/common.h"
 #include "../../cpu.h"
 #include "../../idt.h"
 #include "../../gdt.h"
 #include "../../interrupt.h"
-#include "../../paging.h"
 #include "drivers/io/serial_handler.h"
 
 struct CpuInfo cpus[NCPU];

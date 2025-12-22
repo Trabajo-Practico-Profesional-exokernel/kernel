@@ -11,18 +11,6 @@
 
 // #include "ipc.h"
 
-#ifdef IS_RISC
-#else
-    #include "paging.h" 
-#endif
-
-#ifdef IS_RISC
-#else
-    #define KERNEL_PERMISSIONS_RW (I86_PTE_PRESENT | I86_PTE_WRITABLE)
-    #define USER_PERMISSIONS_ALL (I86_PTE_PRESENT | I86_PTE_WRITABLE | I86_PTE_USER)
-#endif
-
-
 void free_process(struct Proc * proc){
     // TODO !!!!
     // SHOULD FREE PAGES ALLOCATED! BUT IT DOES NOT DO IT YET SINCE ALLOC PAGES IS NOT A LINKED LIST EITHER!

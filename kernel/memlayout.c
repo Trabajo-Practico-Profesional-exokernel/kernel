@@ -15,7 +15,7 @@ extern char __trampoline_start[], __trampoline_end[];
     #define KERNEL_PERMISSIONS_ALL (PAGE_R | PAGE_W | PAGE_X)
     #define USER_PERMISSIONS_ALL (PAGE_U | PAGE_R | PAGE_W | PAGE_X)
 #else
-    #define KERNEL_PERMISSIONS_RW (I86_PTE_WRITABLE) // I86_PTE_PRESENT  no HACE FALTA! Ya se setea en el map_page.
+    #define KERNEL_PERMISSIONS_ALL (I86_PTE_WRITABLE) // I86_PTE_PRESENT  no HACE FALTA! Ya se setea en el map_page.
     #define USER_PERMISSIONS_ALL (I86_PTE_WRITABLE | I86_PTE_USER)
 #endif
 

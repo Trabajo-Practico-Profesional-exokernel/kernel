@@ -106,11 +106,13 @@ typedef TrapFrame FullTrapFrame;
 // TODO: CAMBIAR PARA HACERLO CON x86
 // Macros for syscalls For syscalls param and return handling
 #define SYSCALL_ARG0(tf) tf->regs.eax
-#define SYSCALL_ARG1(tf) tf->regs.eax
-#define SYSCALL_ARG2(tf) tf->regs.eax
+#define SYSCALL_ARG1(tf) tf->regs.ebx
+#define SYSCALL_ARG2(tf) tf->regs.ecx
 #define SYSCALL_SYSNO(tf) tf->regs.eax
 
 #define SET_SYSCALL_RET0(tf, vl) tf->regs.eax=vl;
+#define SET_SYSCALL_RET1(tf, vl) tf->regs.ebx=vl;
+
 
 // Macro to define how to change stack base/top
 #define SWITCH_TO_STACK(stack_base, stack_top)               \

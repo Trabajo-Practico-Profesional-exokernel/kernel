@@ -34,7 +34,7 @@ SECTIONS {
 
 
     /*Add mocked procceses */
-    . += 4096 /*For safety */
+    . += 4096; /*For safety */
     /* ========================= */
     /* User Process A            */
     /* ========================= */
@@ -52,7 +52,7 @@ SECTIONS {
 
 
     . = ALIGN(4096); /* align to page size */
-    . += 4096 /*For safety */
+    . += 4096; /*For safety */
 
     /* ========================= */
     /* User Process B            */
@@ -70,13 +70,25 @@ SECTIONS {
     __user_proc_b_end = .;
 
     . = ALIGN(4096); /* align to page size */
-    . += 4096 /*For safety */
+    . += 4096; /*For safety */
     . = ALIGN(4096); /* align to page size */
 
     . = ALIGN(4096); /* align to page size */
     __free_ram = .; /* add heap ram, hardcoded... its the same as base end but more descriptive? */
     . += 64 * 1024 * 1024; /* 64MB */
     __free_ram_end = .;    
+
+    . = ALIGN(4096); /* align to page size */
+    __user_ram_start = .; /* For user pages and binaries allocation*/
+    . += 64 * 1024 * 1024; /* 64 MB */
+    __user_ram_end = .;
+
+    . = ALIGN(4096); /* align to page size */
+
+    __trampoline_start = .;
+    . += 2 * 4096; /* 2* 4096 == 8KB for trampoline */
+    . = ALIGN(4096); /* align to page size */
+    __trampoline_end = .;
     
 
 }

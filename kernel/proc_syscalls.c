@@ -137,7 +137,7 @@ void syscall_exec(FullTrapFrame *tf, uintptr_t pc) {
     // switch_page_table((uint32_t *)(get_curr()->pde_paddr));
     #else
 
-    load_create_process_user(proc, &_binary_apps[prog_ind]);
+    load_create_process_user(proc, &_binary_apps[prog_ind], (char **) &argv_pointers[0]);
     // Now do switch? or not? naaa If you want you could wait for it! after ret.
     SET_SYSCALL_RET0(tf, proc->pid)
     #endif

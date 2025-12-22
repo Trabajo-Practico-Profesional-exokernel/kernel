@@ -2,7 +2,6 @@
 #include "arch_inc/mem_constants.h"
 #include "arch/mem.h"
 #include "std/string.h"
-#include "arch_inc/virtio.h"
 
 extern char __free_ram[], __free_ram_end[], __kernel_base[], __kernel_base_end[], __trampoline_end[];
 
@@ -40,12 +39,19 @@ void switch_page_table(uint32_t * pde_table) {
     __asm__ volatile("mov %0, %%cr3" :: "r"(pde_table) : "memory");
 }
 
+void enable_paging(void) {
+    uint32_t cr0;
+    asm volatile("mov %%cr0, %0" : "=r"(cr0));
+    cr0 |= 0x80000000; // bit PG (bit 31)
+    asm volatile("mov %0, %%cr0" :: "r"(cr0));
+    printf("PG=1\n");
+}
 
 
 
 
 pd_entry* kernel_pde; // Physical address for Page Directory table
-pd_entry* very_initial_page_table; // Physical address for Page Directory table for the initial paging when enabling
+pd_entry* very_initial_pde; // Physical address for Page Directory table for the initial paging when enabling
 
 
 // paddr_t _cur_pdbr = 0;
@@ -63,14 +69,14 @@ pd_entry* very_initial_page_table; // Physical address for Page Directory table 
 //     return true;
 // }
 
-#define KERNEL_PERMISSIONS_RW (I86_PTE_WRITABLE)
+#define KERNEL_PERMISSIONS_ALL (I86_PTE_WRITABLE)
 #define USER_PERMISSIONS_ALL (I86_PTE_WRITABLE | I86_PTE_USER)
 
 void mem_init(void){
     // kernel_page_table = alloc_pages(1); // Para 0xC0000000 (Kernel)
     very_initial_pde = (pd_entry*) alloc_pages(1); // Para 0x00000000 (Identity Map)
 
-    if (very_initial_page_table == 0){
+    if (very_initial_pde == 0){
         PANIC("virtual mem init: out of memory for PTs");
     }
         
@@ -107,16 +113,16 @@ void mem_init(void){
 
 void switch_to_kernel_tables(void){
     // printf("SHOULD SWITCH TO KERNEL PAGES? IS THAT IT? %x\n", (uint32_t *) kernel_page_table);
-    switch_page_table((uint32_t *) kernel_page_table);
+    switch_page_table((uint32_t *) very_initial_pde);
 }
 
 
 void map_page(uint32_t *pd_table, vaddr_t vaddr, paddr_t paddr, uint32_t permissions) {
-    if (!is_aligned(vaddr, PAGE_SIZE))
-        PANIC("unaligned vaddr %x", vaddr);
+    // if (!is_aligned(vaddr, PAGE_SIZE))
+    //     PANIC("unaligned vaddr %x", vaddr);
 
-    if (!is_aligned(paddr, PAGE_SIZE))
-        PANIC("unaligned paddr %x", paddr);
+    // if (!is_aligned(paddr, PAGE_SIZE))
+    //     PANIC("unaligned paddr %x", paddr);
 
 
     uint32_t pd_index = GET_INDEX_IN_PAGE_DIRECTORY(vaddr);
