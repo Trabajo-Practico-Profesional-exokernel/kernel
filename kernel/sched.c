@@ -103,8 +103,8 @@ void switch_proc(struct Proc* next) {
     printProc(next);
     printf("\n\n");
     switch_page_table(curr->pde_paddr);
-    #endif
     printf("[DEBUG] Target EIP: %x | Target ESP: %x\n", curr->tf.eip, curr->tf.esp);
+    #endif
     switch_context(curr);
 }
 
@@ -116,9 +116,7 @@ void clock_yield(FullTrapFrame *tf, uintptr_t proc_pc) {  // Quitamos uintptr_t 
         return;
     }
 
-    // Usamos el EIP guardado en el trapframe como el PC actual
-    curr->pc = tf->eip; 
-    
+    curr->pc = proc_pc; 
     update_trapframe(curr, tf);
     sched_yield();
 }
