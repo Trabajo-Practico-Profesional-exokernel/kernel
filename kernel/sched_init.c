@@ -6,21 +6,14 @@
 #include "arch/mem_layout.h"
 
 #include "arch_inc/mem_constants.h" //defines perms like PAGE_R and so on.
-
-#ifdef IS_RISC
 #include "meta/apps_info.h" // Include auto generated app_info and indexs for apps  
-
-// meta/gen/apps_meta.c defines this...
-extern struct AppBinaryInfo _binary_apps[];
 
 char *DEF_ARGV[] = { "sh_prog","parameter1", 0 };
 
-// void main_app_a();
-
-
-
 // This is defined on link.ld of the kernel... to hardcode a simple user space page
-extern char __user_space_start[], __user_space_end[];
+#ifdef IS_RISC
+// meta/gen/apps_meta.c defines this...
+extern struct AppBinaryInfo _binary_apps[];
 
 void init_sched(void) {
 
@@ -49,58 +42,40 @@ void init_sched(void) {
 
 
 #else // IS X86
-#include "arch/switch.h"
-
-#define SLEEP_TIME 150000000
 
 
-void proc_a_entry(void) {
-    printf("starting process A\n");
-    //syscall(SYS_KALLOC, 1, 0, 0); //For when its on user space.
-    //printf("called kalloc on A\n");
-    while (1) {
-        // printf("A after sleep\n");
-        sleep(SLEEP_TIME);
-        //printProc(proc_a);
-    }
-}
 
-void proc_b_entry(void) {
-    printf("starting process B\n");
-    while (1) {
-        // printf("B after sleep proc_b: \n");
-        sleep(SLEEP_TIME);
-    }
-}
-
-// #include "arch/mem.h" //defines perms like PAGE_R and so on.
-//#include "arch_inc/trapframe.h"
-//extern char __free_ram[], __free_ram_end[];
+extern char __user_proc_a_start[], __user_proc_a_end[];
+extern char __user_proc_b_start[], __user_proc_b_end[];
 
 void init_sched(void) {
-    // paddr_t new_stk_base = alloc_pages(2);
-    // paddr_t new_stk_top = new_stk_base+2*PAGE_SIZE;
 
-    // printf("SOME LOG? %x to %x\n" ,new_stk_base, new_stk_top);
-    // SWITCH_TO_STACK(new_stk_base, new_stk_top);
+    struct AppBinaryInfo proc_a_app = {
+        .start = __user_proc_a_start,
+        .size  = (size_t)(__user_proc_a_end - __user_proc_a_start),
+    };
+    printf("[INIT SCHED] MOCKED PROC A APP physical addr start= 0x%x, end 0x%x \n", __user_proc_a_start, __user_proc_a_end);
+
+    struct AppBinaryInfo proc_b_app = {
+        .start = __user_proc_b_start,
+        .size  = (size_t)(__user_proc_b_end - __user_proc_b_start),
+    };
+    printf("[INIT SCHED] MOCKED PROC B APP physical addr start= 0x%x, end 0x%x \n", __user_proc_b_start, __user_proc_b_end);
 
     struct Proc * proc_a = get_first_free_proc();
     struct Proc * proc_b = get_first_free_proc();
-    set_proc_a(proc_a);
-    set_proc_b(proc_b);
+
+    load_create_process_user(proc_a, &proc_a_app, DEF_ARGV);
+    load_create_process_user(proc_b, &proc_b_app, DEF_ARGV);
     
-    create_process(proc_a, (uint32_t) proc_a_entry);
-    create_process(proc_b,(uint32_t) proc_b_entry);
-    printf("[INIT SCHED] AT CREATE PROCESS A expected pc= %u, \n", (uint32_t) proc_a_entry);
-    printf("[INIT SCHED] ");
+    printf("[INIT SCHED] PROC A created: ");
     printProc(proc_a);
     
-    printf("[INIT SCHED] AT CREATE PROCESS B expected pc= %u, \n", (uint32_t) proc_b_entry);
-    printf("[INIT SCHED] ");
+    printf("[INIT SCHED] PROC B created: ");
     printProc(proc_b);
 
     printf("START!\n");
-    // DEBERIA LLAMAR SOLO A SWITCH PROC.. no setear a mano curr 
+    
     switch_proc(proc_a);
 
     //set_curr(proc_a);
@@ -109,7 +84,5 @@ void init_sched(void) {
 
     PANIC("unreachable here!");
 }
-
-
 
 #endif

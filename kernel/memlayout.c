@@ -229,7 +229,8 @@ void load_create_process_user(struct Proc * proc, const struct AppBinaryInfo * a
 
 // For now no extra mapping needed.
 void load_create_process_kernel(struct Proc * proc, uint32_t proc_entry){
-    create_process(proc, proc_entry);
+    PANIC("Not implemented kernel process yet");
+    // create_process(proc, proc_entry);
     // proc->pde_table = kernel_page_table; // Should just set pages == to kernel ones
 } 
 

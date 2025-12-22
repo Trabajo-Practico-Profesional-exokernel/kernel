@@ -32,7 +32,51 @@ SECTIONS {
     . = ALIGN(4096); /* align to page size */
     __kernel_base_end = .; /* To know where in memory does the kernel base end, without heap memory*/
 
+
+    /*Add mocked procceses */
+    . += 4096 /*For safety */
+    /* ========================= */
+    /* User Process A            */
+    /* ========================= */
+
+    . = ALIGN(4096);
+    __user_proc_a_start = .;
+
+    .text.proc_a : ALIGN(4096)
+    {
+        KEEP(*(.text.proc_a.entry))  /* entry MUST be first */
+        *(.text.proc_a)              /* rest of proc A */
+    }
+
+    __user_proc_a_end = .;
+
+
+    . = ALIGN(4096); /* align to page size */
+    . += 4096 /*For safety */
+
+    /* ========================= */
+    /* User Process B            */
+    /* ========================= */
+
+    . = ALIGN(4096);
+    __user_proc_b_start = .;
+
+    .text.proc_b : ALIGN(4096)
+    {
+        KEEP(*(.text.proc_b.entry))
+        *(.text.proc_b)
+    }
+
+    __user_proc_b_end = .;
+
+    . = ALIGN(4096); /* align to page size */
+    . += 4096 /*For safety */
+    . = ALIGN(4096); /* align to page size */
+
+    . = ALIGN(4096); /* align to page size */
     __free_ram = .; /* add heap ram, hardcoded... its the same as base end but more descriptive? */
     . += 64 * 1024 * 1024; /* 64MB */
     __free_ram_end = .;    
+    
+
 }

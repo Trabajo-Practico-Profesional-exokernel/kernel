@@ -4,7 +4,6 @@
 #include "inc/types.h"
 #include "arch/proc.h"
 
-void create_process(struct Proc * proc, uint32_t pc);
 
 void free_process(struct Proc * proc);
 

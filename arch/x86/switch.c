@@ -134,7 +134,7 @@ void sleep(int delay) {
  * comience en la instrucción 'init_ins' (función de entrada del proceso).
  *  uint32_t entry_point is in proc->pc
  */
-void init_trapframe(struct Proc *proc) {
+void init_trapframe(struct Proc *proc, vaddr_t user_sp) {
     TrapFrame *tf = &proc->tf;
     printf("[INIT TRAPFRAME] Dir memoria trapframe: %p\n", tf);
 
@@ -151,25 +151,25 @@ void init_trapframe(struct Proc *proc) {
     // Configura punto de inicio (eip)
     tf->eip = proc->pc;
 
-    tf->esp = proc->user_sp_base; 
-    tf->regs.ebp = proc->user_sp_base; // == esp inicialmente? dsps el esp crece hacia abajo
-    // For now? not good? lol at least it should not be 0 or so.. should be virtual addr
+    tf->esp = user_sp; 
+    tf->regs.ebp = user_sp; // == esp inicialmente? dsps el esp crece hacia abajo
 
-    if (proc->pc < 0x01000000) { 
-        // Es código del Kernel (proc_a_entry, proc_b_entry están en ~1MB)
-        // Debe correr en Ring 0
-        tf->ds = GD_KD; 
-        tf->es = GD_KD;
-        tf->ss = GD_KD;
-        tf->cs = GD_KT; 
-    } else {
-        // Es un programa de usuario (cargado en 16MB+)
-        // Debe correr en Ring 3
-        tf->ds = GD_UD | 3; 
-        tf->es = GD_UD | 3;
-        tf->ss = GD_UD | 3;
-        tf->cs = GD_UT | 3; 
-    }
+    // Es un programa de usuario
+    // Debe correr en Ring 3
+    tf->ds = GD_UD | 3; 
+    tf->es = GD_UD | 3;
+    tf->ss = GD_UD | 3;
+    tf->cs = GD_UT | 3; 
+    
+    // Por ahora no hay procs de kernel! y sera en otro metodo seguro!
+    // if (proc->pc < 0x01000000) { 
+    //     // Es código del Kernel (proc_a_entry, proc_b_entry están en ~1MB)
+    //     // Debe correr en Ring 0
+    //     tf->ds = GD_KD; 
+    //     tf->es = GD_KD;
+    //     tf->ss = GD_KD;
+    //     tf->cs = GD_KT; 
+    // }
     
     printf("[INIT TF] pid=%d eip=%x -> Ring %s\n", 
            proc->pid, tf->eip, (tf->cs & 3) == 0 ? "0 (Kernel)" : "3 (User)");
