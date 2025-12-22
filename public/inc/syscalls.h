@@ -33,6 +33,7 @@
 #define SYS_DISK_WRITE 18
 
 #define SYS_GETPID 19
+#define SYS_UPTIME 20
 
 #define DEF_ERR_CODE -1
 

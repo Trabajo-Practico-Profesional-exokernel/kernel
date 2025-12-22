@@ -1,5 +1,4 @@
 #include "inc/syscalls.h"
-
 #include "syscalls.h" // Def of syscalls implemented here.
 #include "lib.h" // For printf and syscall func
 
@@ -94,4 +93,8 @@ int sys_stat(char* filepath){
 
 int getpid(void) {
     return syscall(SYS_GETPID, 0, 0, 0);
+}
+
+int uptime(void) {
+    return syscall(SYS_UPTIME, 0, 0, 0);
 }

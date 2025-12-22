@@ -56,6 +56,6 @@ __attribute__((noreturn)) void exit(int ret_code);
 
 int getpid(void);
 
-
+int uptime(void);
 
 #endif
