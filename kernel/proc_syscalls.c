@@ -20,6 +20,12 @@ struct AppBinaryInfo _binary_apps[10];
 
 
 struct ProcExitStatus exit_statuses[PROCS_MAX]; // Have for every process a current return status. 
+
+
+
+
+
+
 void reset_exit_status(struct ProcExitStatus* status){
     status->ret_code = 0;
     status->waiters_head = NULL;
@@ -69,18 +75,41 @@ void notify_exited(struct ProcExitStatus* exited_status, int ret_code){
 void syscall_exec(FullTrapFrame *tf, uintptr_t pc) {
 
     int prog_ind = SYSCALL_ARG0(tf);
-
     if (prog_ind < 0 || prog_ind>= APP_COUNT){
         printf("Invalid exec call ind %d \n", prog_ind);
         SET_SYSCALL_RET0(tf, DEF_ERR_CODE)        
         return;
     }
+    vaddr_t vaddr_argv_pointer = SYSCALL_ARG1(tf);
+    struct Proc* parent_proc = get_curr();
+    switch_to_kernel_tables();
+    
+    paddr_t argv_pointers[MAXARG]; 
+    
+    if (vaddr_argv_pointer != 0){
+        int argc = copy_argv_pointers_from_user(parent_proc, &argv_pointers[0], vaddr_argv_pointer);
+
+        if (argc< 0){
+            SET_SYSCALL_RET0(tf, argc)
+            save_curr_proc_state(tf, pc + 4);    
+            sched_yield();
+            return;
+        }
+    } else {
+        printf("NO proc params exec\n");
+        argv_pointers[0] = 0;
+    }
+
     printf("Should run program at ind %d \n", prog_ind);
+
+    //int set_init_parameters_for_proc(struct Proc * proc, char ** argv, paddr_t* sp_out);
     
     struct Proc* proc= get_first_free_proc();
     // It cannot but NULL it throws panic for now but check it anyway for the future!
     if (proc == NULL){
         SET_SYSCALL_RET0(tf, DEF_ERR_CODE)
+        save_curr_proc_state(tf, pc + 4);    
+        sched_yield();
         return;
     }
 
@@ -88,7 +117,7 @@ void syscall_exec(FullTrapFrame *tf, uintptr_t pc) {
 
     #ifdef IS_RISC
     switch_to_kernel_tables();
-    load_create_process_user(proc, &_binary_apps[prog_ind]);
+    load_create_process_user(proc, &_binary_apps[prog_ind], (char **) &argv_pointers[0]);
 
     reset_exit_status(&exit_statuses[PROCX(proc->pid)]);
 
@@ -98,7 +127,6 @@ void syscall_exec(FullTrapFrame *tf, uintptr_t pc) {
 
     // When a new process is to be executed, you reduce response time by running it first.
     // Save parent proc state
-    struct Proc * parent_proc = get_curr();
     save_curr_proc_state(tf, pc + 4);
     parent_proc->status = PROC_RUNNABLE;
     

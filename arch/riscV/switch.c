@@ -83,7 +83,7 @@ void sleep(int delay) {
         __asm__ __volatile__("nop"); // do nothing
 }
 
-void init_trapframe(struct Proc * proc){
+void init_trapframe(struct Proc * proc, vaddr_t user_sp){
     proc->tf.s11 = 0;
     proc->tf.s10 = 0;
     proc->tf.s9 = 0;
@@ -97,7 +97,7 @@ void init_trapframe(struct Proc * proc){
     proc->tf.s1 = 0;
     proc->tf.s0 = 0;
 
-    proc->tf.sp = proc->kernel_sp; 
+    proc->tf.sp = user_sp;
 
     proc->tf.ra = proc->pc; // For now ra setted to proc initial pc?    
 
