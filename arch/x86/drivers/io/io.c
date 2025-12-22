@@ -26,7 +26,7 @@ void init_arch(void){
     
     mem_init();
     //pde_init();
-    vmmngr_initialize();
+    // vmmngr_initialize();
     idt_init();
     cpu_init();
 }
