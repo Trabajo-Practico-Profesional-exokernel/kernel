@@ -45,7 +45,7 @@ struct CommandEntry commands[] = {
     { "exec",  handle_exec},
     { "start",  start_program},
     { "msg", send},
-    { "wait", handle_wait},
+    { "wait", handle_wait}
 };
 
 #define COMMAND_COUNT 3

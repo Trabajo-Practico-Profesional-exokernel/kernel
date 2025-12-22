@@ -219,9 +219,16 @@ void syscall_yield(FullTrapFrame *tf, uintptr_t pc){
 }
 
 
+void syscall_getpid(FullTrapFrame *tf, uintptr_t pc){
+    struct Proc * curr_proc = get_curr();
+    int pid = curr_proc->pid;
+    SET_SYSCALL_RET0(tf, pid);
+}
+
 void init_syscalls_proc(void) {
     register_syscall(SYS_EXEC, syscall_exec);
     register_syscall(SYS_EXIT, syscall_exit);
     register_syscall(SYS_WAIT, syscall_wait);
     register_syscall(SYS_YIELD, syscall_yield);
+    register_syscall(SYS_GETPID, syscall_getpid);
 }

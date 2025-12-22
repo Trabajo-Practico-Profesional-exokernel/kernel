@@ -32,6 +32,8 @@
 #define SYS_DISK_READ 17
 #define SYS_DISK_WRITE 18
 
+#define SYS_GETPID 19
+
 #define DEF_ERR_CODE -1
 
 

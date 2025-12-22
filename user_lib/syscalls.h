@@ -54,7 +54,7 @@ __attribute__((noreturn)) void exit(int ret_code);
 // int type = mkfile 
 // char[] nombre 
 
-
+int getpid(void);
 
 
 

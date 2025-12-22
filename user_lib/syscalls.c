@@ -91,3 +91,7 @@ int sys_rm(char* filepath){
 int sys_stat(char* filepath){
     return syscall(SYS_FS_STAT, (int) filepath, 0, 0);
 }
+
+int getpid(void) {
+    return syscall(SYS_GETPID, 0, 0, 0);
+}
