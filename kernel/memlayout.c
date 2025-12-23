@@ -126,7 +126,7 @@ int set_init_parameters_for_proc(struct Proc * proc, char ** argv, paddr_t* sp_o
 
 
 
-
+extern char __free_ram[], __free_ram_end[];
 
 void load_create_process_user(struct Proc * proc, const struct AppBinaryInfo * app_info, char ** argv) {    
     proc->pc = VADDR_USER_BASE; // Entry point is setted to the vaddr, here it could be the trampoline but for now is the code of prog
@@ -181,7 +181,11 @@ void load_create_process_user(struct Proc * proc, const struct AppBinaryInfo * a
             USER_PERMISSIONS_ALL
     );
 
-
+    direct_map_range(pde_table, 
+        (paddr_t)__free_ram,
+        (paddr_t)__free_ram_end,
+        KERNEL_PERMISSIONS_ALL
+    );
 
     // Map the code of the user program/binary... loading it from memory
     for (uint32_t off = 0; off < app_info->size; off += PAGE_SIZE) {

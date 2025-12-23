@@ -9,6 +9,7 @@
 #include "arch_inc/trap_constants.h"
 #include "arch/logging.h"
 #include "std/string.h"
+#include "arch/communication.h"
 
 #include "meta/apps_info.h" // Include auto generated app_info and indexs for apps  
 #ifdef IS_RISC
@@ -223,6 +224,57 @@ void syscall_getpid(FullTrapFrame *tf, uintptr_t pc){
     struct Proc * curr_proc = get_curr();
     int pid = curr_proc->pid;
     SET_SYSCALL_RET0(tf, pid);
+}
+
+
+void syscall_sendmsg(FullTrapFrame *tf, uintptr_t pc){
+    printf("syscall send_msg...\n");
+
+    //switch_to_kernel_tables();
+    struct Proc * sender_proc = get_curr();
+
+    int receiver_proc_pid = SYSCALL_ARG0(tf);
+    uint32_t msg_addr = SYSCALL_ARG1(tf);
+    int len_msg = SYSCALL_ARG2(tf);
+
+    struct Message msg;
+    msg.sender_pid = sender_proc->pid;
+    msg.content_size = len_msg;
+    copyin_msg(sender_proc, msg.content, msg_addr, len_msg);
+
+    printf("AFTER COPYIN MSG...\n");
+    struct Proc* receiver_proc = get_proc(receiver_proc_pid);
+    
+    int success = insert_msg(receiver_proc, msg);
+    if (success) {
+        SET_SYSCALL_RET0(tf, 1);
+    } else {
+        SET_SYSCALL_RET0(tf, 0);
+    }
+}
+
+void syscall_recvmsg(FullTrapFrame *tf, uintptr_t pc){
+    printf("syscall recv_msg...\n");
+
+    //switch_to_kernel_tables();
+    struct Proc * receiver_proc = get_curr();
+
+    uint32_t msg_addr = SYSCALL_ARG0(tf);
+    int len_msg = SYSCALL_ARG1(tf);
+
+    struct Message msg = extract_msg(receiver_proc);
+    if (msg.content_size == 0) {
+        SET_SYSCALL_RET0(tf, 0);
+        return;
+    }
+
+    copyout_msg(receiver_proc, msg_addr, msg.content, msg.content_size);
+    SET_SYSCALL_RET0(tf, 1);
+}
+
+void init_syscalls_ipc(void){
+    register_syscall(SYS_SEND_MSG, syscall_sendmsg);
+    register_syscall(SYS_RECV_MSG, syscall_recvmsg);
 }
 
 void init_syscalls_proc(void) {

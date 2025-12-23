@@ -4,6 +4,9 @@
 #include "arch_inc/trapframe.h"
 #include "arch_inc/mem_constants.h"
 #include "communication.h"
+
+// Forward declaration of MessageQueue if not already defined
+
 #include "mem.h"
 
 // Include constants defining positions in memory, for the utility of whom includes proc.h
@@ -28,6 +31,7 @@ typedef int32_t procid_t;
 // Values of status in struct Proc
 enum { PROC_FREE = 0, PROC_DYING, PROC_RUNNABLE, PROC_RUNNING, PROC_NOT_RUNNABLE };
 
+
 struct Proc {
     struct TrapFrame tf;
     uintptr_t pc; // process current ins
@@ -42,7 +46,7 @@ struct Proc {
 
     int cpunum; // The CPU that the env is running on
 
-    uintptr_t msgs_queue; // struct MessageNode*
+    struct MessageQueue msgs_queue; // struct MessageNode*
 };
 
 // struct ProcMessageQueue*

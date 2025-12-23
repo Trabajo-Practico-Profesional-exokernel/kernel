@@ -78,7 +78,7 @@ void create_process(struct Proc * proc, uint32_t pc) { // pc == entry point == s
     printf("[DBG] `proc->pde_paddr` CREADO: paddr=%x\n",
        (uint32_t)proc->pde_paddr);
     #endif
-
+    proc->msgs_queue.len_queue = 0;
     proc->status = PROC_RUNNABLE;
     printf("##################################### PROCESO LISTO\n"); 
 }

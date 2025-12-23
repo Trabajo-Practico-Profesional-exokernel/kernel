@@ -154,7 +154,7 @@
 //     }
 // }
 
-void init_syscalls_ipc(void){
+/*void init_syscalls_ipc(void){
     // register_syscall(SYS_SEND_BYTE, syscall_send_byte);
     // register_syscall(SYS_RECV_BYTE, syscall_recv_byte);
-}
+}*/

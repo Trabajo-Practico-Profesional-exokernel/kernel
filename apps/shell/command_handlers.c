@@ -48,7 +48,7 @@ struct CommandEntry commands[] = {
     { "wait", handle_wait}
 };
 
-#define COMMAND_COUNT 3
+#define COMMAND_COUNT 4
 
 int send(char* content){
     
@@ -59,15 +59,12 @@ int send(char* content){
         return ERR_CODE;
     }
 
-    // int err = 
-    sys_send_msg(pid_proc, content, strlen(content));
-
-    // for (int i=0; i<strlen(msg_out); i++){
-    //     sendbyte(pid_proc, (uint8_t)msg_out[i]);
-    // }
-    // sendbyte((uint8_t)pid_proc, '\0');
-    //send_msg(pid_proc, &msg_out, strlen(msg_out));
-
+    int success = sys_send_msg(pid_proc, content, strlen(content));
+    if (success) {
+        printf("MSG [%s] sended to process with PID [%u] \n", content, pid_proc);
+    } else {
+        printf("Failed sending MSG [%s] to process with PID [%u] \n", content, pid_proc);
+    }
     return OK_CODE;
 }
 

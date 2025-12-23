@@ -2,9 +2,12 @@
 #define PUBLIC_ARCH_COMMUNICATION_H
 
 #include "inc/types.h"
+#include "mem.h"
 
 #define MSG_SIZE_MAX 64 
 #define QUEUE_CAPACITY 64
+
+struct Proc;
 
 struct Message {
     uint8_t sender_pid;
@@ -12,28 +15,15 @@ struct Message {
     uint8_t content[MSG_SIZE_MAX];
 };
 
-struct MessageNode {
-    struct Message message;
-    struct Message* next;
+struct MessageQueue {
+    struct Message msg_queue[QUEUE_CAPACITY];
+    uint8_t len_queue;
 };
 
-// struct ProcMessageQueue
-// {
-//     struct MessageNode* messa;
+int copyin_msg(struct Proc *p, char *dst, vaddr_t src_va, int max_len);
+int copyout_msg(struct Proc *p, vaddr_t dst_va, void *src, int len);
 
-// };
-
-// [] / 4096
-
-// [ msg 1 = 5] / 4091
-// [msg 1 =5, msg2= 10] 4081
-// [ free = 5 , msg2= 10] /4081
-// [ free = 5 , msg2= 10, msg3 = 10] /4071
-// msg3 = 5
-// uintptr_t msgs_queue= alloc_page(1) 
-// 
-
-
-
+int insert_msg(struct Proc *receiver_proc, struct Message msg);
+struct Message extract_msg(struct Proc *receiver_proc);
 
 #endif

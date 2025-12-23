@@ -8,10 +8,12 @@ int exec(int prog_ind, char ** args){
 }
 
 
-void sys_send_msg(int proc_pid, char *msg, size_t len_msg) {
-    printf("to %d msg '%s' len? %u\n",proc_pid, *msg, len_msg);
+int sys_send_msg(int proc_pid, char *msg, size_t len_msg) {
+    return syscall(SYS_SEND_MSG, proc_pid, (int)(msg), len_msg);
+}
 
-    // syscall(SYS_SEND_MSG, proc_pid, (int)(msg), len_msg);
+int sys_recv_msg(char *msg, size_t len_msg) {
+    return syscall(SYS_RECV_MSG, (int)(msg), len_msg, 0);
 }
 
 void sendchar(int proc_pid, char ch) {
