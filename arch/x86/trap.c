@@ -5,7 +5,7 @@
 #include "inc/common.h"
 
 extern void isr32(void);
-void clock_yield(FullTrapFrame *tf);
+void clock_yield(FullTrapFrame *tf, uintptr_t proc_pc);
 
 /*
 ==================================================
@@ -52,7 +52,7 @@ void handle_trap(FullTrapFrame *tf) {
         case 32: // Timer IRQ
             // End of interrupt (solo master, IRQ0)
             outb(0x20, 0x20);
-            clock_yield(tf);
+            clock_yield(tf, tf->eip);
             break;
         default:
             printf("[TRAP] Unhandled interrupt %d\n", tf->int_no);
