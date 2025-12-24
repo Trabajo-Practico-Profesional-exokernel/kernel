@@ -70,7 +70,7 @@ void mem_init(void){
     direct_map_range(kernel_pde, // Map first 4MB for booting stuff
             (paddr_t) 0x0,
             (paddr_t) (1024 * PAGE_SIZE), 
-            I86_PTE_USER
+            0
     );
 
     // offset_map_range(kernel_pde, // Map first 4MB of kernel to 0xC000000 == VADDR_KERNEL_BASE
@@ -84,7 +84,7 @@ void mem_init(void){
     direct_map_range(kernel_pde, 
             (paddr_t) __kernel_base,
             (paddr_t) __trampoline_end,
-            USER_PERMISSIONS_ALL
+            KERNEL_PERMISSIONS_ALL
     );
 
     switch_page_table(kernel_pde);
@@ -100,7 +100,7 @@ uint32_t * init_user_pde_table(void){
     direct_map_range(pd_table, // Map first 4MB for booting stuff
             (paddr_t) 0x0,
             (paddr_t) (1024 * PAGE_SIZE), 
-            I86_PTE_USER
+            KERNEL_PERMISSIONS_ALL
     );
 
     return pd_table;
