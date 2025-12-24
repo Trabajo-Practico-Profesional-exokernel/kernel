@@ -14,12 +14,30 @@ CC=clang
 mkdir -p $BUILD_FOLDER
 
 
+
 if [[ "$ARCH" == "x86" ]]; then
     ARCH_FOLDER=$ROOT/arch/x86
-    CFLAGS="-std=c11 -O2 -g3 -Wall -Wextra -fno-stack-protector -ffreestanding -nostdlib"
+    CFLAGS="
+        -std=c11
+        -O2 -g3
+        -Wall -Wextra
+        --target=i386-unknown-elf
+        -m32
+        -ffreestanding
+        -nostdlib
+        -fno-stack-protector
+        -fno-pic
+        -fno-pie
+        -no-pie
+        -mno-red-zone
+        -fno-asynchronous-unwind-tables
+    "
+    OBJFLAGS="-Oelf32-i386"
 else
     ARCH_FOLDER=$ROOT/arch/riscV
     CFLAGS="-std=c11 -O2 -g3 -Wall -Wextra --target=riscv32-unknown-elf -fno-stack-protector -ffreestanding -nostdlib"
+    OBJFLAGS="-Oelf32-littleriscv"
+
 fi
 
 INC_DIR="-I$USER_FOLDER/lib -I$ROOT/public -I$ROOT/std"  # Include .h from user lib, common public defs and general std
@@ -47,7 +65,7 @@ for app_file in $@; do
 
     # # Convert ELF to binary
     $OBJCOPY --set-section-flags .bss=alloc,contents -O binary $app_build_folder/app.elf $app_build_folder/app.bin
-    $OBJCOPY -Ibinary -Oelf32-littleriscv $app_build_folder/app.bin $app_build_folder/app.bin.o
+    $OBJCOPY -Ibinary $OBJFLAGS $app_build_folder/app.bin $app_build_folder/app.bin.o
 
     echo "--- '$app_name' build completed!"
 

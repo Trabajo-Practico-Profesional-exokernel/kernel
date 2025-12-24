@@ -1,12 +1,40 @@
-// __attribute__((section(".text.proc_a")))
-// int syscall(int num, int a, int b, int c)
-// {
-//     int ret;
-//     asm volatile (
-//         "int $0x80"
-//         : "=a"(ret)
-//         : "a"(num), "b"(a), "c"(b), "d"(c)
-//         : "memory"
-//     );
-//     return ret;
-// }
+
+
+#include "lib.h"
+
+extern void main(void);
+
+__attribute__((noreturn)) void do_exit(void) {
+    printf("-------> PROCESS EXITED NORMALLY!\n");
+    exit(0); // Syscall exit!
+}
+
+int syscall(int sysno, int arg0, int arg1, int arg2) {
+    int ret;
+    __asm__ volatile (
+        "int $0x80"
+        : "=a"(ret)
+        : "a"(sysno), "b"(arg0), "c"(arg1), "d"(arg2)
+        : "memory"
+    );
+    return ret;
+}
+
+
+void sleep(int delay) {
+    for (int i = 0; i < delay; i++)
+        __asm__ __volatile__("nop"); // do nothing
+}
+
+__attribute__((section(".text.start")))
+void _start(int argc, char** argv){
+    printf("Prog got argc: %d and argv: %x\n", argc, argv);
+    int curr= 0;
+    for(curr = 0; curr < argc; curr++) {
+        printf("Prog got arg pointer argv[%d]: %x ", curr, argv[curr]);    
+        printf("=> '%s'\n", argv[curr]);    
+    }
+    // main();
+    
+    do_exit();
+}
