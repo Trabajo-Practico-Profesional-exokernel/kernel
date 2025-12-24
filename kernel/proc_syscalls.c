@@ -247,6 +247,11 @@ void syscall_trysendmsg(FullTrapFrame *tf, uintptr_t pc){
     
     int success = insert_msg(receiver_proc, msg);
     if (success) {
+
+        if (receiver_proc->status == PROC_NOT_RUNNABLE){
+            receiver_proc->status = PROC_RUNNABLE;
+        }
+
         SET_SYSCALL_RET0(tf, 1);
     } else {
         SET_SYSCALL_RET0(tf, 0);
@@ -272,9 +277,35 @@ void syscall_tryrecvmsg(FullTrapFrame *tf, uintptr_t pc){
     SET_SYSCALL_RET0(tf, 1);
 }
 
+
+void syscall_recvmsg(FullTrapFrame *tf, uintptr_t pc){
+    printf("syscall recv_msg...\n");
+
+    //switch_to_kernel_tables();
+    struct Proc * receiver_proc = get_curr();
+
+    uint32_t msg_addr = SYSCALL_ARG0(tf);
+    int len_msg = SYSCALL_ARG1(tf);
+
+    struct Message msg = extract_msg(receiver_proc);
+    if (msg.content_size == 0) {
+
+        receiver_proc->status = PROC_NOT_RUNNABLE;
+        save_curr_proc_state(tf, pc);
+        sched_yield();    
+
+        SET_SYSCALL_RET0(tf, 0);
+        return;
+    }
+
+    copyout_msg(receiver_proc, msg_addr, msg.content, msg.content_size);
+    SET_SYSCALL_RET0(tf, 1);
+}
+
 void init_syscalls_ipc(void){
-    register_syscall(SYS_SEND_MSG, syscall_trysendmsg);
-    register_syscall(SYS_RECV_MSG, syscall_tryrecvmsg);
+    register_syscall(SYS_TRY_SEND_MSG, syscall_trysendmsg);
+    register_syscall(SYS_TRY_RECV_MSG, syscall_tryrecvmsg);
+    register_syscall(SYS_RECV_MSG, syscall_recvmsg);
 }
 
 void init_syscalls_proc(void) {

@@ -17,14 +17,24 @@ void main() {
     printf("MSG SENDED\n");
     sleep(SLEEP_TIME);
 
-    char content[64];
+    char content_2[64];
     printf("RECEIVING MSG\n");
-    int success = try_recv_msg(&content[0], 64);
+    int success = try_recv_msg(&content_2[0], 64);
+    if (success){
+        printf("MSG RECEIVED WITH CONTENT: [%s]\n", content_2);
+    } else {
+        printf("SOMETHING WENT WRONG DURING THE MSG RECEIVING\n");
+        return;
+    }
+    /*
+    printf("WAITING FOR NEW MSG...\n");
+    char content[64];
+    success = recv_msg(&content[0], 64);
     if (success){
         printf("MSG RECEIVED WITH CONTENT: [%s]\n", content);
     } else {
         printf("SOMETHING WENT WRONG DURING THE MSG RECEIVING\n");
         return;
-    }
+    }*/
 
 }

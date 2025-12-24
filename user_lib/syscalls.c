@@ -9,11 +9,11 @@ int exec(int prog_ind, char ** args){
 
 
 int try_send_msg(int proc_pid, char *msg, size_t len_msg) {
-    return syscall(SYS_SEND_MSG, proc_pid, (int)(msg), len_msg);
+    return syscall(SYS_TRY_SEND_MSG, proc_pid, (int)(msg), len_msg);
 }
 
 int try_recv_msg(char *msg, size_t len_msg) {
-    return syscall(SYS_RECV_MSG, (int)(msg), len_msg, 0);
+    return syscall(SYS_TRY_RECV_MSG, (int)(msg), len_msg, 0);
 }
 
 void sendchar(int proc_pid, char ch) {
@@ -29,8 +29,8 @@ char recvbyte() {
     return syscall(SYS_RECV_BYTE, 0, 0, 0);
 }
 
-char recv_msg() {
-    return (char)syscall(SYS_RECV_MSG, 0, 0, 0); 
+int recv_msg(char *msg, size_t len_msg) {
+    return syscall(SYS_RECV_MSG, (int)(msg), len_msg, 0);
 }
 
 void recvchar(int proc_pid, char ch) {

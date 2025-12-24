@@ -11,9 +11,8 @@
 
 #define SYS_YIELD 5
 
-
-#define SYS_SEND_MSG 6
-#define SYS_RECV_MSG 7
+#define SYS_TRY_SEND_MSG 6
+#define SYS_TRY_RECV_MSG 7
 
 #define SYS_SENDCHAR 8
 #define SYS_RECVCHAR 9
@@ -34,6 +33,9 @@
 
 #define SYS_GETPID 19
 #define SYS_UPTIME 20
+
+#define SYS_SEND_MSG 21
+#define SYS_RECV_MSG 22
 
 #define DEF_ERR_CODE -1
 
