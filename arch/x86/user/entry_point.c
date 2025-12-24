@@ -26,8 +26,10 @@ void sleep(int delay) {
         __asm__ __volatile__("nop"); // do nothing
 }
 
-__attribute__((section(".text.start")))
+// __attribute__((section(".text.start")))
 void _start(int argc, char** argv){
+    printf("Simple log!\n");
+    
     printf("Prog got argc: %d and argv: %x\n", argc, argv);
     int curr= 0;
     for(curr = 0; curr < argc; curr++) {
@@ -37,4 +39,23 @@ void _start(int argc, char** argv){
     // main();
     
     do_exit();
+}
+
+__attribute__((naked, section(".text.start")))
+void _entry(void) {
+    __asm__ volatile (
+        /* Align stack to 16 bytes */
+        "andl $~0xF, %esp        \n"
+
+        /* Push C ABI arguments (right to left) */
+        "pushl %ebx             \n" /* argv */
+        "pushl %eax             \n" /* argc */
+
+        /* Call C entry */
+        "call _start            \n"
+
+        /* If _start returns, hang */
+        "hlt                    \n"
+        "jmp .                  \n"
+    );
 }
