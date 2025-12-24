@@ -1,7 +1,10 @@
 #!/usr/bin/env bash
 set -e
 ROOT=..
-META_FOLDER=$ROOT/user/meta
+META_FOLDER=$ROOT/meta
+
+TEMPLATES_FOLDER=$ROOT/meta/templates
+USER_META_FOLDER=$ROOT/user/meta
 
 res_imports=""
 res_arr_entry=""
@@ -48,7 +51,7 @@ defines_index+="#define APP_COUNT $count\n"
 ###
 
 # Define the path to your template file
-TEMPLATE_FILE="$META_FOLDER/templates/apps_info.h"
+TEMPLATE_FILE="$TEMPLATES_FOLDER/apps_info.h"
 OUTPUT_FILE="$META_FOLDER/gen/meta/apps_info.h"
 
 # Read the template file into a variable
@@ -69,7 +72,7 @@ echo "Generated $OUTPUT_FILE with the apps indexs defines."
 ###
 
 # Define the path to your template file
-TEMPLATE_FILE="$META_FOLDER/templates/apps_meta.c"
+TEMPLATE_FILE="$TEMPLATES_FOLDER/apps_meta.c"
 OUTPUT_FILE="$META_FOLDER/gen/apps_meta.c"
 
 # Read the template file into a variable
@@ -90,8 +93,8 @@ echo "Generated $OUTPUT_FILE with the apps information."
 ### Lastly generate... the app names used by shell and user apps in general maybe..
 ###
 
-TEMPLATE_FILE="$META_FOLDER/templates/app_names.c"
-OUTPUT_FILE="$META_FOLDER/user_gen/app_names.c"
+TEMPLATE_FILE="$TEMPLATES_FOLDER/app_names.c"
+OUTPUT_FILE="$USER_META_FOLDER/app_names.c"
 
 # Read the template file into a variable
 template=$(<"$TEMPLATE_FILE")
@@ -111,7 +114,7 @@ echo "Generated $OUTPUT_FILE with the app names."
 ### Also create a .h file with the count of generated apps
 ###
 
-OUTPUT_FILE="$META_FOLDER/user_gen/app_names.h"
+OUTPUT_FILE="$USER_META_FOLDER/app_names.h"
 
 # Write the final result to the output file
 echo "#define APP_COUNT $count" > "$OUTPUT_FILE"
