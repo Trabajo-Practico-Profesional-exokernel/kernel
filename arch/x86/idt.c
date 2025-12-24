@@ -18,6 +18,33 @@ void create_idt_gate(uint8_t n, uint32_t handler) {
     idt[n].config = (1 << 7) | (0 << 5) | (0 << 3) | IDT_INTERRUPT_GATE;
 }
 
+void create_user_idt_gate(uint8_t n, uint32_t handler) {
+    idt[n].handler_low  = handler & 0xFFFF;
+    idt[n].handler_high = (handler >> 16) & 0xFFFF;
+    idt[n].segsel       = SEGSEL_KERNEL_CS;
+    idt[n].zero         = 0;
+
+    idt[n].config =
+        (1 << 7) |        // Present
+        (3 << 5) |        // DPL = 3 (user callable)
+        (0 << 3) |        // Reserved
+        IDT_INTERRUPT_GATE;
+}
+
+// void create_user_idt_gate_with_irq(uint8_t n, uint32_t handler) {
+//     idt[n].handler_low  = handler & 0xFFFF;
+//     idt[n].handler_high = (handler >> 16) & 0xFFFF;
+//     idt[n].segsel       = SEGSEL_KERNEL_CS;
+//     idt[n].zero         = 0;
+
+//     idt[n].config =
+//         (1 << 7) |        // Present
+//         (3 << 5) |        // DPL = 3
+//         (0 << 3) |
+//         IDT_TRAP_GATE;    // <-- trap, not interrupt
+// }
+
+
 extern void idt_load_and_set(uint32_t idt_ptr);
 
 void (*isr_table[33])(void) = {
@@ -67,7 +94,7 @@ void idt_init(void) {
     }
 
     // mock proc
-    create_idt_gate(0x80, (uint32_t)syscall_handler);
+    create_user_idt_gate(0x80, (uint32_t)syscall_handler);
 
     idt_load_and_set((uint32_t)&idt_ptr);
 }

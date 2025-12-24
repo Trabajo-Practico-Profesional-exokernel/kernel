@@ -6,6 +6,7 @@
 
 extern void isr32(void);
 void clock_yield(FullTrapFrame *tf, uintptr_t proc_pc);
+#include "arch/trap_handling.h"
 
 /*
 ==================================================
@@ -55,7 +56,9 @@ void handle_trap(FullTrapFrame *tf) {
             clock_yield(tf, tf->eip);
             break;
         default:
-            PANIC("[TRAP] Unhandled interrupt %d\n", tf->int_no);
+            uintptr_t user_pc = handle_syscall(tf, tf->eip);
+
+            PANIC("[TRAP] Dont know how to go back wiuth new pc %x\n", user_pc);
             break;
     }
 }
