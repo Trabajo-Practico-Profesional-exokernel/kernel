@@ -56,6 +56,7 @@ void (*isr_table[33])(void) = {
     isr32
 };
 
+
 void idt_init(void) {
     idt_ptr_t idt_ptr;
     idt_ptr.limit = sizeof(idt_gate_t) * IDT_NUM_ENTRIES - 1;
@@ -64,6 +65,9 @@ void idt_init(void) {
     for (int i = 1; i <= 32; i++) {
         create_idt_gate(i, (uint32_t)isr_table[i]);
     }
+
+    // mock proc
+    create_idt_gate(0x80, (uint32_t)syscall_handler);
 
     idt_load_and_set((uint32_t)&idt_ptr);
 }

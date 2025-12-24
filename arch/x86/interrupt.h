@@ -39,4 +39,6 @@ extern void isr30(void);
 extern void isr31(void);
 extern void isr32(void);
 
+extern void syscall_handler(void);
+
 #endif /* INTERRUPT_H */
