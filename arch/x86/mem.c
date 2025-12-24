@@ -83,20 +83,20 @@ void mem_init(void){
     direct_map_range(very_initial_pde, // Map first 4MB as identity
             (paddr_t) 0x0,
             (paddr_t) (1024 * PAGE_SIZE), 
-            KERNEL_PERMISSIONS_ALL
+            I86_PTE_USER
     );
 
     offset_map_range(very_initial_pde, // Map first 4MB of kernel to 0xC000000 == VADDR_KERNEL_BASE
             (paddr_t) __kernel_base,
-            (paddr_t) (1024 * PAGE_SIZE), 
-            KERNEL_PERMISSIONS_ALL,
+            (paddr_t) __kernel_base + (paddr_t) (1024 * PAGE_SIZE), 
+            USER_PERMISSIONS_ALL,
             VADDR_KERNEL_BASE
     );
 
     switch_page_table(very_initial_pde);
 
-    printf("---> JUST BEFORE ENABLING PAGING!\n");
     enable_paging();
+    
     printf("---> ENABLED PAGING ALL OK\n");
 
     // paddr_t pa_free_ram_start = (paddr_t)__free_ram;
@@ -109,7 +109,6 @@ void mem_init(void){
     //     vmmngr_map_page(pa, pa); 
     // }    
 }
-
 
 void switch_to_kernel_tables(void){
     // printf("SHOULD SWITCH TO KERNEL PAGES? IS THAT IT? %x\n", (uint32_t *) kernel_page_table);
@@ -132,16 +131,37 @@ void map_page(uint32_t *pd_table, vaddr_t vaddr, paddr_t paddr, uint32_t permiss
         // Alloc/Create the table for pages, i.e the page table at this index.
         // The page table is 1024 page table entries , of 32 bits each. i.e 4KB == 1 PAGE 
         paddr_t pt_paddr = alloc_pages(1);
+
+        pd_table[pd_index] = (I86_PDE_FRAME & pt_paddr) | I86_PTE_PRESENT | I86_PDE_WRITABLE;
         
-        pd_table[pd_index] = SET_ENTRY_OFFSET(pt_paddr);
+        // Other options
+        // pd_table[pd_index] = I86_PTE_PRESENT | I86_PDE_WRITABLE;
+        // pd_table[pd_index] = (pd_table[pd_index] & ~I86_PDE_FRAME) | pt_paddr;
+
+        // pd_table[pd_index] = I86_PDE_FRAME & pt_paddr;
+        // pd_table[pd_index] |= I86_PTE_PRESENT | I86_PDE_WRITABLE;
+
+        printf("Allocated page at 0x%x for ptable pd_index %u (%x) == %x \n", pt_paddr, pd_index, pd_index* 4, pd_table[pd_index]);
     }
 
     // 
     uint32_t pt_index = GET_INDEX_IN_PAGE_TABLE(vaddr);
     
-    uint32_t* pt_table = (uint32_t *) GET_ENTRY_OFFSET(pd_table[pd_index]); 
+    uint32_t* pt_table = (uint32_t *) (pd_table[pd_index] & I86_PDE_FRAME);
+
+    pt_table[pt_index] = (I86_PTE_FRAME & paddr) | I86_PTE_PRESENT | permissions;
+
+    // Other options
+    // pt_table[pt_index] = I86_PTE_FRAME & paddr;
+    // pt_table[pt_index] |= I86_PTE_PRESENT | permissions;
     
-    pt_table[pt_index] = SET_ENTRY_OFFSET(paddr) | permissions;
+    // pt_table[pt_index] = I86_PTE_PRESENT | permissions;
+    // pt_table[pt_index] = (pt_table[pt_index] & ~I86_PTE_FRAME) | paddr;
+
+    if(pt_index == 4){
+        printf("Allocate pt entry table %x, ind: %u (%x) == %x\n", pt_table, pt_index, pt_index* 4, pt_table[pt_index]);
+    }
+    // pt_table[pt_index] |= SET_ENTRY_OFFSET_PTE(paddr);
 
 }
 
@@ -185,7 +205,6 @@ paddr_t direct_map_range(uint32_t *pde_table, paddr_t range_start, paddr_t range
 paddr_t offset_map_range(uint32_t *pde_table, paddr_t range_start, paddr_t range_end, uint32_t permissions, vaddr_t mapped_vstart){
     paddr_t paddr = range_start;
     paddr_t vaddr = mapped_vstart;
-
     while (paddr < range_end){
         map_page(pde_table, vaddr, paddr, permissions); // Map offseted to there        
         paddr += PAGE_SIZE;

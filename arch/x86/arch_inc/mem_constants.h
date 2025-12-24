@@ -147,7 +147,8 @@ enum PAGE_PDE_FLAGS {
 
 // This method gets the offset of an physical address, and puts it on the config. Also marks IS_PRESENT
 // This is used in both page table entries and page directory entries! 
-#define SET_ENTRY_OFFSET(paddr) (((paddr / PAGE_SIZE) << 10) | I86_PDE_PRESENT)
+#define SET_ENTRY_OFFSET_PDE(paddr) (((paddr / PAGE_SIZE) << 10) | I86_PDE_PRESENT)
+#define SET_ENTRY_OFFSET_PTE(paddr) (((paddr / PAGE_SIZE) << 10) | I86_PTE_PRESENT)
 
 #define PTABLE_ADDR_SPACE_SIZE 0x400000
 
