@@ -19,13 +19,13 @@ if [[ $is_user_app -eq 1 ]]; then
 		trg=shell
 	fi
 	
-	if [[ $clean_build -eq 1 ]]; then
-		echo "Rebuilding user app with trg $trg"
-		rm -r apps/build
-		./compile_user.sh
-	fi
+	# if [[ $clean_build -eq 1 ]]; then
+	# 	echo "Rebuilding user app with trg $trg"
+	# 	rm -r apps/build
+	# 	./compile_user.sh
+	# fi
 	
-	llvm-objdump -d apps/build/$trg/app.elf
+	llvm-objdump -d user/build/$trg/app.elf
 
 else
 	if [[ "$trg" == "" ]]; then

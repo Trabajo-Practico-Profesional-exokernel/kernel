@@ -25,7 +25,10 @@ int syscall(int num, int a, int b, int c)
 __attribute__((section(".text.proc_a.entry")))
 void proc_a_entry(void) {
     // printf("starting process A\n");
+    #ifdef IS_RISC
+    #else
     syscall(0,0,0,0);
+    #endif
     // while (1) {
     //     // sleep(SLEEP_TIME);
     //     // printf("PROC A AFTER SLEEP\n");

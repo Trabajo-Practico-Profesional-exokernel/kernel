@@ -23,7 +23,7 @@ REGISTERED_APPS=("$@")   # array of app names
 echo "Generate metadata with $COUNT_DEF_APPS def executables"
 
 for app_name in "${REGISTERED_APPS[@]}";do
-    prefix="_binary_user_build_${app_name}_app_bin"
+    prefix="_binary_____user_build_${app_name}_app_bin"
 
     res_imports+="extern char ${prefix}_start[],${prefix}_size[];\n"
     res_arr_entry+="    {${prefix}_start, (size_t) ${prefix}_size},\n"
