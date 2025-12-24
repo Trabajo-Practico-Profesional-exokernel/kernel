@@ -85,5 +85,6 @@ struct TrapFrame {
 #define SYSCALL_SYSNO(tf) tf->a3
 
 #define SET_SYSCALL_RET0(tf, vl) tf->a0=vl;
+#define SET_SYSCALL_RET1(tf, vl) tf->a1=vl;
 
 #endif /* !*/

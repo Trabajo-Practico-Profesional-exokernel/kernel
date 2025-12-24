@@ -36,7 +36,7 @@ void kmain()
     init_syscalls_fs();
     init_syscalls_ipc();
     init_syscalls_proc();
-    
+    init_user_pages_alloc();
     #endif
 
     printf("\n\nHello World!\n");

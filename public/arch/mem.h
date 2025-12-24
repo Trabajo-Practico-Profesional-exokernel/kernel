@@ -28,11 +28,11 @@ void switch_to_kernel_tables(void);
 
 
 paddr_t direct_map_range(paddr_t *table1, paddr_t range_start, paddr_t range_end, uint32_t flags);
-paddr_t offset_map_range(paddr_t *table1, paddr_t range_start, paddr_t range_end, 
-						vaddr_t mapped_vstart, uint32_t flags);
+paddr_t offset_map_range(paddr_t *table1, paddr_t range_start, paddr_t range_end, uint32_t flags, vaddr_t mapped_vstart);
 
 void direct_map_all_pages(uint32_t *table1, paddr_t start, uint32_t flags);
 void map_page(uint32_t *table1, vaddr_t vaddr, paddr_t paddr, uint32_t flags);
+
 #else
 void switch_page_table(uint32_t pde_paddr);
 

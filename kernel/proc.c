@@ -16,10 +16,7 @@
     #include "paging.h" 
 #endif
 
-// TODO: ver si se puede unificar
 #ifdef IS_RISC
-    #define KERNEL_PERMISSIONS_ALL (PAGE_R | PAGE_W | PAGE_X)
-    #define USER_PERMISSIONS_ALL (PAGE_U | PAGE_R | PAGE_W | PAGE_X)
 #else
     #define KERNEL_PERMISSIONS_RW (I86_PTE_PRESENT | I86_PTE_WRITABLE)
     #define USER_PERMISSIONS_ALL (I86_PTE_PRESENT | I86_PTE_WRITABLE | I86_PTE_USER)
@@ -29,7 +26,8 @@
 void free_process(struct Proc * proc){
     // TODO !!!!
     // SHOULD FREE PAGES ALLOCATED! BUT IT DOES NOT DO IT YET SINCE ALLOC PAGES IS NOT A LINKED LIST EITHER!
-    proc->kernel_sp = 0;
+    // proc->kernel_sp = 0;
+    proc->user_sp_start = 0;
     proc->pde_paddr = 0;
 
     proc->pc = 0; // Or some default one If so you want!
@@ -43,44 +41,14 @@ void free_process(struct Proc * proc){
 void create_process(struct Proc * proc, uint32_t pc) { // pc == entry point == start instruction
     // Save initial pc on proc.
     printf("#####################################\n"); 
-    proc->pc = pc;
-    // init_proc_queue(proc);
-    
-    // For now kernel stack of process... is on the proc struct itself! xv6 does it in a page a virtual memory.. for the future
-    vaddr_t sp_base = alloc_pages(KERN_STACK_PAGES);
-    printf("FOR PROC %u SP_BASE IS %x \n", proc->pid, sp_base);
-    proc->kernel_sp =  sp_base + KERN_STACK_PAGES * PAGE_SIZE;
 
     // Stack callee-saved registers. These register values will be restored in
     // the first context switch in switch_context. ... init registers basically?
     // After proc->kernel_sp and proc->pc setted up so that they can be included on trapframe if needed
-    init_trapframe(proc);
 
-    #ifdef IS_RISC
-    // Initialize memory/pagetables
-    paddr_t page_table_addr = alloc_pages(1);
-    uint32_t *page_table = (uint32_t *) page_table_addr;
-    
-    printf("FOR PROC %u MAP PAGETABLE %x\n", proc->pid, page_table_addr);
-    // First map page for page table as direct map
-    map_page(page_table,page_table_addr, page_table_addr, KERNEL_PERMISSIONS_ALL);
-
-    printf("FOR PROC %u MAP KERNEL STACK %x to %x\n", proc->pid, sp_base, proc->kernel_sp);
-    // Also map kernel stack
-    direct_map_range(page_table, 
-            sp_base, proc->kernel_sp, KERNEL_PERMISSIONS_ALL);
-
-    printf("FOR PROC %u MAP KERNEL CODE %x to %x\n", proc->pid, get_paddr_kernel_start(), get_paddr_kernel_end());
-    // Map base kernel code pages, does not include any allocated pages, like the page_table_addr
-    direct_map_range(page_table, 
-            get_paddr_kernel_start(),
-            get_paddr_kernel_end(),
-            KERNEL_PERMISSIONS_ALL
-    );
-
-    proc->pde_paddr = page_table_addr;
-
+    #ifdef IS_RISC    
     #else //x86
+    init_trapframe(proc);
 
     paddr_t pde_paddr = alloc_pages(1);
     if (!pde_paddr) PANIC("create_process: out of memory (page_dir)");
@@ -110,63 +78,7 @@ void create_process(struct Proc * proc, uint32_t pc) { // pc == entry point == s
     printf("[DBG] `proc->pde_paddr` CREADO: paddr=%x\n",
        (uint32_t)proc->pde_paddr);
     #endif
-
+    proc->msgs_queue.len_queue = 0;
     proc->status = PROC_RUNNABLE;
     printf("##################################### PROCESO LISTO\n"); 
-}
-
-void create_process_user(struct Proc * proc, uint32_t proc_entry,
-    paddr_t user_space_start, paddr_t user_space_end) {
-
-    create_process(proc, proc_entry);//((uint32_t) user_entry);
-
-    // TODO: una vez que globalicemos lo de memoria virtual, refactorear esto
-    #ifdef IS_RISC
-    uint32_t *page_table = (uint32_t *) proc->pde_paddr;
-    direct_map_range(page_table,
-        (paddr_t)user_space_start,
-        (paddr_t)user_space_end,
-        USER_PERMISSIONS_ALL
-        );
-    #else
-    struct pdirectory *new_dir = (struct pdirectory*) proc->pde_paddr;
-    vaddr_t v_user = (vaddr_t)user_space_start;
-    paddr_t p_user = (paddr_t)user_space_start;
-
-    while (p_user < user_space_end) {
-        // Mapeo 1:1 (p_user -> v_user, que son iguales)
-        map_page(new_dir, p_user, v_user, USER_PERMISSIONS_ALL);
-        v_user += PAGE_SIZE;
-        p_user += PAGE_SIZE;
-    }
-    #endif
-}
-
-void load_create_process_user(struct Proc * proc, const struct AppBinaryInfo * app_info) {    
-    create_process(proc, VADDR_USER_BASE);
-
-    #ifdef IS_RISC
-    uint32_t *page_table = (uint32_t *) proc->pde_paddr;
-    #else
-    struct pdirectory *page_table = (struct pdirectory*) proc->pde_paddr;
-    #endif
-
-    // Mapear paginas de usuario y copiar la imagen
-    for (uint32_t off = 0; off < app_info->size; off += PAGE_SIZE) {
-        paddr_t page = alloc_pages(1);
-        if (page == 0) {
-            PANIC("load_create_process_user: out of memory");
-        }
-
-        // Handle the case where the data to be copied is smaller than the page size.
-        size_t remaining = app_info->size - off;
-        size_t copy_size = (PAGE_SIZE <= remaining) ? PAGE_SIZE : remaining;
-
-        // Copiar los datos a la página física recién asignada
-        memcpy((void *) page, app_info->start + off, copy_size);
-
-        // Mapear la página física en el espacio de direcciones virtual del proceso
-        map_page(page_table, VADDR_USER_BASE + off, page,
-                 USER_PERMISSIONS_ALL);
-    }
 }

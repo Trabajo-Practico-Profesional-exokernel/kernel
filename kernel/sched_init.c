@@ -13,6 +13,7 @@
 // meta/gen/apps_meta.c defines this...
 extern struct AppBinaryInfo _binary_apps[];
 
+char *DEF_ARGV[] = { "sh_prog","parameter1", 0 };
 
 // void main_app_a();
 
@@ -26,14 +27,14 @@ void init_sched(void) {
     // Main user process
     struct Proc * proc_shell = get_first_free_proc();
     // load_create_process_user(proc_shell, &_binary_apps[APP_IND_PROC_A]);
-    // load_create_process_user(proc_shell, &_binary_apps[APP_IND_SHELL]);
-    load_create_process_user(proc_shell, &_binary_apps[APP_IND_FILESYSTEM]);
+    load_create_process_user(proc_shell, &_binary_apps[APP_IND_SHELL], DEF_ARGV);
+    // load_create_process_user(proc_shell, &_binary_apps[APP_IND_FILESYSTEM], DEF_ARGV);
     
-    // load_create_process_user(proc_shell, &_binary_apps[APP_IND_TESTS_SHELL]);
+    // load_create_process_user(proc_shell, &_binary_apps[APP_IND_TESTS_SHELL], DEF_ARGV);
 
     // Extra initial processes....
     // load_create_process_user(get_first_free_proc(), 
-    //                     &_binary_apps[APP_IND_FILESYSTEM]);
+    //                     &_binary_apps[APP_IND_FILESYSTEM], DEF_ARGV);
 
     
     printf("AT CREATE PROCESS SHELL expected pc= %x, ", (uint32_t)VADDR_USER_BASE);

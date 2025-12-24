@@ -37,9 +37,20 @@ SECTIONS {
     __kernel_base_end = .; /* To know where in memory does the kernel base end, without heap memory*/
 
     __free_ram = .; /* add heap ram, hardcoded... its the same as base end but more descriptive? */
-    . += 64 * 1024 * 1024; /* 64MB */
+    . += 8 * 1024 * 1024; /* 8MB */
     __free_ram_end = .;
+
+    . = ALIGN(4096); /* align to page size */
+    __user_ram_start = .; /* For user pages and binaries allocation*/
+    . += 64 * 1024 * 1024; /* 64 MB */
+    __user_ram_end = .;
+
+    . = ALIGN(4096); /* align to page size */
+
+    __trampoline_start = .;
+    . += 2 * 4096; /* 2* 4096 == 8KB for trampoline */
+    . = ALIGN(4096); /* align to page size */
+    __trampoline_end = .;
     
-    . += 1 * 4096 ; /* 1 for safeness If ram is not well managed*/
-    /* __user_bin_start = .; */ /*In the future! If we load binaries at runtime, for now saved on heap */
+
 }
