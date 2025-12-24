@@ -71,17 +71,14 @@ clean:
 	@mkdir -p $(BUILD_FOLDER)
 
 servers_dirs:
-	@echo "Building servers multi-file apps:"
-	@for d in $(SERVERS_DIRS); do \
-		echo "  [SRV_DIR] $$d"; \
-	done
+	@echo "Building servers:"
+	@./compile_dir_apps.sh $(ARCH) $(SERVERS_DIRS)
+
 general_c:
 	@echo "Building general single-file apps:"
 	@for f in $(GENERAL_C); do \
 		echo "  [GEN_C] $$f"; \
 	done
 general_dirs:
-	@echo "Building general multi-file apps:"
-	@for d in $(GENERAL_DIRS); do \
-		echo "  [GEN_DIR] $$d"; \
-	done
+	@echo "Building general multi-file/dir apps:"
+	@./compile_dir_apps.sh $(ARCH) $(GENERAL_DIRS)
