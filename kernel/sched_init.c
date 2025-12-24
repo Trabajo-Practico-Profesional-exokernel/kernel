@@ -10,9 +10,6 @@
 
 char *DEF_ARGV[] = { "sh_prog","parameter1", 0 };
 
-// This is defined on link.ld of the kernel... to hardcode a simple user space page
-#ifdef IS_RISC
-// meta/gen/apps_meta.c defines this...
 extern struct AppBinaryInfo _binary_apps[];
 
 void init_sched(void) {
@@ -41,9 +38,8 @@ void init_sched(void) {
 }
 
 
-#else // IS X86
-
-
+/*
+/// Mocked user programs
 
 extern char __user_proc_a_start[], __user_proc_a_end[];
 extern char __user_proc_b_start[], __user_proc_b_end[];
@@ -85,4 +81,4 @@ void init_sched(void) {
     PANIC("unreachable here!");
 }
 
-#endif
+*/
