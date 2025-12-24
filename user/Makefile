@@ -1,6 +1,7 @@
 
 ROOT := ..
 USER_FOLDER := $(ROOT)/user
+ARCH        ?= riscv                        # o x86
 
 
 APPS_FOLDER := $(USER_FOLDER)/apps
@@ -53,8 +54,8 @@ DEF_EXECUTABLE_COUNT := $(words $(DEF_EXECUTABLES))
 
 .PHONY: servers_dirs general_c general_dirs all
 
-#servers_dirs general_c general_dirs
-all: metadata
+
+all: metadata servers_dirs general_c general_dirs
 	@echo "NOW COMPILE MAIN APPS ... i.e shell app"
 # 	@./compile_dir_app.sh shell
 # 	@./compile_dir_app.sh tests_shell
