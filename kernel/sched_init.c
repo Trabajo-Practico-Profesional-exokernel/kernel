@@ -17,7 +17,16 @@ void init_sched(void) {
     // Main user process
     struct Proc * proc_shell = get_first_free_proc();
     // load_create_process_user(proc_shell, &_binary_apps[APP_IND_PROC_A]);
+
+    #ifdef IS_RISC
     load_create_process_user(proc_shell, &_binary_apps[APP_IND_SHELL], DEF_ARGV);
+
+    #else
+
+    load_create_process_user(proc_shell, &_binary_apps[APP_IND_PROC_A], DEF_ARGV);
+    load_create_process_user(get_first_free_proc(), &_binary_apps[APP_IND_PROC_B], DEF_ARGV);
+
+    #endif
     // load_create_process_user(proc_shell, &_binary_apps[APP_IND_FILESYSTEM], DEF_ARGV);
     
     // load_create_process_user(proc_shell, &_binary_apps[APP_IND_TESTS_SHELL], DEF_ARGV);

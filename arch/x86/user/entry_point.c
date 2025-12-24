@@ -36,7 +36,7 @@ void _start(int argc, char** argv){
         printf("Prog got arg pointer argv[%d]: %x ", curr, argv[curr]);    
         printf("=> '%s'\n", argv[curr]);    
     }
-    // main();
+    main();
     
     do_exit();
 }

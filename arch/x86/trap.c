@@ -58,7 +58,7 @@ void handle_trap(FullTrapFrame *tf) {
         default:
             uintptr_t user_pc = handle_syscall(tf, tf->eip);
 
-            PANIC("[TRAP] Dont know how to go back wiuth new pc %x\n", user_pc);
+            // PANIC("[TRAP] Dont know how to go back wiuth new pc %x\n", user_pc);
             break;
     }
 }
