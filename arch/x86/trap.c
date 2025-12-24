@@ -55,7 +55,7 @@ void handle_trap(FullTrapFrame *tf) {
             clock_yield(tf, tf->eip);
             break;
         default:
-            printf("[TRAP] Unhandled interrupt %d\n", tf->int_no);
+            PANIC("[TRAP] Unhandled interrupt %d\n", tf->int_no);
             break;
     }
 }

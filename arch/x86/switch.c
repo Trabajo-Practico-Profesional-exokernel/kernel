@@ -164,11 +164,11 @@ void init_trapframe(struct Proc *proc, vaddr_t user_sp) {
     // Por ahora no hay procs de kernel! y sera en otro metodo seguro!
     // if (proc->pc < 0x01000000) { 
     //     // Es código del Kernel (proc_a_entry, proc_b_entry están en ~1MB)
-    //     // Debe correr en Ring 0
-    //     tf->ds = GD_KD; 
-    //     tf->es = GD_KD;
-    //     tf->ss = GD_KD;
-    //     tf->cs = GD_KT; 
+        // Debe correr en Ring 0
+        // tf->ds = GD_KD; 
+        // tf->es = GD_KD;
+        // tf->ss = GD_KD;
+        // tf->cs = GD_KT; 
     // }
     
     printf("[INIT TF] pid=%d eip=%x -> Ring %s\n", 
