@@ -8,7 +8,7 @@ void main() {
 
     char *content_send = "holis como andas";
     printf("SENDING MSG [%s] to ME WITH PID [%u] AND LEN CONTENT [%u]\n", content_send, getpid(), strlen(content_send));
-    int send_success = sys_send_msg(getpid(), content_send, strlen(content_send));
+    int send_success = try_send_msg(getpid(), content_send, strlen(content_send));
 
     if (!send_success) {
         printf("SOMETHING WENT WRONG DURING THE MSG SENDING\n");
@@ -19,7 +19,7 @@ void main() {
 
     char content[64];
     printf("RECEIVING MSG\n");
-    int success = sys_recv_msg(&content[0], 64);
+    int success = try_recv_msg(&content[0], 64);
     if (success){
         printf("MSG RECEIVED WITH CONTENT: [%s]\n", content);
     } else {

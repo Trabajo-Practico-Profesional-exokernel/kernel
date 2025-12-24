@@ -59,7 +59,7 @@ int send(char* content){
         return ERR_CODE;
     }
 
-    int success = sys_send_msg(pid_proc, content, strlen(content));
+    int success = try_send_msg(pid_proc, content, strlen(content));
     if (success) {
         printf("MSG [%s] sended to process with PID [%u] \n", content, pid_proc);
     } else {

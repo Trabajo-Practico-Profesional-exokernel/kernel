@@ -227,7 +227,7 @@ void syscall_getpid(FullTrapFrame *tf, uintptr_t pc){
 }
 
 
-void syscall_sendmsg(FullTrapFrame *tf, uintptr_t pc){
+void syscall_trysendmsg(FullTrapFrame *tf, uintptr_t pc){
     printf("syscall send_msg...\n");
 
     //switch_to_kernel_tables();
@@ -253,7 +253,7 @@ void syscall_sendmsg(FullTrapFrame *tf, uintptr_t pc){
     }
 }
 
-void syscall_recvmsg(FullTrapFrame *tf, uintptr_t pc){
+void syscall_tryrecvmsg(FullTrapFrame *tf, uintptr_t pc){
     printf("syscall recv_msg...\n");
 
     //switch_to_kernel_tables();
@@ -273,8 +273,8 @@ void syscall_recvmsg(FullTrapFrame *tf, uintptr_t pc){
 }
 
 void init_syscalls_ipc(void){
-    register_syscall(SYS_SEND_MSG, syscall_sendmsg);
-    register_syscall(SYS_RECV_MSG, syscall_recvmsg);
+    register_syscall(SYS_SEND_MSG, syscall_trysendmsg);
+    register_syscall(SYS_RECV_MSG, syscall_tryrecvmsg);
 }
 
 void init_syscalls_proc(void) {

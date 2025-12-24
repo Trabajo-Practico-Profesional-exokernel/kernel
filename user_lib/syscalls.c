@@ -8,11 +8,11 @@ int exec(int prog_ind, char ** args){
 }
 
 
-int sys_send_msg(int proc_pid, char *msg, size_t len_msg) {
+int try_send_msg(int proc_pid, char *msg, size_t len_msg) {
     return syscall(SYS_SEND_MSG, proc_pid, (int)(msg), len_msg);
 }
 
-int sys_recv_msg(char *msg, size_t len_msg) {
+int try_recv_msg(char *msg, size_t len_msg) {
     return syscall(SYS_RECV_MSG, (int)(msg), len_msg, 0);
 }
 

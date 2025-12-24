@@ -34,9 +34,9 @@ int sys_stat(char* filepath);
 
 
 
-int sys_send_msg(int pid_proc, char * msg_out, size_t len_msg_out);
+int try_send_msg(int pid_proc, char * msg_out, size_t len_msg_out);
 
-int sys_recv_msg(char *msg, size_t len_msg);
+int try_recv_msg(char *msg, size_t len_msg);
 // int recv_ipc_msg(char* msg, size_t max_len);
 // void send_msg(int proc_pid, char* ch, size_t len);
 
