@@ -51,68 +51,63 @@ void enable_paging(void) {
 
 
 pd_entry* kernel_pde; // Physical address for Page Directory table
-pd_entry* very_initial_pde; // Physical address for Page Directory table for the initial paging when enabling
 
+// NO HACE FALTA!
+// pd_entry* very_initial_pde; // Physical address for Page Directory table for the initial paging when enabling
 
-// paddr_t _cur_pdbr = 0;
-// pd_entry* _cur_directory=0;
-
-// Loads new Page Directory to CR3 and to global variable
-// bool switch_pdirectory(paddr_t p_dir_phys) {
-//     if (!p_dir_phys)
-//         return false;
-
-//     _cur_pdbr = p_dir_phys;
-//     _cur_directory = (pd_entry *) p_dir_phys; 
-    
-//     switch_page_table(_cur_pdbr);
-//     return true;
-// }
 
 #define KERNEL_PERMISSIONS_ALL (I86_PTE_WRITABLE)
 #define USER_PERMISSIONS_ALL (I86_PTE_WRITABLE | I86_PTE_USER)
 
 void mem_init(void){
     // kernel_page_table = alloc_pages(1); // Para 0xC0000000 (Kernel)
-    very_initial_pde = (pd_entry*) alloc_pages(1); // Para 0x00000000 (Identity Map)
+    kernel_pde = (pd_entry*) alloc_pages(1); // Para 0x00000000 (Identity Map)
 
-    if (very_initial_pde == 0){
+    if (kernel_pde == 0){
         PANIC("virtual mem init: out of memory for PTs");
     }
-        
-    direct_map_range(very_initial_pde, // Map first 4MB as identity
+
+    direct_map_range(kernel_pde, // Map first 4MB for booting stuff
             (paddr_t) 0x0,
             (paddr_t) (1024 * PAGE_SIZE), 
             I86_PTE_USER
     );
 
-    offset_map_range(very_initial_pde, // Map first 4MB of kernel to 0xC000000 == VADDR_KERNEL_BASE
+    // offset_map_range(kernel_pde, // Map first 4MB of kernel to 0xC000000 == VADDR_KERNEL_BASE
+    //         (paddr_t) __kernel_base,
+    //         (paddr_t) __kernel_base + (paddr_t) (1024 * PAGE_SIZE), 
+    //         USER_PERMISSIONS_ALL,
+    //         VADDR_KERNEL_BASE
+    // );
+
+    // No memory save attempt! map all available pages!
+    direct_map_range(kernel_pde, 
             (paddr_t) __kernel_base,
-            (paddr_t) __kernel_base + (paddr_t) (1024 * PAGE_SIZE), 
-            USER_PERMISSIONS_ALL,
-            VADDR_KERNEL_BASE
+            (paddr_t) __trampoline_end,
+            USER_PERMISSIONS_ALL
     );
 
-    switch_page_table(very_initial_pde);
+    switch_page_table(kernel_pde);
 
     enable_paging();
-    
+
     printf("---> ENABLED PAGING ALL OK\n");
+}
 
-    // paddr_t pa_free_ram_start = (paddr_t)__free_ram;
-    // paddr_t pa_free_ram_end = (paddr_t)__free_ram_end;
+uint32_t * init_user_pde_table(void){
+    pd_entry * pd_table = alloc_pages(1);
+    
+    direct_map_range(pd_table, // Map first 4MB for booting stuff
+            (paddr_t) 0x0,
+            (paddr_t) (1024 * PAGE_SIZE), 
+            I86_PTE_USER
+    );
 
-    // // La RAM libre queda identity-mapped
-    // for (paddr_t pa = pa_free_ram_start; pa < pa_free_ram_end; pa += PAGE_SIZE) {
-    //     // Mapeo 1:1 (virtual = físico)
-    //     // vmmngr_map_page [cite: 119-133] asignará PTs bajo demanda
-    //     vmmngr_map_page(pa, pa); 
-    // }    
+    return pd_table;
 }
 
 void switch_to_kernel_tables(void){
-    // printf("SHOULD SWITCH TO KERNEL PAGES? IS THAT IT? %x\n", (uint32_t *) kernel_page_table);
-    switch_page_table((uint32_t *) very_initial_pde);
+    switch_page_table((uint32_t *) kernel_pde);
 }
 
 

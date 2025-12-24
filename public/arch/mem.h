@@ -22,6 +22,8 @@ paddr_t get_paddr_kernel_end();
 paddr_t get_paddr_for(uint32_t *table1, vaddr_t vaddr);
 
 
+uint32_t * init_user_pde_table(void);
+
 void switch_page_table(uint32_t *table_next);
 void switch_to_kernel_tables(void);
 
