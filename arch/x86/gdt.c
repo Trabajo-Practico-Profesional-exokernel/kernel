@@ -28,8 +28,8 @@ void gdt_init()
 	lseg(); //TODO: mario???? move down
 
 	// TODO: ver si se mete dentro de estructura proc, entonces se puede acceder a kstack
-    cpu->cpu_ts.esp0 = KSTACKTOPCPU(0);
-	cpu->cpu_ts.ss0 = GD_TSS;
+    // cpu->cpu_ts.esp0 = KSTACKTOPCPU(0);
+	// cpu->cpu_ts.ss0 = GD_TSS;
 	cpu->cpu_ts.iomap_base = sizeof(struct TaskState);
 
     gdt[SEG_TSS] = SEG16(STS_T32A, (uint32_t) (&cpu->cpu_ts), sizeof(struct TaskState) - 1, PL0);

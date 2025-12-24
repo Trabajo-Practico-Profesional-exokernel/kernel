@@ -5,6 +5,9 @@
 extern char* _app_names[];
 char *DEF_ARGV[] = { "param1","name2", 0 };
 
+
+// char args[10][256];
+
 int exec_program(char* program_name, char*args){
     for (int ind_program = 0; ind_program < APP_COUNT; ind_program++) {
         if (strncmp(program_name, _app_names[ind_program] , strlen(program_name)) == 0) {
