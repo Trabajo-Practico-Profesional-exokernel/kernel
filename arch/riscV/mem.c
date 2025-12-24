@@ -57,6 +57,11 @@ void mem_init(void){
     map_page(page_table, VIRTIO_BLK_PADDR, VIRTIO_BLK_PADDR, PAGE_R | PAGE_W); 
 
 }
+
+uint32_t * init_user_pde_table(void) {
+    return (uint32_t *)alloc_pages(1);
+}
+
 void switch_to_kernel_tables(void){
     // printf("SHOULD SWITCH TO KERNEL PAGES? IS THAT IT? %x\n", (uint32_t *) kernel_page_table);
 

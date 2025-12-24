@@ -135,7 +135,7 @@ void load_create_process_user(struct Proc * proc, const struct AppBinaryInfo * a
     // ALLOC OF Page directory table! .. 1024 entries of 32bits, that are the configs of page tables.. allocated dynamically
     //
     
-    proc->pde_paddr = init_user_pde_table();
+    proc->pde_paddr = (paddr_t)init_user_pde_table();
     uint32_t *pde_table = (uint32_t *) proc->pde_paddr;
     
     printf("FOR PROC %u MAP PAGETABLE %x\n", proc->pid, proc->pde_paddr);
