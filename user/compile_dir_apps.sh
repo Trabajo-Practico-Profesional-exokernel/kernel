@@ -18,12 +18,9 @@ mkdir -p $BUILD_FOLDER
 
 
 if [[ "$ARCH" == "x86" ]]; then
-    echo "Compiling with x86"
     ARCH_FOLDER=$ROOT/arch/x86
     CFLAGS="-std=c11 -O2 -g3 -Wall -Wextra -fno-stack-protector -ffreestanding -nostdlib"
 else
-    echo "Compiling with riscv"
-
     ARCH_FOLDER=$ROOT/arch/riscV
     CFLAGS="-std=c11 -O2 -g3 -Wall -Wextra --target=riscv32-unknown-elf -fno-stack-protector -ffreestanding -nostdlib"
 fi
@@ -61,7 +58,7 @@ for app_dir in $@; do
         continue
     fi
     
-    echo "build '$app_name'"
+    echo "$ARCH build '$app_name' "
 
     # Create build directories
     app_build_folder="$BUILD_FOLDER/$app_name"

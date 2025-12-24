@@ -1,4 +1,3 @@
-
 ROOT := ..
 USER_FOLDER := $(ROOT)/user
 ARCH        ?= riscv                        # o x86
@@ -52,13 +51,11 @@ META_APP_NAMES := $(strip \
 
 DEF_EXECUTABLE_COUNT := $(words $(DEF_EXECUTABLES))
 
-.PHONY: servers_dirs general_c general_dirs all
-
+.PHONY: all metadata clean servers_dirs general_c general_dirs
 
 all: metadata servers_dirs general_c general_dirs
-	@echo "NOW COMPILE MAIN APPS ... i.e shell app"
-# 	@./compile_dir_app.sh shell
-# 	@./compile_dir_app.sh tests_shell
+	@echo "NOW COMPILE MAIN APPS ... i.e shell apps"
+	@./compile_dir_apps.sh $(ARCH) -add_meta shell tests_shell
 
 ##
 ## Metadata building
@@ -76,9 +73,7 @@ servers_dirs:
 
 general_c:
 	@echo "Building general single-file apps:"
-	@for f in $(GENERAL_C); do \
-		echo "  [GEN_C] $$f"; \
-	done
+	@./compile_file_apps.sh $(ARCH) $(GENERAL_C)
 general_dirs:
 	@echo "Building general multi-file/dir apps:"
 	@./compile_dir_apps.sh $(ARCH) $(GENERAL_DIRS)
