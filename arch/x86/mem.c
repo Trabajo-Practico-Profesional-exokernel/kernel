@@ -127,7 +127,7 @@ void map_page(uint32_t *pd_table, vaddr_t vaddr, paddr_t paddr, uint32_t permiss
         // The page table is 1024 page table entries , of 32 bits each. i.e 4KB == 1 PAGE 
         paddr_t pt_paddr = alloc_pages(1);
 
-        pd_table[pd_index] = (I86_PDE_FRAME & pt_paddr) | I86_PTE_PRESENT | I86_PDE_WRITABLE;
+        pd_table[pd_index] = (I86_PDE_FRAME & pt_paddr) | I86_PTE_PRESENT | I86_PDE_WRITABLE | I86_PDE_USER;
         
         // Other options
         // pd_table[pd_index] = I86_PTE_PRESENT | I86_PDE_WRITABLE;
