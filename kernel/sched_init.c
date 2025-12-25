@@ -12,21 +12,25 @@ char *DEF_ARGV[] = { "sh_prog","parameter1", 0 };
 
 extern struct AppBinaryInfo _binary_apps[];
 
+struct Proc * create_process(size_t ind, char ** argv){
+    struct Proc * proc = get_first_free_proc();
+    load_create_process_user(proc, &_binary_apps[ind], argv);
+    return proc;
+}
+
 void init_sched(void) {
 
     // Main user process
-    struct Proc * proc_shell = get_first_free_proc();
     // load_create_process_user(proc_shell, &_binary_apps[APP_IND_PROC_A]);
 
     #ifdef IS_RISC
-    load_create_process_user(proc_shell, &_binary_apps[APP_IND_SHELL], DEF_ARGV);
-
+    struct Proc * proc_shell = create_process(APP_IND_SHELL, DEF_ARGV);
     #else
     // load_create_process_user(proc_shell, &_binary_apps[APP_IND_SHELL], DEF_ARGV);
+    struct Proc * proc_shell = create_process(APP_IND_PROC_A, DEF_ARGV);
 
-    load_create_process_user(proc_shell, &_binary_apps[APP_IND_PROC_A], DEF_ARGV);
-    load_create_process_user(get_first_free_proc(), &_binary_apps[APP_IND_PROC_B], DEF_ARGV);
-    load_create_process_user(get_first_free_proc(), &_binary_apps[APP_IND_PERIODIC_YIELD], DEF_ARGV);
+    create_process(APP_IND_PROC_B, DEF_ARGV);
+    create_process(APP_IND_PERIODIC_YIELD, DEF_ARGV);
 
     #endif
     // load_create_process_user(proc_shell, &_binary_apps[APP_IND_FILESYSTEM], DEF_ARGV);
