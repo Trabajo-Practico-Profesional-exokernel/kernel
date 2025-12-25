@@ -209,7 +209,7 @@ void syscall_wait(FullTrapFrame *tf, uintptr_t pc){
 
 
 void syscall_yield(FullTrapFrame *tf, uintptr_t pc){
-    save_curr_proc_state(tf, pc);
+    save_curr_proc_state(tf, pc+ 4);
     sched_yield();
 }
 

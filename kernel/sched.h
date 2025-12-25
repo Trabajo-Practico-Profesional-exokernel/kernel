@@ -19,8 +19,6 @@ void init_cpu(int cpunum);
 
 void init_sched(void);
 
-// Tampoco deberia usarse!
-void set_curr(struct Proc * proc);
 struct Proc * get_curr();
 struct Proc * get_proc_by_pid(int receiver_pid);
 

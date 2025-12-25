@@ -13,29 +13,11 @@
 #define MAX_TIME_SLICES 45
 uint32_t curr_slices = 0;
 
-// For now, for simple switching. Not even round robin for a vec lol.
-struct Proc *proc_a;
-struct Proc *proc_b;
-
-void set_proc_a(struct Proc * proc){
-    proc_a = proc;
-}
-void set_proc_b(struct Proc * proc){
-    proc_b = proc;    
-}
-
-
 struct Proc *curr;
-
-void set_curr(struct Proc * proc){
-    curr = proc;    
-}
 
 struct Proc * get_curr(){
     return curr;
 }
-
-
 
 struct Proc procs[PROCS_MAX]; // All process control structures.
 
@@ -183,28 +165,3 @@ void sched_yield(void) {
 
     PANIC("+++++++++++++++++++++ Nothing to run at sched yield!?");    
 }
-
-
-
-/*
-    #else 
-    
-    /////
-    ///// IS X86
-    /////
-    curr->status = PROC_RUNNABLE;
-
-    printf("[PROC RUNNING] ");
-    printProc(curr);
-
-    if (curr == proc_a){
-        printf("Should switch to PROC B\n");
-        switch_proc(proc_b);
-    } else{
-        printf("Should switch to PROC A\n");
-        switch_proc(proc_a);
-    }
-    printf("Preemtptive sched!\n");
-    #endif
-
-*/

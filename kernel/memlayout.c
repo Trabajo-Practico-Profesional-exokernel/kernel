@@ -218,6 +218,7 @@ void load_create_process_user(struct Proc * proc, const struct AppBinaryInfo * a
     printf("Proc has sp top 0x%x after params at: 0x%x, len: %u so vaddr 0x%x\n", paddr_sp_end, final_user_sp_top, params_total_len, params_vaddr);
     // Sets sp to the virtual stack end - len of params.. params start vaddr, so that it does not use it for the proc
     init_trapframe(proc, params_vaddr); 
+    proc->status = PROC_RUNNABLE;
 
     struct TrapFrame * proc_tf = &proc->tf;
 
