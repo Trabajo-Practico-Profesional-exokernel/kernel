@@ -24,7 +24,7 @@ void init_sched(void) {
     #else
 
     load_create_process_user(proc_shell, &_binary_apps[APP_IND_PROC_A], DEF_ARGV);
-    // load_create_process_user(get_first_free_proc(), &_binary_apps[APP_IND_PROC_A], DEF_ARGV);
+    // load_create_process_user(get_first_free_proc(), &_binary_apps[APP_IND_PAGE_FAULT], DEF_ARGV);
 
     #endif
     // load_create_process_user(proc_shell, &_binary_apps[APP_IND_FILESYSTEM], DEF_ARGV);
