@@ -128,7 +128,7 @@ void save_curr_proc_state(FullTrapFrame *tf, uintptr_t proc_pc){
 
 
 void sched_yield(void) {
-    #ifdef IS_RISC
+    // #ifdef IS_RISC
     ////
     //// Round robin!
     ////
@@ -181,8 +181,12 @@ void sched_yield(void) {
         switch_proc(curr);
     }
 
-    PANIC("+++++++++++++++++++++ Nothing to run at sched yield!?");
-    
+    PANIC("+++++++++++++++++++++ Nothing to run at sched yield!?");    
+}
+
+
+
+/*
     #else 
     
     /////
@@ -202,4 +206,5 @@ void sched_yield(void) {
     }
     printf("Preemtptive sched!\n");
     #endif
-}
+
+*/
