@@ -235,19 +235,21 @@ void syscall_trysendmsg(FullTrapFrame *tf, uintptr_t pc){
     uint32_t msg_addr = SYSCALL_ARG1(tf);
     int len_msg = SYSCALL_ARG2(tf);
 
-    int result = send_msg(sender_proc, receiver_proc_pid, msg_addr, len_msg);
+    int result = send_msg(sender_proc, receiver_proc_pid, msg_addr, len_msg, 0);
     SET_SYSCALL_RET0(tf, result);
 }
 
 void syscall_tryrecvmsg(FullTrapFrame *tf, uintptr_t pc) {
     printf("syscall tryrecvmsg...\n");
-    int result = recv_msg(tf, pc, false);
+    uint32_t msg_addr = SYSCALL_ARG0(tf);
+    int result = recv_msg(tf, pc, false, msg_addr);
     SET_SYSCALL_RET0(tf, result);
 }
 
 void syscall_recvmsg(FullTrapFrame *tf, uintptr_t pc) {
     printf("syscall recvmsg...\n");
-    int result = recv_msg(tf, pc, true);
+    uint32_t msg_addr = SYSCALL_ARG0(tf);
+    int result = recv_msg(tf, pc, true, msg_addr);
     SET_SYSCALL_RET0(tf, result);
 }
 void init_syscalls_ipc(void){

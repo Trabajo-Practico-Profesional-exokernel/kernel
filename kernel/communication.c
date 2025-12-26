@@ -65,10 +65,11 @@ struct Message extract_msg(struct Proc *receiver_proc){
     return msg;
 }
 
-int send_msg(struct Proc * sender_proc, int receiver_proc_pid, uint32_t msg_addr, int len_msg){
+int send_msg(struct Proc * sender_proc, int receiver_proc_pid, uint32_t msg_addr, int len_msg, int msg_type){
     struct Message msg;
     msg.sender_pid = sender_proc->pid;
     msg.content_size = len_msg;
+    msg.type = msg_type;
     copyin_msg(sender_proc, msg.content, msg_addr, len_msg);
 
     printf("AFTER COPYIN MSG...\n");
@@ -86,9 +87,8 @@ int send_msg(struct Proc * sender_proc, int receiver_proc_pid, uint32_t msg_addr
     }
 }
 
-int recv_msg(FullTrapFrame *tf, uintptr_t pc, bool blocking) {
+int recv_msg(FullTrapFrame *tf, uintptr_t pc, bool blocking, uint32_t msg_addr) {
     struct Proc *receiver_proc = get_curr();
-    uint32_t msg_addr = SYSCALL_ARG0(tf);
 
     struct Message msg = extract_msg(receiver_proc);
 
