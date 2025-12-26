@@ -100,3 +100,35 @@ int getpid(void) {
 int uptime(void) {
     return syscall(SYS_UPTIME, 0, 0, 0);
 }
+
+int open(const char *path, int mode) {
+    return syscall(SYS_OPEN, (int)path, mode, 0);
+}
+
+int close(int fd) {
+    return syscall(SYS_CLOSE, fd, 0, 0);
+}
+
+int fstat(int fd, struct stat *st) {
+    return syscall(SYS_FSTAT, fd, (int)st, 0);
+}
+
+int mknod(const char *path, short major, short minor) {
+    return syscall(SYS_MKNOD, (int)path, major, minor);
+}
+
+int unlink(const char *path) {
+    return syscall(SYS_UNLINK, (int)path, 0, 0);
+}
+
+int link(const char *old_path, const char *new_path) {
+    return syscall(SYS_LINK, (int)old_path, (int)new_path, 0);
+}
+
+int mkdir(const char *path) {
+    return syscall(SYS_MKDIR, (int)path, 0, 0);
+}
+
+int chdir(const char *path) {
+    return syscall(SYS_CHDIR, (int)path, 0, 0);
+}

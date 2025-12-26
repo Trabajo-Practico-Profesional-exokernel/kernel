@@ -62,4 +62,21 @@ int getpid(void);
 
 int uptime(void);
 
+
+int open(const char *path, int mode);
+
+int close(int fd);
+
+int fstat(int fd, struct stat *st);
+
+int mknod(const char *path, short major, short minor);
+
+int unlink(const char *path);
+
+int link(const char *old_path, const char *new_path);
+
+int mkdir(const char *path);
+
+int chdir(const char *path);
+
 #endif

@@ -37,6 +37,16 @@
 #define SYS_SEND_MSG 21
 #define SYS_RECV_MSG 22
 
+
+#define SYS_FSTAT 23
+#define SYS_CHDIR 24
+#define SYS_OPEN 25
+#define SYS_MKNOD 26
+#define SYS_UNLINK 27
+#define SYS_LINK 28
+#define SYS_MKDIR 29
+#define SYS_CLOSE 30
+
 #define DEF_ERR_CODE -1
 
 

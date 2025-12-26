@@ -27,7 +27,8 @@ int exec_program(char* program_name, char*args){
 
 
 bool default_executable_check(char* executable_name, char*args, int* out_ret){
-    printf("Should check def executable %s", executable_name);
-    
+    printf("Should check def executable %s\n", executable_name);
+    printf("Should check def args %s\n", args);
+    printf("Should check def out_ret %s\n", out_ret);
     return false;
 }

@@ -14,4 +14,10 @@ struct FilesystemEventsHandler {
     fs_event_handler on_rm;
 };
 
+struct stat {
+    short type; //Tipo de archivo
+    int dev; // ID dispositivo
+    uint32_t size; //tamaño en bytes
+};
+
 #endif

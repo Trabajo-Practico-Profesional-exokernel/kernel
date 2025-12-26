@@ -6,7 +6,7 @@
 #include "arch/arch_init.h"
 #include "arch/mem.h"
 #include "arch/trap_handling.h"
-
+#include "fs_syscalls.h"
 
 
 
@@ -32,7 +32,8 @@ void kmain()
     mem_init();
     // Why not ... maybe not full needed at first but works.
     switch_to_kernel_tables();
-
+    init_syscalls_filesystem();
+    //hay que unificar despues ambos inits
     init_syscalls_fs();
     init_syscalls_ipc();
     init_syscalls_proc();
