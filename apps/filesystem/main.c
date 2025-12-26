@@ -3,6 +3,7 @@
 #include "inc/filesystem.h"
 #include "disk_syscalls.h"
 #include "std/string.h"
+#include "syscalls.h"
 
 #define SLEEP_TIME 300000000
 #define MSG_SIZE_MAX 64
@@ -30,6 +31,7 @@ void handler_on_stat(int msg_len){
     sys_fs_ret(5);
 }
 
+/*
 void main() {
 
     fs_events_handler.buffer = &buffer;
@@ -63,4 +65,23 @@ void main() {
         printf("FS finished.. it was mounted down? or was it a mistake?\n");
     }
 
+}*/
+
+void init_fs(){}
+
+void server_listen(){
+
+    for(;;){
+
+        
+
+    }
+
+}
+
+
+
+void main(){
+    init_fs();
+    server_listen();
 }

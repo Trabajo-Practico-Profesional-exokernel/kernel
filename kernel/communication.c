@@ -3,6 +3,7 @@
 #include "arch/mem.h"
 #include "std/printf.h"
 #include "arch/proc.h"
+#include "sched.h"
 
 int copyin_msg(struct Proc *p, char *dst, vaddr_t src_va, int max_len) {
     int i;
@@ -62,4 +63,44 @@ struct Message extract_msg(struct Proc *receiver_proc){
     (*queue_index)--;
 
     return msg;
+}
+
+int send_msg(struct Proc * sender_proc, int receiver_proc_pid, uint32_t msg_addr, int len_msg){
+    struct Message msg;
+    msg.sender_pid = sender_proc->pid;
+    msg.content_size = len_msg;
+    copyin_msg(sender_proc, msg.content, msg_addr, len_msg);
+
+    printf("AFTER COPYIN MSG...\n");
+    struct Proc* receiver_proc = get_proc(receiver_proc_pid);
+    
+    int success = insert_msg(receiver_proc, msg);
+    if (success) {
+
+        if (receiver_proc->status == PROC_NOT_RUNNABLE){
+            receiver_proc->status = PROC_RUNNABLE;
+        }
+        return 1;
+    } else {
+        return 0;
+    }
+}
+
+int recv_msg(FullTrapFrame *tf, uintptr_t pc, bool blocking) {
+    struct Proc *receiver_proc = get_curr();
+    uint32_t msg_addr = SYSCALL_ARG0(tf);
+
+    struct Message msg = extract_msg(receiver_proc);
+
+    if (msg.content_size == 0) {
+        if (blocking) {
+            receiver_proc->status = PROC_NOT_RUNNABLE;
+            save_curr_proc_state(tf, pc);
+            sched_yield();
+        }
+        return 0;
+    }
+
+    copyout_msg(receiver_proc, msg_addr, msg.content, msg.content_size);
+    return 1;
 }
