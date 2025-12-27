@@ -78,7 +78,7 @@ void syscall_mkdir(FullTrapFrame *tf, uintptr_t pc) {
         // de otra manera podria recibirse el mensaje de otro proceso ajeno
         int recv_msg_result = recv_msg(tf, pc, true, (uint32_t)&msg_recv_content[0]);
         if (recv_msg_result >= 0){
-            printf("MKDIR RESPONSE: %s\n", recv_msg_result);
+            printf("MKDIR RESPONSE: %x\n", recv_msg_result);
             SET_SYSCALL_RET0(tf, 0);
         } else {
             printf("Error receiving syscall response\n");

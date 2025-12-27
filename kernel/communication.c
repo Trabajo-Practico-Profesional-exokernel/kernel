@@ -36,14 +36,13 @@ int copyout_msg(struct Proc *p, vaddr_t dst_va, void *src, int len) {
     return 0;
 }
 
-
 int insert_msg(struct Proc *receiver_proc, struct Message msg){
-    int *queue_index = &receiver_proc->msgs_queue.len_queue;
-
-    if (*queue_index < QUEUE_CAPACITY){
-
-        receiver_proc->msgs_queue.msg_queue[*queue_index] = msg;
-        (*queue_index)++;
+    if (receiver_proc->msgs_queue.len_queue < QUEUE_CAPACITY){
+        
+        int index = receiver_proc->msgs_queue.len_queue;
+        receiver_proc->msgs_queue.msg_queue[index] = msg;
+        
+        receiver_proc->msgs_queue.len_queue++;
 
         return 1;
     }
@@ -51,16 +50,19 @@ int insert_msg(struct Proc *receiver_proc, struct Message msg){
 }
 
 struct Message extract_msg(struct Proc *receiver_proc){
-
-    int *queue_index = &receiver_proc->msgs_queue.len_queue;
     
-    if (*queue_index <= 0) {
+    if (receiver_proc->msgs_queue.len_queue == 0) {
         struct Message empty_msg = {0};
         return empty_msg;
     }
 
-    struct Message msg = receiver_proc->msgs_queue.msg_queue[*queue_index - 1];
-    (*queue_index)--;
+    struct Message msg = receiver_proc->msgs_queue.msg_queue[0];
+
+    for (int i = 0; i < receiver_proc->msgs_queue.len_queue - 1; i++) {
+        receiver_proc->msgs_queue.msg_queue[i] = receiver_proc->msgs_queue.msg_queue[i+1];
+    }
+
+    receiver_proc->msgs_queue.len_queue--;
 
     return msg;
 }
@@ -101,6 +103,6 @@ int recv_msg(FullTrapFrame *tf, uintptr_t pc, bool blocking, uint32_t msg_addr) 
         return -1;
     }
 
-    copyout_msg(receiver_proc, msg_addr, msg.content, msg.content_size);
-    return msg.sender_pid;;
+    copyout_msg(receiver_proc, msg_addr, &msg, sizeof(struct Message));
+    return 0;
 }

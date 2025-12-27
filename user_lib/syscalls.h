@@ -3,6 +3,7 @@
 
 
 #include "inc/filesystem.h"
+#include "arch/communication.h"
 
 void putchar(char ch);
 
@@ -34,11 +35,11 @@ int sys_stat(char* filepath);
 
 
 
-int try_send_msg(int pid_proc, char * msg_out, size_t len_msg_out);
+int sys_try_send_msg(int pid_proc, char * msg_out, size_t len_msg_out);
 
-int try_recv_msg(char *msg, size_t len_msg);
+int sys_try_recv_msg(char *msg, size_t len_msg);
 
-int recv_msg(char *msg, size_t len_msg);
+int sys_recv_msg(struct Message *msg);
 // int recv_ipc_msg(char* msg, size_t max_len);
 // void send_msg(int proc_pid, char* ch, size_t len);
 

@@ -1,87 +1,90 @@
 #include "lib.h"
-
 #include "inc/filesystem.h"
-#include "disk_syscalls.h"
+#include "inc/syscalls.h"
+#include "arch/communication.h"
 #include "std/string.h"
-#include "syscalls.h"
 
-#define SLEEP_TIME 300000000
-#define MSG_SIZE_MAX 64
-#define DISK_SECTOR_SIZE 512
 
-char buffer[MSG_SIZE_MAX];
-struct FilesystemEventsHandler fs_events_handler;
-
-void handler_on_touch(int msg_len){
-    printf("USER FS on touch msg len %d path: ", msg_len);
-    printf("'%s'\n", &buffer[0]);
-    sys_fs_ret(5);
+void send_ok_response(int pid_target) {
+    char *response = "OK";
+    sys_try_send_msg(pid_target, response, 2); 
 }
 
-void handler_on_rm(int msg_len){
-    printf("USER FS on remove msg len %d path: ", msg_len);
-    printf("'%s'\n", &buffer[0]);
-    
-    sys_fs_ret(5);
+
+void handle_open(struct Message *msg) {
+    printf("[FS] OPEN request from PID %d: path='%s'\n", msg->sender_pid, msg->content);
+    // TODO: Lógica real de open
+    send_ok_response(msg->sender_pid);
 }
 
-void handler_on_stat(int msg_len){
-    printf("USER FS on stat msg len %d path: ", msg_len);
-    printf("'%s'\n", &buffer[0]);
-    sys_fs_ret(5);
+void handle_close(struct Message *msg) {
+    printf("[FS] CLOSE request from PID %d\n", msg->sender_pid);
+    // TODO: Lógica real de close
+    send_ok_response(msg->sender_pid);
 }
 
-/*
-void main() {
+void handle_mkdir(struct Message *msg) {
+    printf("[FS] MKDIR request from PID %d: path='%s'\n", msg->sender_pid, msg->content);
+    // TODO: Lógica real de mkdir
+    send_ok_response(msg->sender_pid);
+}
 
-    fs_events_handler.buffer = &buffer;
-    fs_events_handler.buffer_len = MSG_SIZE_MAX-1; // Just in case have the last byte always 0!
-    buffer[MSG_SIZE_MAX -1] = 0; 
+void handle_rm(struct Message *msg) {
+    printf("[FS] REMOVE request from PID %d: path='%s'\n", msg->sender_pid, msg->content);
+    // TODO: Lógica real de remove
+    send_ok_response(msg->sender_pid);
+}
 
-    
-    fs_events_handler.on_touch = handler_on_touch;
-    fs_events_handler.on_stat = handler_on_stat;
-    fs_events_handler.on_rm = handler_on_rm;
+void handle_fstat(struct Message *msg) {
+    printf("[FS] FSTAT request from PID %d\n", msg->sender_pid);
+    // TODO: Lógica real de fstat (debería devolver struct stat, no solo OK)
+    send_ok_response(msg->sender_pid);
+}
 
-    char buff_write[DISK_SECTOR_SIZE];
-    char* VALUE = "SOME MESSAGE VALUE";
-    strcpy(&buff_write[0], VALUE);
-    
-    printf("=====> USER FS WRITING TO DISK 0 => '%s'\n", VALUE);
-    int write_superblock_ret = disk_write(VALUE, 0, DISK_SECTOR_SIZE);
+void handle_link(struct Message *msg) {
+    printf("[FS] LINK request from PID %d\n", msg->sender_pid);
+    // TODO: Lógica real de link
+    send_ok_response(msg->sender_pid);
+}
 
-    printf("=====> WRITE RET %d\n", write_superblock_ret);
+void handle_mknod(struct Message *msg) {
+    printf("[FS] MKNOD request from PID %d\n", msg->sender_pid);
+    // TODO: Lógica real de mknod
+    send_ok_response(msg->sender_pid);
+}
 
-    char ret[100];
+void handle_chdir(struct Message *msg) {
+    printf("[FS] CHDIR request from PID %d\n", msg->sender_pid);
+    // TODO: Lógica real de chdir
+    send_ok_response(msg->sender_pid);
+}
 
-    int read_superblock_ret = disk_read(0, &ret[0], strlen(VALUE));
-
-    printf("USER FS READ disk READ RESULT %d  CONTENT => '%s'\n",read_superblock_ret, &ret[0]);
-
-    int err = register_fs_handler(&fs_events_handler);
-    if (err != 0) {
-        printf("Failed registering FS handler %d\n", err);
-    } else {
-        printf("FS finished.. it was mounted down? or was it a mistake?\n");
+void dispatch_request(struct Message *msg) {
+    switch (msg->type) {
+        case FS_TYPE_OPEN:   handle_open(msg); break;
+        case FS_TYPE_CLOSE:  handle_close(msg); break;
+        case FS_TYPE_MKDIR:  handle_mkdir(msg); break;
+        case FS_TYPE_UNLINK: handle_rm(msg); break;
+        case FS_TYPE_FSTAT:  handle_fstat(msg); break;
+        case FS_TYPE_LINK:   handle_link(msg); break;
+        case FS_TYPE_MKNOD:  handle_mknod(msg); break;
+        case FS_TYPE_CHDIR:  handle_chdir(msg); break;
+        default:
+            printf("[FS] Unknown msg type %d from PID %d\n", msg->type, msg->sender_pid);
+            send_ok_response(msg->sender_pid); 
+            break;
     }
-
-}*/
-
-void init_fs(){
-    printf("init filesystem \n");
 }
 
 void server_listen(){
-    for(;;){
+    struct Message msg;
+    
+    while(1) {
         printf("WAITING FOR NEW MSG...\n");
-        char content[64];
-        int pid_sender = recv_msg(&content[0], 64);
-        if (pid_sender >= 0){
-            printf("MSG RECEIVED WITH CONTENT: [%s]\n", content);
-
-            char *response = "OK";
-            try_send_msg(pid_sender, response, strlen(response));
-
+        int res = sys_recv_msg(&msg); 
+        
+        if (res == 0) { 
+            dispatch_request(&msg);
         } else {
             printf("SOMETHING WENT WRONG DURING THE MSG RECEIVING\n");
             return;
@@ -89,7 +92,9 @@ void server_listen(){
     }
 }
 
-
+void init_fs(){
+    printf("[FS] Service Initialized. Waiting for messages...\n");
+}
 
 void main(){
     init_fs();

@@ -1,6 +1,7 @@
 #include "inc/syscalls.h"
 #include "syscalls.h" // Def of syscalls implemented here.
 #include "lib.h" // For printf and syscall func
+#include "arch/communication.h"
 
 int exec(int prog_ind, char ** args){
     // convert args pointer to int
@@ -8,11 +9,11 @@ int exec(int prog_ind, char ** args){
 }
 
 
-int try_send_msg(int proc_pid, char *msg, size_t len_msg) {
+int sys_try_send_msg(int proc_pid, char *msg, size_t len_msg) {
     return syscall(SYS_TRY_SEND_MSG, proc_pid, (int)(msg), len_msg);
 }
 
-int try_recv_msg(char *msg, size_t len_msg) {
+int sys_try_recv_msg(char *msg, size_t len_msg) {
     return syscall(SYS_TRY_RECV_MSG, (int)(msg), len_msg, 0);
 }
 
@@ -29,8 +30,8 @@ char recvbyte() {
     return syscall(SYS_RECV_BYTE, 0, 0, 0);
 }
 
-int recv_msg(char *msg, size_t len_msg) {
-    return syscall(SYS_RECV_MSG, (int)(msg), len_msg, 0);
+int sys_recv_msg(struct Message *msg) {
+    return syscall(SYS_RECV_MSG, (int)msg, sizeof(struct Message), 0);
 }
 
 void recvchar(int proc_pid, char ch) {
