@@ -5,7 +5,6 @@
 #include "arch/communication.h"
 #include "arch/trap_handling.h"
 #include "inc/common.h"
-
 // Sched exec , wait and so on...
 #include "sched.h"
 #include "proc_syscalls.h"
@@ -18,7 +17,6 @@
 
 #include "meta/apps_info.h"
 
-#define FILESYSTEM_PID 0
 
 void syscall_fstat(FullTrapFrame *tf, uintptr_t pc) {
     int fd = SYSCALL_ARG0(tf);
@@ -71,18 +69,15 @@ void syscall_mkdir(FullTrapFrame *tf, uintptr_t pc) {
 
     struct Proc* actual_proc = get_curr();
 
-
-    int recv_msg(FullTrapFrame *tf, uintptr_t pc, bool blocking, uint32_t msg_addr);
-
     printf("syscall_mkdir called path_ptr=%x", path_vaddr);
-    int send_msg_success = send_msg(actual_proc, FILESYSTEM_PID, path_vaddr, MSG_SIZE_MAX, FS_TYPE_MKDIR);
+    int send_msg_success = send_msg(actual_proc, filesystem_PID, path_vaddr, MSG_SIZE_MAX, FS_TYPE_MKDIR);
     if (send_msg_success) {
         char msg_recv_content[MSG_SIZE_MAX];
 
         // validar que el mensaje recibido debe ser del filesystem,
         // de otra manera podria recibirse el mensaje de otro proceso ajeno
         int recv_msg_result = recv_msg(tf, pc, true, (uint32_t)&msg_recv_content[0]);
-        if (recv_msg_result){
+        if (recv_msg_result >= 0){
             printf("MKDIR RESPONSE: %s\n", recv_msg_result);
             SET_SYSCALL_RET0(tf, 0);
         } else {

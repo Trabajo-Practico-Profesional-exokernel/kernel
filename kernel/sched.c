@@ -12,7 +12,7 @@
 
 #define MAX_TIME_SLICES 45
 uint32_t curr_slices = 0;
-
+int filesystem_PID = -1;
 // For now, for simple switching. Not even round robin for a vec lol.
 struct Proc *proc_a;
 struct Proc *proc_b;

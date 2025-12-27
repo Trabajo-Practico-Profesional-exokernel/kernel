@@ -98,9 +98,9 @@ int recv_msg(FullTrapFrame *tf, uintptr_t pc, bool blocking, uint32_t msg_addr) 
             save_curr_proc_state(tf, pc);
             sched_yield();
         }
-        return 0;
+        return -1;
     }
 
     copyout_msg(receiver_proc, msg_addr, msg.content, msg.content_size);
-    return 1;
+    return msg.sender_pid;;
 }

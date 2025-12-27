@@ -40,15 +40,23 @@ int handle_wait(char* args){
     
 }
 
-
+int handle_mkdir(char* args) {
+    if (mkdir(args) == 0) {
+        printf("mkdir success: %s\n", args);
+        return OK_CODE;
+    }
+    printf("mkdir failed\n");
+    return ERR_CODE;
+}
 struct CommandEntry commands[] = {
     { "exec",  handle_exec},
     { "start",  start_program},
     { "msg", send},
-    { "wait", handle_wait}
+    { "wait", handle_wait},
+    { "mkdir", handle_mkdir}
 };
 
-#define COMMAND_COUNT 4
+#define COMMAND_COUNT 6
 
 int send(char* content){
     
@@ -85,3 +93,4 @@ int exec_command(char * action, char* args){
     printf("\nUnknown Command: '%s' args '%s'\n", action, args);
     return ret_code;
 }
+

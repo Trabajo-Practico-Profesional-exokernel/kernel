@@ -67,16 +67,26 @@ void main() {
 
 }*/
 
-void init_fs(){}
+void init_fs(){
+    printf("init filesystem \n");
+}
 
 void server_listen(){
-
     for(;;){
+        printf("WAITING FOR NEW MSG...\n");
+        char content[64];
+        int pid_sender = recv_msg(&content[0], 64);
+        if (pid_sender >= 0){
+            printf("MSG RECEIVED WITH CONTENT: [%s]\n", content);
 
-        
+            char *response = "OK";
+            try_send_msg(pid_sender, response, strlen(response));
 
+        } else {
+            printf("SOMETHING WENT WRONG DURING THE MSG RECEIVING\n");
+            return;
+        }
     }
-
 }
 
 

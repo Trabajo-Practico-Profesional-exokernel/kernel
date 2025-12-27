@@ -4,7 +4,6 @@
 
 #include "arch/logging.h"
 #include "arch/mem_layout.h"
-
 #include "arch_inc/mem_constants.h" //defines perms like PAGE_R and so on.
 
 #ifdef IS_RISC
@@ -12,7 +11,6 @@
 
 // meta/gen/apps_meta.c defines this...
 extern struct AppBinaryInfo _binary_apps[];
-
 char *DEF_ARGV[] = { "sh_prog","parameter1", 0 };
 
 // void main_app_a();
@@ -24,10 +22,14 @@ extern char __user_space_start[], __user_space_end[];
 
 void init_sched(void) {
 
+    struct Proc * proc_fs = get_first_free_proc();
+    load_create_process_user(proc_fs, &_binary_apps[APP_IND_FILESYSTEM], DEF_ARGV);
+    filesystem_PID = proc_fs->pid;
     // Main user process
     struct Proc * proc_shell = get_first_free_proc();
     // load_create_process_user(proc_shell, &_binary_apps[APP_IND_PROC_A]);
     load_create_process_user(proc_shell, &_binary_apps[APP_IND_SHELL], DEF_ARGV);
+
     // load_create_process_user(proc_shell, &_binary_apps[APP_IND_FILESYSTEM], DEF_ARGV);
     
     // load_create_process_user(proc_shell, &_binary_apps[APP_IND_TESTS_SHELL], DEF_ARGV);
