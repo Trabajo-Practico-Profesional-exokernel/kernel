@@ -29,8 +29,18 @@ if [[ $clean_user_apps -eq 1 ]]; then
 
 	# # Si es riscv compila los programas user space
 	if [[ "$trg" == "riscv" ]]; then
-		echo "-->Compiling user space apps!"
-		./compile_user.sh
+		echo "-->Compiling user space apps for riscv!"
+		cd user
+		make
+		cd ..
+		
+		clean_build=1 # Ensure no issues with vars
+	else
+		echo "-->Compiling user space apps for x86!"
+		cd user
+		make ARCH=x86
+		cd ..
+		
 		clean_build=1 # Ensure no issues with vars
 	fi
 fi

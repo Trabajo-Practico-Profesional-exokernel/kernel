@@ -1,36 +1,29 @@
-#!/bin/bash
+#!/usr/bin/env bash
+set -e
+ROOT=..
+META_FOLDER=$ROOT/meta
+
+TEMPLATES_FOLDER=$ROOT/meta/templates
+USER_META_FOLDER=$ROOT/user/meta
 
 res_imports=""
 res_arr_entry=""
 defines_index=""
 apps_names=""
+def_executables=""
 
 count=0
 
-REGISTERED_APPS=""
+COUNT_DEF_APPS="$1"
+shift   # remove COUNT_DEF_APPS from $@
+# COUNT_DEF_APPS="0"
 
-# first build apps that have many .c files i.e have their own folder....
-for app_dir in apps/*/; do
+REGISTERED_APPS=("$@")   # array of app names
 
-    app_name=$(basename $app_dir)
-	if [[ "$app_name" == "build" ]];then
-		continue
-	fi
-    REGISTERED_APPS+=" $app_name"
-done
+echo "Generate metadata with $COUNT_DEF_APPS def executables"
 
-
-### Then take the mono .c file like hello_world
-for app_file in apps/*.c; do
-    app_name=$(basename "$app_file" .c)
-    REGISTERED_APPS+=" $app_name"
-done
-
-REGISTERED_APPS="${REGISTERED_APPS:1}"
-
-for app_name in $REGISTERED_APPS;do
-    echo "GOT REGISTERED APP '$app_name' ind: $count"
-    prefix="_binary_apps_build_${app_name}_app_bin"
+for app_name in "${REGISTERED_APPS[@]}";do
+    prefix="_binary_____user_build_${app_name}_app_bin"
 
     res_imports+="extern char ${prefix}_start[],${prefix}_size[];\n"
     res_arr_entry+="    {${prefix}_start, (size_t) ${prefix}_size},\n"
@@ -39,18 +32,27 @@ for app_name in $REGISTERED_APPS;do
 
     apps_names+="\"$app_name\",\n"
 
+    # -------------------------
+    # DEF-APP-ONLY LOGIC
+    # -------------------------
+
+    if (( count < COUNT_DEF_APPS )); then
+        def_executables+="\"$app_name\",\n"
+        echo "ADD META FOR ind: $count DEF APP '$app_name'"
+    else
+        echo "ADD META FOR ind: $count APP '$app_name'"
+    fi
     count=$(( count + 1 ))
 done
 
 defines_index+="#define APP_COUNT $count\n"
-
 ###
 ### GENERATE apps_info.h file!
 ###
 
 # Define the path to your template file
-TEMPLATE_FILE="meta/templates/apps_info.h"
-OUTPUT_FILE="meta/gen/meta/apps_info.h"
+TEMPLATE_FILE="$TEMPLATES_FOLDER/apps_info.h"
+OUTPUT_FILE="$META_FOLDER/gen/meta/apps_info.h"
 
 # Read the template file into a variable
 template=$(<"$TEMPLATE_FILE")
@@ -70,8 +72,8 @@ echo "Generated $OUTPUT_FILE with the apps indexs defines."
 ###
 
 # Define the path to your template file
-TEMPLATE_FILE="meta/templates/apps_meta.c"
-OUTPUT_FILE="meta/gen/apps_meta.c"
+TEMPLATE_FILE="$TEMPLATES_FOLDER/apps_meta.c"
+OUTPUT_FILE="$META_FOLDER/gen/apps_meta.c"
 
 # Read the template file into a variable
 template=$(<"$TEMPLATE_FILE")
@@ -91,13 +93,16 @@ echo "Generated $OUTPUT_FILE with the apps information."
 ### Lastly generate... the app names used by shell and user apps in general maybe..
 ###
 
-TEMPLATE_FILE="meta/templates/app_names.c"
-OUTPUT_FILE="meta/user_gen/app_names.c"
+TEMPLATE_FILE="$TEMPLATES_FOLDER/app_names.c"
+OUTPUT_FILE="$USER_META_FOLDER/app_names.c"
 
 # Read the template file into a variable
 template=$(<"$TEMPLATE_FILE")
 # Replace the placeholders with the dynamically generated content
 template=$(echo "$template" | sed "s|{APP_NAMES}|$apps_names|g")
+
+template=$(echo "$template" | sed "s|{DEF_EXECUTABLES}|$def_executables|g")
+
 
 # Write the final result to the output file
 echo "$template" > "$OUTPUT_FILE"
@@ -109,7 +114,7 @@ echo "Generated $OUTPUT_FILE with the app names."
 ### Also create a .h file with the count of generated apps
 ###
 
-OUTPUT_FILE="meta/user_gen/app_names.h"
+OUTPUT_FILE="$USER_META_FOLDER/app_names.h"
 
 # Write the final result to the output file
 echo "#define APP_COUNT $count" > "$OUTPUT_FILE"

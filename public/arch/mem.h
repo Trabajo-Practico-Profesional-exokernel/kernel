@@ -21,7 +21,8 @@ paddr_t get_paddr_kernel_end();
 
 paddr_t get_paddr_for(uint32_t *table1, vaddr_t vaddr);
 
-#ifdef IS_RISC
+
+uint32_t * init_user_pde_table(void);
 
 void switch_page_table(uint32_t *table_next);
 void switch_to_kernel_tables(void);
@@ -33,13 +34,8 @@ paddr_t offset_map_range(paddr_t *table1, paddr_t range_start, paddr_t range_end
 void direct_map_all_pages(uint32_t *table1, paddr_t start, uint32_t flags);
 void map_page(uint32_t *table1, vaddr_t vaddr, paddr_t paddr, uint32_t flags);
 
-#else
-void switch_page_table(uint32_t pde_paddr);
-
-
-
-
-#endif
+// #ifdef IS_RISC
+// #endif
 
 
 #endif /* !*/

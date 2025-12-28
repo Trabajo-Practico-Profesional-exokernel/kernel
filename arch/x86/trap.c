@@ -3,9 +3,11 @@
 #include "arch/proc.h"
 #include "io.h"
 #include "inc/common.h"
+#include "arch/logging.h"
 
 extern void isr32(void);
 void clock_yield(FullTrapFrame *tf, uintptr_t proc_pc);
+#include "arch/trap_handling.h"
 
 /*
 ==================================================
@@ -40,22 +42,46 @@ void init_trap(void) {
     printf("[TRAP] Interrupts enabled\n");
 }
 
+
+unsigned long get_cr2_value(void) {
+    unsigned long value;
+    // The "mov %%cr2, %0" instruction moves the CR2 register value 
+    // into the output operand %0, which is the 'value' variable.
+    asm volatile("mov %%cr2, %0" : "=r" (value));
+    return value;
+}
+
 /*
 ==================================================
   HANDLER GENERAL
 ==================================================
 */
+#define SYSCALL_NUMBER 80
+#define PAGE_FAULT_NUM 14
+#define TIMER_NUM 32
 
 //No toca sti (eso se hace en el stub después del iret)
 void handle_trap(FullTrapFrame *tf) {
     switch (tf->int_no) {
-        case 32: // Timer IRQ
+        case TIMER_NUM: // Timer IRQ
             // End of interrupt (solo master, IRQ0)
             outb(0x20, 0x20);
             clock_yield(tf, tf->eip);
             break;
+        case SYSCALL_NUMBER:
+            uintptr_t user_pc = handle_syscall(tf, tf->eip);
+            // PANIC("\n[TRAP] Dont know how to go back wiuth new pc %x\n", user_pc);
+            break;
+        case PAGE_FAULT_NUM: 
+            unsigned long addr_fault = get_cr2_value();
+            printTrapFull(tf);
+            
+            // EIP is not actually where it happened! Allegedly its on the stack?
+            PANIC("\n[TRAP] Pagefault at %x fault address: 0x%x \n", tf->eip, addr_fault);
+            break;
         default:
-            printf("[TRAP] Unhandled interrupt %d\n", tf->int_no);
+            printTrapFull(tf);
+            PANIC("\n[TRAP] Unhandled trap %u \n", tf->int_no);
             break;
     }
 }

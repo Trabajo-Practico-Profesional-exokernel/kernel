@@ -15,7 +15,7 @@ extern char __trampoline_start[], __trampoline_end[];
     #define KERNEL_PERMISSIONS_ALL (PAGE_R | PAGE_W | PAGE_X)
     #define USER_PERMISSIONS_ALL (PAGE_U | PAGE_R | PAGE_W | PAGE_X)
 #else
-    #define KERNEL_PERMISSIONS_RW (I86_PTE_WRITABLE) // I86_PTE_PRESENT  no HACE FALTA! Ya se setea en el map_page.
+    #define KERNEL_PERMISSIONS_ALL (I86_PTE_WRITABLE) // I86_PTE_PRESENT  no HACE FALTA! Ya se setea en el map_page.
     #define USER_PERMISSIONS_ALL (I86_PTE_WRITABLE | I86_PTE_USER)
 #endif
 
@@ -135,7 +135,7 @@ void load_create_process_user(struct Proc * proc, const struct AppBinaryInfo * a
     // ALLOC OF Page directory table! .. 1024 entries of 32bits, that are the configs of page tables.. allocated dynamically
     //
     
-    proc->pde_paddr = alloc_pages(1);
+    proc->pde_paddr = (paddr_t)init_user_pde_table();
     uint32_t *pde_table = (uint32_t *) proc->pde_paddr;
     
     printf("FOR PROC %u MAP PAGETABLE %x\n", proc->pid, proc->pde_paddr);
@@ -222,6 +222,7 @@ void load_create_process_user(struct Proc * proc, const struct AppBinaryInfo * a
     printf("Proc has sp top 0x%x after params at: 0x%x, len: %u so vaddr 0x%x\n", paddr_sp_end, final_user_sp_top, params_total_len, params_vaddr);
     // Sets sp to the virtual stack end - len of params.. params start vaddr, so that it does not use it for the proc
     init_trapframe(proc, params_vaddr); 
+    proc->status = PROC_RUNNABLE;
 
     struct TrapFrame * proc_tf = &proc->tf;
 
@@ -233,7 +234,8 @@ void load_create_process_user(struct Proc * proc, const struct AppBinaryInfo * a
 
 // For now no extra mapping needed.
 void load_create_process_kernel(struct Proc * proc, uint32_t proc_entry){
-    create_process(proc, proc_entry);
+    PANIC("Not implemented kernel process yet");
+    // create_process(proc, proc_entry);
     // proc->pde_table = kernel_page_table; // Should just set pages == to kernel ones
 } 
 

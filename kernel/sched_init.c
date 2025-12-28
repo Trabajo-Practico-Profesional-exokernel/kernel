@@ -5,31 +5,37 @@
 #include "arch/logging.h"
 #include "arch/mem_layout.h"
 #include "arch_inc/mem_constants.h" //defines perms like PAGE_R and so on.
-
-#ifdef IS_RISC
 #include "meta/apps_info.h" // Include auto generated app_info and indexs for apps  
 
-// meta/gen/apps_meta.c defines this...
-extern struct AppBinaryInfo _binary_apps[];
 char *DEF_ARGV[] = { "sh_prog","parameter1", 0 };
 
-// void main_app_a();
+extern struct AppBinaryInfo _binary_apps[];
 
-
-
-// This is defined on link.ld of the kernel... to hardcode a simple user space page
-extern char __user_space_start[], __user_space_end[];
+struct Proc * create_process(size_t ind, char ** argv){
+    struct Proc * proc = get_first_free_proc();
+    load_create_process_user(proc, &_binary_apps[ind], argv);
+    return proc;
+}
 
 void init_sched(void) {
 
-    struct Proc * proc_fs = get_first_free_proc();
-    load_create_process_user(proc_fs, &_binary_apps[APP_IND_FILESYSTEM], DEF_ARGV);
-    filesystem_PID = proc_fs->pid;
     // Main user process
-    struct Proc * proc_shell = get_first_free_proc();
     // load_create_process_user(proc_shell, &_binary_apps[APP_IND_PROC_A]);
-    load_create_process_user(proc_shell, &_binary_apps[APP_IND_SHELL], DEF_ARGV);
 
+    #ifdef IS_RISC
+    struct Proc * proc_fs = create_process(APP_IND_FILESYSTEM, DEF_ARGV);
+    filesystem_PID = proc_fs->pid;
+
+    struct Proc * proc_shell = create_process(APP_IND_SHELL, DEF_ARGV);
+    
+    #else
+    // load_create_process_user(proc_shell, &_binary_apps[APP_IND_SHELL], DEF_ARGV);
+    struct Proc * proc_shell = create_process(APP_IND_PROC_A, DEF_ARGV);
+
+    create_process(APP_IND_PROC_B, DEF_ARGV);
+    create_process(APP_IND_PERIODIC_YIELD, DEF_ARGV);
+
+    #endif
     // load_create_process_user(proc_shell, &_binary_apps[APP_IND_FILESYSTEM], DEF_ARGV);
     
     // load_create_process_user(proc_shell, &_binary_apps[APP_IND_TESTS_SHELL], DEF_ARGV);
@@ -48,70 +54,3 @@ void init_sched(void) {
     
     PANIC("unreachable here!");
 }
-
-
-#else // IS X86
-#include "arch/switch.h"
-
-#define SLEEP_TIME 150000000
-
-
-void proc_a_entry(void) {
-    printf("starting process A\n");
-    //syscall(SYS_KALLOC, 1, 0, 0); //For when its on user space.
-    //printf("called kalloc on A\n");
-    while (1) {
-        // printf("A after sleep\n");
-        sleep(SLEEP_TIME);
-        //printProc(proc_a);
-    }
-}
-
-void proc_b_entry(void) {
-    printf("starting process B\n");
-    while (1) {
-        // printf("B after sleep proc_b: \n");
-        sleep(SLEEP_TIME);
-    }
-}
-
-// #include "arch/mem.h" //defines perms like PAGE_R and so on.
-//#include "arch_inc/trapframe.h"
-//extern char __free_ram[], __free_ram_end[];
-
-void init_sched(void) {
-    // paddr_t new_stk_base = alloc_pages(2);
-    // paddr_t new_stk_top = new_stk_base+2*PAGE_SIZE;
-
-    // printf("SOME LOG? %x to %x\n" ,new_stk_base, new_stk_top);
-    // SWITCH_TO_STACK(new_stk_base, new_stk_top);
-
-    struct Proc * proc_a = get_first_free_proc();
-    struct Proc * proc_b = get_first_free_proc();
-    set_proc_a(proc_a);
-    set_proc_b(proc_b);
-    
-    create_process(proc_a, (uint32_t) proc_a_entry);
-    create_process(proc_b,(uint32_t) proc_b_entry);
-    printf("[INIT SCHED] AT CREATE PROCESS A expected pc= %u, \n", (uint32_t) proc_a_entry);
-    printf("[INIT SCHED] ");
-    printProc(proc_a);
-    
-    printf("[INIT SCHED] AT CREATE PROCESS B expected pc= %u, \n", (uint32_t) proc_b_entry);
-    printf("[INIT SCHED] ");
-    printProc(proc_b);
-
-    printf("START!\n");
-    // DEBERIA LLAMAR SOLO A SWITCH PROC.. no setear a mano curr 
-    switch_proc(proc_a);
-
-    //set_curr(proc_a);
-    //switch_page_table(curr->page_table, &curr->stack[sizeof(curr->stack)]);
-    //proc_a_entry();
-
-    PANIC("unreachable here!");
-}
-
-
-
-#endif

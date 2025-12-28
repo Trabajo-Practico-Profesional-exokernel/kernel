@@ -31,13 +31,12 @@ void kmain()
     mem_init();
     // Why not ... maybe not full needed at first but works.
     switch_to_kernel_tables();
+    #endif
+    
     init_syscalls_filesystem();
-    //hay que unificar despues ambos inits
-    init_syscalls_fs();
     init_syscalls_ipc();
     init_syscalls_proc();
     init_user_pages_alloc();
-    #endif
 
     printf("\n\nHello World!\n");
     

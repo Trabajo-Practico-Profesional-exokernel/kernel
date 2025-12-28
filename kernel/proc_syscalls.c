@@ -12,12 +12,7 @@
 #include "arch/communication.h"
 
 #include "meta/apps_info.h" // Include auto generated app_info and indexs for apps  
-#ifdef IS_RISC
-// meta/gen/apps_meta.c defines this...
 extern struct AppBinaryInfo _binary_apps[];
-#else
-struct AppBinaryInfo _binary_apps[10];
-#endif
 
 
 struct ProcExitStatus exit_statuses[PROCS_MAX]; // Have for every process a current return status. 
@@ -138,7 +133,7 @@ void syscall_exec(FullTrapFrame *tf, uintptr_t pc) {
     // switch_page_table((uint32_t *)(get_curr()->pde_paddr));
     #else
 
-    load_create_process_user(proc, &_binary_apps[prog_ind]);
+    load_create_process_user(proc, &_binary_apps[prog_ind], (char **) &argv_pointers[0]);
     // Now do switch? or not? naaa If you want you could wait for it! after ret.
     SET_SYSCALL_RET0(tf, proc->pid)
     #endif
@@ -215,7 +210,7 @@ void syscall_wait(FullTrapFrame *tf, uintptr_t pc){
 
 
 void syscall_yield(FullTrapFrame *tf, uintptr_t pc){
-    save_curr_proc_state(tf, pc);
+    save_curr_proc_state(tf, pc+ 4);
     sched_yield();
 }
 
