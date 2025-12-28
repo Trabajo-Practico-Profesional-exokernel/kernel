@@ -102,8 +102,6 @@ typedef TrapFrame FullTrapFrame;
 
 
 
-
-// TODO: CAMBIAR PARA HACERLO CON x86
 // Macros for syscalls For syscalls param and return handling
 #define SYSCALL_ARG0(tf) tf->regs.ebx
 #define SYSCALL_ARG1(tf) tf->regs.ecx
