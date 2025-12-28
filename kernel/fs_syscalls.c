@@ -70,6 +70,8 @@ void syscall_mkdir(FullTrapFrame *tf, uintptr_t pc) {
     struct Proc* actual_proc = get_curr();
 
     printf("syscall_mkdir called path_ptr=%x", path_vaddr);
+    // switch_to_kernel_tables();// You need to be on kernel pages to be able to map/get real paddr
+    
     int send_msg_success = send_msg(actual_proc, filesystem_PID, path_vaddr, MSG_SIZE_MAX, FS_TYPE_MKDIR);
     if (send_msg_success) {
         char msg_recv_content[MSG_SIZE_MAX];
@@ -84,7 +86,6 @@ void syscall_mkdir(FullTrapFrame *tf, uintptr_t pc) {
             printf("Error receiving syscall response\n");
             SET_SYSCALL_RET0(tf, -1);
         }
-
     } else {
         printf("Error sending syscall msg\n");
         SET_SYSCALL_RET0(tf, -1);

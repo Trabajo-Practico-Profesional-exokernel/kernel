@@ -9,8 +9,6 @@
 
 #include "arch/trap_handling.h"
 
-volatile uint64_t ticks = 0;
-
 // Assume its defined somewhere
 void clock_yield(FullTrapFrame *tf, uintptr_t pc);
 
@@ -192,7 +190,6 @@ void handle_trap(FullTrapFrame *tf) {
         user_pc += 4;  // Skip illegal instruction
         WRITE_CSR(sepc, user_pc);
     } else if(IS_CLOCK_INTERRUPT(scause)) {
-        ticks ++;
         // printf("Clock interrupt ins scause=%x, stval=%x, sepc=%x\n", scause, stval, user_pc);
         SET_NEXT_INTERRUPT(DELAY_INTERRUPT);
         clock_yield(tf, user_pc);

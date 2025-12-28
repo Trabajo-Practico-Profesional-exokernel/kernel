@@ -4,6 +4,7 @@
 #include "std/string.h"
 #include "arch/stdio.h"
 #include "arch/trap.h"
+#include "sched.h"
 
 void syscall_putchar(FullTrapFrame *tf, uintptr_t pc) {
     putchar(SYSCALL_ARG0(tf));

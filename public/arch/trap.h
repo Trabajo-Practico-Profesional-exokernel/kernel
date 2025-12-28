@@ -4,7 +4,6 @@
 //__attribute__((naked))
 //__attribute__((aligned(4)))
 //void trap_entry(void);
-extern volatile uint64_t ticks;
 //void handle_trap(FullTrapFrame *f);
 // Para riscv no hace falta el resto de metodos almenos. El resto son internos/solo usados 
 // por trap.c del arch

@@ -148,8 +148,20 @@ void load_create_process_user(struct Proc * proc, const struct AppBinaryInfo * a
     proc->user_sp_start = alloc_pages(USER_STACK_PAGE_COUNT);
     printf("FOR PROC %u USER SP_START IS %x \n", proc->pid, proc->user_sp_start);
 
+    // Map the code of the kernel so that when a syscall/trap happens there is no page fault. No permission for user. Direct map.
+    printf("FOR PROC %u MAP KERNEL CODE %x to %x\n", proc->pid, get_paddr_kernel_start(), get_paddr_kernel_end());
+    direct_map_range(pde_table, 
+            get_paddr_kernel_start(),
+            get_paddr_kernel_end(),
+            KERNEL_PERMISSIONS_ALL
+    );
 
-
+    direct_map_range(pde_table, 
+        (paddr_t)__free_ram,
+        (paddr_t)__free_ram_end,
+        KERNEL_PERMISSIONS_ALL
+    );
+    
     // Mem layout is Direct mapping for users? For easier management for now.
 
     // First map page for page table as direct map
@@ -166,13 +178,7 @@ void load_create_process_user(struct Proc * proc, const struct AppBinaryInfo * a
 
 
 
-    // Map the code of the kernel so that when a syscall/trap happens there is no page fault. No permission for user. Direct map.
-    printf("FOR PROC %u MAP KERNEL CODE %x to %x\n", proc->pid, get_paddr_kernel_start(), get_paddr_kernel_end());
-    direct_map_range(pde_table, 
-            get_paddr_kernel_start(),
-            get_paddr_kernel_end(),
-            KERNEL_PERMISSIONS_ALL
-    );
+
 
     // Map trampoline so that It can be accesed from user space... 
     direct_map_range(pde_table, 
@@ -181,11 +187,7 @@ void load_create_process_user(struct Proc * proc, const struct AppBinaryInfo * a
             USER_PERMISSIONS_ALL
     );
 
-    direct_map_range(pde_table, 
-        (paddr_t)__free_ram,
-        (paddr_t)__free_ram_end,
-        KERNEL_PERMISSIONS_ALL
-    );
+
 
     // Map the code of the user program/binary... loading it from memory
     for (uint32_t off = 0; off < app_info->size; off += PAGE_SIZE) {

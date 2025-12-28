@@ -4,6 +4,9 @@
 #include "arch_inc/trapframe.h"
 #include "arch/proc.h"
 extern int filesystem_PID;
+extern volatile uint64_t ticks;
+
+
 struct Proc * get_first_free_proc();
 struct Proc * get_proc(procid_t proc_pid);
 

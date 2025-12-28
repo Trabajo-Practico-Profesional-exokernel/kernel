@@ -11,6 +11,9 @@
 #include "arch/mem_layout.h"
 
 #define MAX_TIME_SLICES 45
+
+volatile uint64_t ticks = 0;
+
 uint32_t curr_slices = 0;
 int filesystem_PID = -1;
 
@@ -94,6 +97,7 @@ void switch_proc(struct Proc* next) {
 // Cambia la firma y el cuerpo:
 void clock_yield(FullTrapFrame *tf, uintptr_t proc_pc) {  // Quitamos uintptr_t proc_pc
     curr_slices += 1;
+    ticks+=1;
     
     if (curr_slices < MAX_TIME_SLICES){
         return;
