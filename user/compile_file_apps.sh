@@ -65,7 +65,11 @@ for app_file in $@; do
 
     # # Convert ELF to binary
     $OBJCOPY --set-section-flags .bss=alloc,contents -O binary $app_build_folder/app.elf $app_build_folder/app.bin
-    $OBJCOPY -Ibinary $OBJFLAGS $app_build_folder/app.bin $app_build_folder/app.bin.o
+    
+    # Copiar a temporal para forzar nombre de simbolo limpio (sin rutas)
+    cp $app_build_folder/app.bin ${app_name}_app.bin
+    $OBJCOPY -Ibinary $OBJFLAGS ${app_name}_app.bin $app_build_folder/app.bin.o
+    rm ${app_name}_app.bin
 
     echo "--- '$app_name' build completed!"
 
