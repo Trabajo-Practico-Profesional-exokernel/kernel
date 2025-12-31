@@ -9,17 +9,13 @@
 int fs_get_free_inode(void) {
     Block block_buf;
     
-    // Iterar sobre los bloques asignados a la tabla de inodos
     for (int i = 0; i < INODE_BLOCKS; i++) {
         int current_block = FIRST_INODE_POSITION + i;
         
-        // Leer el bloque actual de inodos del disco a memoria
         block_read(current_block, (char *)&block_buf);
 
-        // Iterar sobre los inodos dentro del bloque (16 por bloque)
         for (int j = 0; j < INODES_PER_BLOCK; j++) {
-            if (block_buf.inodes[j].type == 0) { // 0 = Libre
-                // Calcular índice global del inodo
+            if (block_buf.inodes[j].type == 0) {
                 return (i * INODES_PER_BLOCK) + j;
             }
         }
