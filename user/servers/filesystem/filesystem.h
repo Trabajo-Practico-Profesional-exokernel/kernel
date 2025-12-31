@@ -2,16 +2,33 @@
 #define FILESYSTEM_INCLUDED
 
 #include "std/string.h"
+#include "inc/types.h"
+#include "block.h"
+#define MAGIC_NUMBER 0xCAFEBEBE
+#define FILESYSTEM_TOTAL_BLOCKS 64
 
-#define MAGIC_NUMBER 0x42
-#define FILESYSTEM_SIZE 2048
+
 // superblock
 typedef struct{
-	uint32_t magic_number; // 4 bytes
-} superblock_t;
+
+	// metadata of the disk
+	uint32_t size_disk; // 4 bytes
+	uint32_t block_size; // 4 bytes
+	uint32_t num_inodes; // 4 bytes
+	uint32_t num_data_blocks; // 4 bytes
+	uint32_t num_blocks_inodes; // 4 bytes
+	
+	uint32_t magic_number; // 4 byte
+} superblock_t; // Total size = 36 bytes
+
 
 typedef union{
-	superblock_t sb;
+	uint8_t data[BLOCK_SIZE];
+} DataBlock; // Total size = 512 bytes
+
+typedef union{
+	superblock_t super_block;
+	DataBlock data_block;
 } Block;
 
 void fs_init(void);
