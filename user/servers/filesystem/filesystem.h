@@ -20,7 +20,6 @@
 #define INODES_PER_BLOCK (BLOCK_SIZE / INODE_SIZE) // 512 / 32 = 16 inodos por bloque
 #define DIRECT_POINTERS 6       // Ajustado para encajar en 32 bytes
 
-
 typedef struct {
     uint32_t size_disk;         // Tamaño total en bytes (32768)
     uint32_t block_size;        // 512 bytes
@@ -58,8 +57,12 @@ typedef union {
     dirent_t dirents[INODES_PER_BLOCK];  // Acceso como array de entradas de directorio (16 por bloque)
 } Block;
 
-
+extern superblock_t super;
 void fs_init(void);
 int fs_mkfs(void);
+
+int fs_mkdir(char *filepath);
+
+
 
 #endif

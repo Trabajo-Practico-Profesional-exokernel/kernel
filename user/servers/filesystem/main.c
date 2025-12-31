@@ -26,7 +26,7 @@ void handle_close(struct Message *msg) {
 
 void handle_mkdir(struct Message *msg) {
     printf("[FS] MKDIR request from PID %d: path='%s'\n", msg->sender_pid, msg->content);
-    // TODO: Lógica real de mkdir
+    int result = fs_mkdir(msg->content);
     send_ok_response(msg->sender_pid);
 }
 
@@ -60,26 +60,7 @@ void handle_chdir(struct Message *msg) {
     send_ok_response(msg->sender_pid);
 }
 
-void test_disk_write() {
-    char buffer[512]; // Tamaño obligatorio por check_valid_size_write
-    
-    // 1. Limpiar buffer
-    memset(buffer, 0, 512);
-    
-    // 2. Escribir "hola" al inicio
-    char *msg = "hola";
-    memcpy(buffer, msg, 5); // Copiar 'h','o','l','a','\0'
 
-    // 3. Llamar a la función existente: buffer, sector 0, tamaño 512
-    printf("[FS] Intentando escribir 'hola' en sector 0...\n");
-    int res = disk_write(buffer, 0, 512);
-
-    if (res < 0) {
-        printf("[FS] Error escribiendo en disco: %d\n", res);
-    } else {
-        printf("[FS] Escritura exitosa en sector 0.\n");
-    }
-}
 void dispatch_request(struct Message *msg) {
     switch (msg->type) {
         case FS_TYPE_OPEN:   handle_open(msg); break;
