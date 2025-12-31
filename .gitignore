@@ -2,4 +2,6 @@
 *.obj
 *.elf
 *.iso
+*.img
+.kernel_disk/
 build/
