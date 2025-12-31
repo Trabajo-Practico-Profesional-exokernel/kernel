@@ -2,8 +2,7 @@
 #define BLOCK_INCLUDED
 
 #include "disk_syscalls.h"
-
-#define BLOCK_SIZE 512
+#include "filesystem.h"
 
 int block_read( int block, char *mem);
 int block_write(int block, char *mem);
