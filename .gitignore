@@ -3,5 +3,5 @@
 *.elf
 *.iso
 *.img
-.kernel_disk/
 build/
+.kernel_disk/disk.img
