@@ -1,3 +1,2 @@
-b *0x1000000
-watch curr
-b clock_yield
+b syscall_disk_write
+b syscall_disk_read

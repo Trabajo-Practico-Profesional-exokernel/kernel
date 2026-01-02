@@ -1,0 +1,44 @@
+/* util.h */
+
+#ifndef UTIL_INCLUDED
+#define UTIL_INCLUDED
+
+#include "common.h"
+#include "std/string.h"
+#include "std/printf.h"
+
+// Funciones de conversión
+int atoi(const char *s);
+void itoa(unsigned int n, char *s);
+void itohex(unsigned int n, char *s);
+void reverse(char *s);
+
+// Mapeo a funciones estándar del kernel (std/string.h)
+// int strlen(const char *s); // Ya definida en std/string.h
+
+// Adaptación de funciones de memoria legacy
+#define bcopy(src, dest, size) memcpy(dest, src, size)
+#define bzero(addr, size) memset(addr, 0, size)
+
+// Helper de comparación (simple-linux-fs espera TRUE si son iguales)
+#define same_string(s1, s2) (strcmp(s1, s2) == 0)
+
+// Funciones de pantalla (Eliminadas - Sin acceso a hardware de video)
+// void clear_screen(int minx, int miny, int maxx, int maxy);
+// void scroll(int minx, int miny, int maxx, int maxy);
+// int peek_screen(int x, int y);
+
+// Funciones de tiempo (Eliminadas - Sin acceso a timer hardware)
+// void ms_delay(uint32_t msecs);
+// uint64_t get_timer(void);
+
+// Adaptación de funciones de impresión para usar printf (ignoran fila/columna)
+#define print_char(l, c, ch) printf("%c", ch)
+#define print_int(l, c, num) printf("%d", num)
+#define print_hex(l, c, num) printf("%x", num)
+#define print_str(l, c, str) printf("%s", str)
+
+// Debug print
+#define dprint(str) printf("%s\n", str)
+
+#endif
