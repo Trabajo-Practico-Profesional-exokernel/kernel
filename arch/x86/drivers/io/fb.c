@@ -7,6 +7,9 @@
 #define FB_COMMAND_PORT 0x3D4
 #define FB_DATA_PORT    0x3D5
 
+#define KBD_DATA_PORT   0x60
+#define KBD_STATUS_PORT 0x64
+
 /* The I/O port commands */
 #define FB_HIGH_BYTE_COMMAND 14
 #define FB_LOW_BYTE_COMMAND  15
@@ -65,9 +68,36 @@ uint16_t get_cursor_position(){
     return position;
 }
 
-// TODO
-long getchar(void){
-    return 0;
+// TODO: check if it works
+/* US Map, scancode set 1 */
+static const char kbd_us[128] = {
+    0,  27, '1', '2', '3', '4', '5', '6', '7', '8', '9', '0', '-', '=', '\b',
+    '\t','q', 'w', 'e', 'r', 't', 'y', 'u', 'i', 'o', 'p', '[', ']', '\n',
+    0,   'a', 's', 'd', 'f', 'g', 'h', 'j', 'k', 'l', ';', '\'', '`',
+    0,  '\\', 'z', 'x', 'c', 'v', 'b', 'n', 'm', ',', '.', '/',
+    0,   '*',
+    0,   ' ',
+};
+
+/* Takes a single input character from standard input.
+Talks directly with the keyboard hardware.
+Keyboard gives scan codes which we convert to ASCII. */
+char getchar(void) {
+    uint8_t scancode;
+
+    for (;;) {
+        if (inb(KBD_STATUS_PORT) & 1) {
+            scancode = inb(KBD_DATA_PORT);
+
+            // Ignore key release
+            if (scancode & 0x80)
+                continue;
+
+            char c = kbd_us[scancode];
+            if (c)
+                return c;
+        }
+    }
 }
 
 void putchar(char ch) {

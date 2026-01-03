@@ -30,10 +30,10 @@ void init_sched(void) {
     
     #else
     // load_create_process_user(proc_shell, &_binary_apps[APP_IND_SHELL], DEF_ARGV);
-    struct Proc * proc_shell = create_process(APP_IND_PROC_A, DEF_ARGV);
+    struct Proc * proc_shell = create_process(APP_IND_SHELL, DEF_ARGV);
 
-    create_process(APP_IND_PROC_A, DEF_ARGV);
-    create_process(APP_IND_PERIODIC_YIELD, DEF_ARGV);
+    // create_process(APP_IND_PROC_A, DEF_ARGV);
+    // create_process(APP_IND_PERIODIC_YIELD, DEF_ARGV);
 
     #endif
     // load_create_process_user(proc_shell, &_binary_apps[APP_IND_FILESYSTEM], DEF_ARGV);
