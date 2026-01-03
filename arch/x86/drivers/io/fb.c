@@ -82,7 +82,7 @@ static const char kbd_us[128] = {
 /* Takes a single input character from standard input.
 Talks directly with the keyboard hardware.
 Keyboard gives scan codes which we convert to ASCII. */
-char getchar(void) {
+long getchar(void) {
     uint8_t scancode;
 
     for (;;) {

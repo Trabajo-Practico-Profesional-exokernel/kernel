@@ -8,6 +8,7 @@ char * _app_names[] = {
 "periodic_yield",
 "proc_a",
 "proc_b",
+"read_write_shell",
 "shell",
 "tests_shell",
 

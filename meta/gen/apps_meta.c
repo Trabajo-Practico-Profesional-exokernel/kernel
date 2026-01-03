@@ -9,6 +9,7 @@ extern char _binary_____user_build_page_fault_app_bin_start[],_binary_____user_b
 extern char _binary_____user_build_periodic_yield_app_bin_start[],_binary_____user_build_periodic_yield_app_bin_size[];
 extern char _binary_____user_build_proc_a_app_bin_start[],_binary_____user_build_proc_a_app_bin_size[];
 extern char _binary_____user_build_proc_b_app_bin_start[],_binary_____user_build_proc_b_app_bin_size[];
+extern char _binary_____user_build_read_write_shell_app_bin_start[],_binary_____user_build_read_write_shell_app_bin_size[];
 extern char _binary_____user_build_shell_app_bin_start[],_binary_____user_build_shell_app_bin_size[];
 extern char _binary_____user_build_tests_shell_app_bin_start[],_binary_____user_build_tests_shell_app_bin_size[];
 
@@ -23,6 +24,7 @@ struct AppBinaryInfo _binary_apps[] = {
     {_binary_____user_build_periodic_yield_app_bin_start, (size_t) _binary_____user_build_periodic_yield_app_bin_size},
     {_binary_____user_build_proc_a_app_bin_start, (size_t) _binary_____user_build_proc_a_app_bin_size},
     {_binary_____user_build_proc_b_app_bin_start, (size_t) _binary_____user_build_proc_b_app_bin_size},
+    {_binary_____user_build_read_write_shell_app_bin_start, (size_t) _binary_____user_build_read_write_shell_app_bin_size},
     {_binary_____user_build_shell_app_bin_start, (size_t) _binary_____user_build_shell_app_bin_size},
     {_binary_____user_build_tests_shell_app_bin_start, (size_t) _binary_____user_build_tests_shell_app_bin_size},
 
