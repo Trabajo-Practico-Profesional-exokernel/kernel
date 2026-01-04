@@ -5,6 +5,7 @@
 
 
 #define USER_STACK_PAGE_COUNT 6
+#define USER_HEAP_MAX_PAGE_COUNT 20
 
 // The base virtual address of an application/user proc image. This needs to match the
 // starting address defined in `user.ld`.
@@ -18,7 +19,14 @@
 #define VADDR_USER_STACK_HARD_END \
     (VADDR_USER_HARD_END + (USER_STACK_PAGE_COUNT * PAGE_SIZE))
 
-    
+#define VADDR_USER_HEAP_START \
+    (VADDR_USER_STACK_HARD_END + (1 * PAGE_SIZE)) // Add 1 page for security reasons or so.
+
+
+#define VADDR_USER_HEAP_HARD_END \
+    (VADDR_USER_HEAP_START + (USER_HEAP_MAX_PAGE_COUNT * PAGE_SIZE)) // Put some hard limit to heap for user procs.
+
+
 // It is basically the place where the trampoline is or so.
 // For now its the the ins where the program was loaded
 

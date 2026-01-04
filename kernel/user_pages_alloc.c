@@ -2,12 +2,19 @@
 #include "inc/common.h"
 #include "arch_inc/mem_constants.h"
 #include "arch/mem.h"
+#include "arch/mem_layout.h"
 #include "std/string.h"
 
 #include "arch/trap_handling.h"
 #include "sched.h"
 
+
 #include "user_pages_alloc.h"
+
+#include "user_pages_alloc.h"
+
+// VADDR_USER_HEAP_START, VADDR_USER_HEAP_HARD_END
+
 
 #ifdef IS_RISC
     #define KERNEL_PERMISSIONS_ALL (PAGE_R | PAGE_W | PAGE_X)
@@ -16,6 +23,53 @@
     #define KERNEL_PERMISSIONS_ALL (I86_PTE_WRITABLE) // I86_PTE_PRESENT  no HACE FALTA! Ya se setea en el map_page.
     #define USER_PERMISSIONS_ALL (I86_PTE_WRITABLE | I86_PTE_USER)
 #endif
+
+struct UserProcPages {
+    paddr_t pages[USER_HEAP_MAX_PAGE_COUNT];
+    int used_pages;
+};
+
+struct UserProcPages procs_pages[PROCS_MAX]; 
+
+
+paddr_t get_paddr_proc_page(struct Proc * proc, int ind){
+    struct UserProcPages* proc_pages = &procs_pages[proc->pid];
+    if(ind >= proc_pages->used_pages){
+        return 0; // Not mapped/used for proc.
+    }
+    
+    return proc_pages->pages[ind];
+}
+vaddr_t get_vaddr_user_page(int ind){
+    return VADDR_USER_HEAP_START + ind * PAGE_SIZE;
+}
+
+int try_add_page_for_proc(struct Proc * proc, paddr_t* allocated_paddr){
+    struct UserProcPages* proc_pages = &procs_pages[proc->pid];
+
+    if (proc_pages->used_pages >= USER_HEAP_MAX_PAGE_COUNT){
+        printf("Process %u reached max limit of heap pages! Cannot alloc\n", proc->pid);
+        return -1;
+    }
+
+    int ret_value = try_alloc_user_page(allocated_paddr);
+    
+    if(ret_value < 0){
+        printf("Failed alloc page, no memory left!\n");
+        return ret_value;
+    }
+    int page_off = proc_pages->used_pages;
+    proc_pages->pages[page_off] = *allocated_paddr;
+    proc_pages->used_pages+=1;
+
+
+    uint32_t *pde_table = (uint32_t *) proc->pde_paddr;
+
+    map_page(pde_table, get_vaddr_user_page(page_off), proc_pages->pages[page_off], USER_PERMISSIONS_ALL);
+    
+    return page_off;
+}
+
 
 
 
@@ -107,15 +161,12 @@ void syscall_sbrk(FullTrapFrame *tf, uintptr_t pc) {
 
     paddr_t allocated_page;
     
-    ret_value = try_alloc_user_page(&allocated_page);
+    ret_value = try_add_page_for_proc(caller_proc, &allocated_page);
     
-    if(ret_value == 0){
-        ret_value = allocated_page; // If all ok then set ret value to paddr of page... i.e
-        // NO mem layout for now to make it be incremental and contiguous
-
-        map_page(pde_table, allocated_page, allocated_page, USER_PERMISSIONS_ALL);
-    } else {
-        printf("Failed alloc page, no memory left!\n");
+    if(ret_value >= 0){
+        vaddr_t ret_vaddr = get_vaddr_user_page(ret_value);
+        printf("SBRK incremented by 1! Allocated page ind %d, vaddr= %x to paddr= %x\n", ret_value, ret_vaddr, allocated_page);
+        ret_value = ret_vaddr;
     }
 
     // Switch back to proc tables to return to proc
