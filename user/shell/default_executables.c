@@ -3,6 +3,7 @@
 #include "lib.h"
 #include "app_names.h"
 extern char* _app_names[];
+extern char* __def_executables[];
 char *DEF_ARGV[] = { "param1","name2", 0 };
 
 #define MAX_ARG 10
@@ -74,8 +75,20 @@ int exec_program(char* program_name, char*args){
 
 
 bool default_executable_check(char* executable_name, char*args, int* out_ret){
-    printf("Should check def executable %s\n", executable_name);
-    printf("Should check def args %s\n", args);
-    printf("Should check def out_ret %s\n", out_ret);
+    printf("CHECK DEF EXEC ");
+    printf("'%s'with args: '%s'\n",executable_name, args);
+
+    int len_name = strlen(executable_name) +1;
+    for (int ind_executable = 0; ind_executable < EXECUTABLE_COUNT; ind_executable++) {
+        char * executable_trg = __def_executables[ind_executable];
+
+        printf("Compare '%s'with trg: '%s'\n",executable_name, executable_trg);
+
+        if (strncmp(executable_name, executable_trg , len_name) == 0) {
+            *out_ret = exec_program(executable_name, args);
+            return true;
+        }
+    }
+
     return false;
 }
