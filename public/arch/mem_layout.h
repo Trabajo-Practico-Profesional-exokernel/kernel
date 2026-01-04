@@ -4,7 +4,7 @@
 #include "arch_inc/mem_constants.h"
 
 
-#define USER_STACK_PAGE_COUNT 32
+#define USER_STACK_PAGE_COUNT 6
 
 // The base virtual address of an application/user proc image. This needs to match the
 // starting address defined in `user.ld`.

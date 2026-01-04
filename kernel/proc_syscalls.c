@@ -112,7 +112,6 @@ void syscall_exec(FullTrapFrame *tf, uintptr_t pc) {
     printf("Should run free proc %p binary: %p \n", proc, &_binary_apps[prog_ind]);
 
     #ifdef IS_RISC
-    switch_to_kernel_tables();
     load_create_process_user(proc, &_binary_apps[prog_ind], (char **) &argv_pointers[0]);
 
     reset_exit_status(&exit_statuses[PROCX(proc->pid)]);

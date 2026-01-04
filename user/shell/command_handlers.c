@@ -12,6 +12,9 @@
 int start_program(char* program_name){
     char * args = NULL;
     split_by_once(program_name, &args, ' ');
+
+    // printf("START  %s with args %s\n", program_name, args);
+
     return exec_program(program_name, args);
 
 }
@@ -78,9 +81,16 @@ int send(char* content){
 
 
 int exec_command(char * action, char* args){
-    int len_act = strlen(action);
+    int len_act = strlen(action) + 1;// include 0 byte
+
     for (int i = 0; i < COMMAND_COUNT; i++) {
-        if (strncmp(action, commands[i].action_name, len_act) == 0) {
+        char* trg_action = commands[i].action_name;
+        
+        if (strncmp(action, trg_action, len_act) == 0) {
+            if(!args){ // Fill with empty if not defined.
+                args = "";
+            }
+
             return commands[i].handler(args);
         }
     }
