@@ -33,6 +33,7 @@ if [[ "$ARCH" == "x86" ]]; then
         -no-pie
         -mno-red-zone
         -fno-asynchronous-unwind-tables
+        -march=i386 -mtune=i386
     "
     OBJFLAGS="-Oelf32-i386"
 else

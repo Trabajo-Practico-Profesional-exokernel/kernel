@@ -1,4 +1,5 @@
 #include "inc/types.h"
+#include "inc/common.h"
 #include "arch/stdio.h"
 #include "drivers/io.h"
 #include "drivers/io/serial_handler.h"
@@ -67,7 +68,7 @@ uint16_t get_cursor_position(){
 
 // TODO
 long getchar(void){
-    return 0;
+    PANIC("panic attack;");
 }
 
 void putchar(char ch) {
