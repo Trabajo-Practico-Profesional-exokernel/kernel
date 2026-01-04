@@ -59,6 +59,7 @@ unsigned long get_cr2_value(void) {
 #define SYSCALL_NUMBER 80
 #define PAGE_FAULT_NUM 14
 #define TIMER_NUM 32
+#define KEYBOARD_PRESS 33
 
 //No toca sti (eso se hace en el stub después del iret)
 void handle_trap(FullTrapFrame *tf) {
@@ -71,6 +72,11 @@ void handle_trap(FullTrapFrame *tf) {
         case SYSCALL_NUMBER:
             uintptr_t user_pc = handle_syscall(tf, tf->eip);
             // PANIC("\n[TRAP] Dont know how to go back wiuth new pc %x\n", user_pc);
+            break;
+        case KEYBOARD_PRESS:
+            printf("[HANDLE TRAP] Key was pressed");
+            keyboard_handle_interrupt();
+            pic_acknowledge(1);
             break;
         case PAGE_FAULT_NUM: 
             unsigned long addr_fault = get_cr2_value();

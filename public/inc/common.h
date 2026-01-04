@@ -12,5 +12,6 @@
         while (1) {}                                                           \
     } while (0)
 
+#define UNUSED_ARGUMENT(x) (void) x;
 
 #endif /* !SIMPLE UTIL FUNCTIONS*/

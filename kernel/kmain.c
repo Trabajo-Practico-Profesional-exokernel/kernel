@@ -38,6 +38,11 @@ void kmain()
     init_syscalls_proc();
     init_user_pages_alloc();
 
+    #ifdef IS_RISC
+    #else
+    kbd_init();
+    #endif
+
     printf("\n\nHello World!\n");
     
     init_sched();

@@ -30,6 +30,7 @@ global isr29
 global isr30
 global isr31
 global isr32
+global isr33
 global syscall_handler
 
 extern trap_entry
@@ -191,14 +192,19 @@ isr31:
     push 31
     jmp trap_entry
 
-; Interrupt
+; Timer (Clock)
 isr32:
     push 0
     push 32
     jmp trap_entry
 
+; Keyboard
+isr33:
+    push 0
+    push 33
+    jmp trap_entry
 
-; mock syscal
+; mock syscall
 syscall_handler:
     push 0
     push 80
