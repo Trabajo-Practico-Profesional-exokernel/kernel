@@ -80,4 +80,6 @@ int mkdir(const char *path);
 
 int chdir(const char *path);
 
+void * sbrk(const int count_pages);
+
 #endif
