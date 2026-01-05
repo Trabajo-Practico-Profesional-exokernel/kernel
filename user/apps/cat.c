@@ -6,7 +6,11 @@ void
 main()
 {
 	char buf[64];
-	sys_disk_read(0, buf, 64);
-	printf("%s\n", buf);
+	int r = disk_read(64, buf, 64);
+	printf("status: %d\n", r);
+
+	for (int i = 0; i < 64; i++) {
+		printf("%c ", buf[i]);
+	}
 }
 

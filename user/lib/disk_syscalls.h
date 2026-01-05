@@ -5,7 +5,7 @@
 #include "inc/filesystem.h"
 
 
-int sys_disk_read(size_t disk_pos, char* buffer, size_t read_len);
-int sys_disk_write(char* buffer, size_t disk_pos, size_t write_len);
+int disk_read(size_t disk_pos, char* buffer, size_t read_len);
+int disk_write(char* buffer, size_t disk_pos, size_t write_len);
 
 #endif

@@ -95,7 +95,7 @@ typedef intptr_t off_t;
 #define offsetof(type, member)   __builtin_offsetof(type, member)
 
 #define align_up(value, align)   ROUNDUP(value, align)
-#define is_aligned(value, align) (((x) & ((a) - 1)) == 0)
+#define is_aligned(value, align) (((value) & ((align) - 1)) == 0)
 
 #define va_list  __builtin_va_list
 #define va_start __builtin_va_start
