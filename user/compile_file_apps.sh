@@ -24,6 +24,7 @@ if [[ "$ARCH" == "x86" ]]; then
         -m32
         -ffreestanding
         -nostdlib
+        -nostdinc
         -fno-stack-protector
         -fno-pic
         -fno-pie

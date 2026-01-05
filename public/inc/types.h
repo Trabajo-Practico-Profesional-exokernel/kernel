@@ -66,7 +66,7 @@ typedef intptr_t off_t;
 		typeof(_b) __b = (_b);                                         \
 		__a >= __b ? __a : __b;                                        \
 	})
-
+/*
 // Rounding operations (efficient when n is a power of 2)
 // Round down to the nearest multiple of n
 #define ROUNDDOWN(a, n)                                                        \
@@ -80,6 +80,9 @@ typedef intptr_t off_t;
 		uint32_t __n = (uint32_t) (n);                                 \
 		(typeof(a)) (ROUNDDOWN((uint32_t) (a) + __n - 1, __n));        \
 	})
+*/
+#define ROUNDDOWN(a, n) ((a) & ~((n) - 1))
+#define ROUNDUP(a, n)   (((a) + (n) - 1) & ~((n) - 1))
 
 #define ARRAY_SIZE(a) (sizeof(a) / sizeof(a[0]))
 
@@ -91,8 +94,8 @@ typedef intptr_t off_t;
 
 #define offsetof(type, member)   __builtin_offsetof(type, member)
 
-#define align_up(value, align)   __builtin_align_up(value, align)
-#define is_aligned(value, align) __builtin_is_aligned(value, align)
+#define align_up(value, align)   ROUNDUP(value, align)
+#define is_aligned(value, align) (((x) & ((a) - 1)) == 0)
 
 #define va_list  __builtin_va_list
 #define va_start __builtin_va_start

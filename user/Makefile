@@ -39,7 +39,7 @@ META_APP_NAMES += tests_shell
 
 META_APP_NAMES     := $(sort $(META_APP_NAMES))
 
-DEF_EXECUTABLES:= touch rm stat
+DEF_EXECUTABLES:= touch rm stat cat
 
 ### Ensure def excecutables are at the start
 META_APP_NAMES := $(filter-out $(DEF_EXECUTABLES),$(META_APP_NAMES))
@@ -73,7 +73,7 @@ servers_dirs:
 
 general_c:
 	@echo "Building general single-file apps:"
-	@./compile_file_apps.sh $(ARCH) $(GENERAL_C)
+	./compile_file_apps.sh $(ARCH) $(GENERAL_C)
 general_dirs:
 	@echo "Building general multi-file/dir apps:"
-	@./compile_dir_apps.sh $(ARCH) $(GENERAL_DIRS)
+	./compile_dir_apps.sh $(ARCH) $(GENERAL_DIRS)

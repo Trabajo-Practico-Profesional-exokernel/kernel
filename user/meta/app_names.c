@@ -20,5 +20,6 @@ char * __def_executables[] = {
 "touch",
 "rm",
 "stat",
+"cat",
 
 };
