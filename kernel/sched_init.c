@@ -30,10 +30,11 @@ void init_sched(void) {
     
     #else
     // load_create_process_user(proc_shell, &_binary_apps[APP_IND_SHELL], DEF_ARGV);
-    struct Proc * proc_shell = create_process(APP_IND_SHELL, DEF_ARGV);
+    // struct Proc * proc_shell = create_process(APP_IND_SHELL, DEF_ARGV);
+    struct Proc * proc_shell = create_process(APP_IND_PROC_A, DEF_ARGV);
 
-    //create_process(APP_IND_PROC_A, DEF_ARGV);
-    //create_process(APP_IND_PERIODIC_YIELD, DEF_ARGV);
+    create_process(APP_IND_PROC_A, DEF_ARGV);
+    create_process(APP_IND_PERIODIC_YIELD, DEF_ARGV);
 
     #endif
     // load_create_process_user(proc_shell, &_binary_apps[APP_IND_FILESYSTEM], DEF_ARGV);
@@ -57,4 +58,13 @@ void init_sched(void) {
     #endif
     
     PANIC("unreachable here!");
+}
+
+void init_sched2(void) {
+    struct Proc * proc_def = create_process(APP_IND_KALLOC_PROGRAM, DEF_ARGV);
+    printf("AT CREATE PROCESS DEF expected pc= %x, ", (uint32_t)VADDR_USER_BASE);
+    printProc(proc_def);
+    
+    switch_proc(proc_def);
+    
 }

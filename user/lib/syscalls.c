@@ -65,6 +65,9 @@ __attribute__((noreturn)) void exit(int ret_code) {
     }
 }
 
+void * sbrk(const int count_pages){
+    return (void *) syscall(SYS_SBRK, count_pages, 0, 0);
+}
 
 
 

@@ -13,6 +13,7 @@ apps_names=""
 def_executables=""
 
 count=0
+count_executables=0
 
 COUNT_DEF_APPS="$1"
 shift   # remove COUNT_DEF_APPS from $@
@@ -40,6 +41,7 @@ for app_name in "${REGISTERED_APPS[@]}";do
     if (( count < COUNT_DEF_APPS )); then
         def_executables+="\"$app_name\",\n"
         echo "ADD META FOR ind: $count DEF APP '$app_name'"
+        count_executables=$(( count_executables + 1 ))
     else
         echo "ADD META FOR ind: $count APP '$app_name'"
     fi
@@ -47,6 +49,7 @@ for app_name in "${REGISTERED_APPS[@]}";do
 done
 
 defines_index+="#define APP_COUNT $count\n"
+
 ###
 ### GENERATE apps_info.h file!
 ###
@@ -118,6 +121,8 @@ echo "Generated $OUTPUT_FILE with the app names."
 OUTPUT_FILE="$USER_META_FOLDER/app_names.h"
 
 # Write the final result to the output file
-echo "#define APP_COUNT $count" > "$OUTPUT_FILE"
+defs="#define APP_COUNT $count"
+echo "$defs" > "$OUTPUT_FILE"
+echo "#define EXECUTABLE_COUNT $count_executables" >> "$OUTPUT_FILE"
 
 echo "Generated $OUTPUT_FILE with the apps info."

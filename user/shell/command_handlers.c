@@ -10,6 +10,9 @@
 int start_program(char* program_name){
     char * args = NULL;
     split_by_once(program_name, &args, ' ');
+
+    // printf("START  %s with args %s\n", program_name, args);
+
     return exec_program(program_name, args);
 }
 
@@ -182,13 +185,16 @@ struct CommandEntry commands[] = {
 #define COMMAND_COUNT (sizeof(commands) / sizeof(struct CommandEntry))
 
 int exec_command(char * action, char* args){
-    int len_act = strlen(action);
+    int len_act = strlen(action) + 1;// include 0 byte
+
     for (int i = 0; i < COMMAND_COUNT; i++) {
-        // Simple validation to check exact match or prefix if needed
-        // Note: strncmp with len_act might match "ex" to "exec", be careful if strict match is desired
-        if (strncmp(action, commands[i].action_name, len_act) == 0 && 
-            strlen(commands[i].action_name) == len_act) {
-            
+
+        char* trg_action = commands[i].action_name;
+        
+        if (strncmp(action, trg_action, len_act) == 0) {
+            if(!args){ // Fill with empty if not defined.
+                args = "";
+            }
             return commands[i].handler(args);
         }
     }

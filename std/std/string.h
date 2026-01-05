@@ -16,6 +16,8 @@ char *strfind(const char *s, char c);
 
 
 void split_by_once(char* src, char** after_delim, char delimeter);
+char* extract_once(char* src, char** extracted_arg, char delimeter);
+
 int parse_num_and_msg(char* input_buffer, char** msg_out);
 
 void *memset(void *dst, int c, size_t len);
