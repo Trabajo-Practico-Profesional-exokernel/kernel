@@ -2,6 +2,7 @@ char * _app_names[] = {
 "touch",
 "rm",
 "stat",
+"cat",
 "filesystem",
 "hello_world",
 "kalloc_program",
