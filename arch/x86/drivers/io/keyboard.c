@@ -4,6 +4,14 @@
 #include "inc/common.h"
 #include "../../interrupt.h"
 
+/*
+Hardware facts (x86 PS/2)
+    - Data port: 0x60
+    - Status port: 0x64
+    - IRQ: 1
+    - Interrupt fires when a scancode is available
+*/
+
 #define KBD_DATA_PORT   0x60
 #define KBD_BUFFER_SIZE 512
 
@@ -115,6 +123,37 @@ typedef struct stack_state stack_state_t;
 static char kbd_scan_code_to_ascii(uint8_t sc);
 static uint8_t kbd_read_scan_code(void);
 
+#define SYSCALL_INT_IDX 0xAE
+
+typedef void (*interrupt_handler_t)(cpu_state_t state,
+                                    idt_info_t info,
+                                    stack_state_t exec);
+
+static interrupt_handler_t interrupt_handlers[IDT_NUM_ENTRIES];
+
+uint32_t register_interrupt_handler(uint32_t interrupt,
+                                    interrupt_handler_t handler)
+{
+    if (interrupt > 255) {
+        return 1;
+    }
+    if (interrupt == SYSCALL_INT_IDX) {
+        return 1;
+    }
+    if (interrupt_handlers[interrupt] != NULL) {
+        return 1;
+    }
+
+    interrupt_handlers[interrupt] = handler;
+    return 0;
+}
+
+void interrupt_handler(cpu_state_t state, idt_info_t info, stack_state_t exec)
+{
+    if (interrupt_handlers[info.idt_index] != NULL) {
+        interrupt_handlers[info.idt_index](state, info, exec);
+    }
+}
 
 void keyboard_handle_interrupt(void)
 {
@@ -192,6 +231,8 @@ static int kbd_getattr(vnode_t *n, vattr_t *a)
 
 uint32_t kbd_init(void)
 {
+    register_interrupt_handler(KBD_INT_IDX, keyboard_handle_interrupt);
+
     kbd_buffer.count = 0;
     kbd_buffer.head = kbd_buffer.buffer;
     kbd_buffer.tail = kbd_buffer.buffer;
@@ -506,10 +547,29 @@ static char kbd_scan_code_to_ascii(uint8_t scan_code)
     return ch;
 }
 
+/// ADDED:
+static inline void io_wait(void) {
+    outb(0x80, 0);
+}
+
+void kbd_hw_enable(void)
+{
+    // Enable PS/2 keyboard port
+    outb(0x64, 0xAE);
+    io_wait();
+
+    // Optional but recommended: enable IRQ1 in controller config
+    outb(0x64, 0x20);      // read controller command byte
+    io_wait();
+    uint8_t status = inb(0x60);
+    status |= 0x01;        // enable IRQ1
+    outb(0x64, 0x60);
+    io_wait();
+    outb(0x60, status);
+}
+
 long kgetchar(void)
 {
-    char ch;
-
     for (;;) {
         disable_interrupts();
 
@@ -522,14 +582,12 @@ long kgetchar(void)
 
             enable_interrupts();
 
-            ch = kbd_scan_code_to_ascii(sc);
+            char ch = kbd_scan_code_to_ascii(sc);
             if (ch >= 0)
                 return (long)ch;
-
-            // scan code inválido → seguir esperando
-        } else {
-            enable_interrupts();
-            // cpu_relax();   // hlt / pause
         }
+
+        enable_interrupts();
+        // sched_yield();
     }
 }

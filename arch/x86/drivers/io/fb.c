@@ -1,4 +1,5 @@
 #include "inc/types.h"
+#include "inc/common.h"
 #include "arch/stdio.h"
 #include "drivers/io.h"
 #include "drivers/io/serial_handler.h"
@@ -77,6 +78,8 @@ uint16_t get_cursor_position(){
 Talks directly with the keyboard hardware.
 Keyboard gives scan codes which we convert to ASCII. */
 long getchar(void) {
+    // PANIC("en getchar");
+    printf("kernel getchar\n");
     return kgetchar();
 }
 

@@ -11,6 +11,6 @@ struct CommandEntry {
 };
 
 int exec_command(char * action, char* args);
-int send(char* content);
+//int send(char* content);
 
 #endif

@@ -58,3 +58,12 @@ void init_sched(void) {
     
     PANIC("unreachable here!");
 }
+
+void init_sched2(void) {
+    struct Proc * proc_def = create_process(APP_IND_KALLOC_PROGRAM, DEF_ARGV);
+    printf("AT CREATE PROCESS DEF expected pc= %x, ", (uint32_t)VADDR_USER_BASE);
+    printProc(proc_def);
+    
+    switch_proc(proc_def);
+    
+}

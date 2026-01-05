@@ -79,7 +79,7 @@ void syscall_disk_read(FullTrapFrame *tf, uintptr_t pc) {
 
 
     err = read_write_disk(&disk_request_content_buffer[0],
-             0, false /* read from the disk */);
+        src_disk_sector, false /* read from the disk */);
     if(err < 0){
         SET_SYSCALL_RET0(tf, err);
         save_curr_proc_state(tf, pc + 4); // Skip this ins that called syscall
@@ -89,7 +89,7 @@ void syscall_disk_read(FullTrapFrame *tf, uintptr_t pc) {
 
     printf("first sector: '%s'\n", &disk_request_content_buffer[0]);
 
-    strncpy((char*)trg_buffer_paddr, &disk_request_content_buffer[0], read_len);
+    memcpy((char*)trg_buffer_paddr, &disk_request_content_buffer[0], read_len);
     
     SET_SYSCALL_RET0(tf, read_len);
     save_curr_proc_state(tf, pc + 4); // Skip this ins that called syscall
@@ -127,7 +127,7 @@ void syscall_disk_write(FullTrapFrame *tf, uintptr_t pc) {
 	printf("Got write buffer at %x to disk sector: %u len: %u \n", 
         src_buffer_paddr, trg_disk_sector, write_len);	
 
-    strncpy(&disk_request_content_buffer[0], (char*)src_buffer_paddr, write_len);
+    memcpy(&disk_request_content_buffer[0], (char*)src_buffer_paddr, write_len);
 
     err = read_write_disk(&disk_request_content_buffer[0], trg_disk_sector, true /* write to the disk */);
     

@@ -4,6 +4,7 @@ char * _app_names[] = {
 "stat",
 "filesystem",
 "hello_world",
+"kalloc_program",
 "page_fault",
 "periodic_yield",
 "proc_a",

@@ -199,7 +199,13 @@ isr32:
     jmp trap_entry
 
 ; Keyboard
+;isr33:
+;    push 0
+;    push 33
+;    jmp trap_entry
 isr33:
+    mov al, 'I'
+    out 0xE9, al
     push 0
     push 33
     jmp trap_entry

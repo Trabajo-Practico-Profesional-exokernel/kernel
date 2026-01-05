@@ -15,6 +15,10 @@
 #define FS_TYPE_LINK    5
 #define FS_TYPE_MKNOD   6
 #define FS_TYPE_CHDIR   7
+#define FS_TYPE_READ    8
+#define FS_TYPE_WRITE   9
+#define FS_TYPE_LSEEK   10
+#define FS_TYPE_RMDIR 11
 
 struct Proc;
 

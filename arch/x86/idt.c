@@ -55,12 +55,12 @@ void create_user_idt_gate(uint8_t n, uint32_t handler) {
 //     outb(PIC1_PORT_A, PIC_EOI);
 //     outb(PIC2_PORT_A, PIC_EOI);
 // }
-void pic_acknowledge(int irq)
-{
-    if (irq >= 8)
-        outb(0xA0, 0x20);
-    outb(0x20, 0x20);
-}
+// void pic_acknowledge(int irq)
+// {
+//     if (irq >= 8)
+//         outb(0xA0, 0x20);
+//     outb(0x20, 0x20);
+// }
 
 #define NBASE_TRAPS 33
 #define TOTAL_TRAPS NBASE_TRAPS+1

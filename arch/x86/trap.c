@@ -27,9 +27,13 @@ static void pic_remap(void) {
     // ICW4
     outb(0x21, 0x01);
     outb(0xA1, 0x01);
-    // Unmask (habilitar todas)
+    // Unmask (unables every hardware interrupt)
     outb(0x21, 0x0);
     outb(0xA1, 0x0);
+
+    // ADDED INSTEAD :Enable only timer (IRQ0) and keyboard (IRQ1)
+    // outb(0x21, 0xFC); // 11111100
+    // outb(0xA1, 0xFF);
 }
 
 void init_trap(void) {
@@ -75,6 +79,7 @@ void handle_trap(FullTrapFrame *tf) {
             break;
         case KEYBOARD_PRESS:
             printf("[HANDLE TRAP] Key was pressed");
+            outb(0xE9, 'K'); //debug a ver si hace getchar
             keyboard_handle_interrupt();
             pic_acknowledge(1);
             break;

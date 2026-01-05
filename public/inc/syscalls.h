@@ -47,6 +47,8 @@
 #define SYS_MKDIR 29
 #define SYS_CLOSE 30
 
+#define SYS_SBRK 31
+
 #define DEF_ERR_CODE -1
 
 

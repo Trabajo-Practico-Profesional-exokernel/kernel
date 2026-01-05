@@ -44,6 +44,7 @@ void putchar(char ch) {
 }
 
 int getchar(void) {
+    printf("user getchar\n");
     return syscall(SYS_GETCHAR, 0, 0, 0);
 }
 
@@ -65,6 +66,9 @@ __attribute__((noreturn)) void exit(int ret_code) {
     }
 }
 
+void * sbrk(const int count_pages){
+    return (void *) syscall(SYS_SBRK, count_pages, 0, 0);
+}
 
 
 

@@ -74,7 +74,6 @@ int send_msg(struct Proc * sender_proc, int receiver_proc_pid, uint32_t msg_addr
     msg.type = msg_type;
     copyin_msg(sender_proc, msg.content, msg_addr, len_msg);
 
-    printf("AFTER COPYIN MSG...\n");
     struct Proc* receiver_proc = get_proc(receiver_proc_pid);
     
     int success = insert_msg(receiver_proc, msg);

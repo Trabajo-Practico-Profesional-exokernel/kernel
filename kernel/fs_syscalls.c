@@ -80,8 +80,46 @@ void syscall_mkdir(FullTrapFrame *tf, uintptr_t pc) {
         // de otra manera podria recibirse el mensaje de otro proceso ajeno
         int recv_msg_result = recv_msg(tf, pc, true, (uint32_t)&msg_recv_content[0]);
         if (recv_msg_result >= 0){
-            printf("MKDIR RESPONSE: %x\n", recv_msg_result);
-            SET_SYSCALL_RET0(tf, 0);
+            printf("MKDIR RESPONSE: %x\n", msg_recv_content[0]);
+            if ((uint32_t)msg_recv_content[0] >= 0){
+                SET_SYSCALL_RET0(tf, 0);
+            } else {
+                SET_SYSCALL_RET0(tf, -1);
+            }
+        } else {
+            printf("Error receiving syscall response\n");
+            SET_SYSCALL_RET0(tf, -1);
+        }
+    } else {
+        printf("Error sending syscall msg\n");
+        SET_SYSCALL_RET0(tf, -1);
+    }
+}
+
+
+void syscall_rmdir(FullTrapFrame *tf, uintptr_t pc) {
+    vaddr_t path_vaddr = SYSCALL_ARG0(tf);
+
+    struct Proc* actual_proc = get_curr();
+
+    printf("syscall_rmdir called path_ptr=%x", path_vaddr);
+    // switch_to_kernel_tables();// You need to be on kernel pages to be able to map/get real paddr
+    
+    int send_msg_success = send_msg(actual_proc, filesystem_PID, path_vaddr, MSG_SIZE_MAX, FS_TYPE_RMDIR);
+    
+    if (send_msg_success) {
+        char msg_recv_content[MSG_SIZE_MAX];
+
+        // validar que el mensaje recibido debe ser del filesystem,
+        // de otra manera podria recibirse el mensaje de otro proceso ajeno
+        int recv_msg_result = recv_msg(tf, pc, true, (uint32_t)&msg_recv_content[0]);
+        if (recv_msg_result >= 0){
+            printf("RMDIR RESPONSE: %x\n", (uint32_t)msg_recv_content[0]);
+            if ((uint32_t)msg_recv_content[0] >= 0){
+                SET_SYSCALL_RET0(tf, 0);
+            } else {
+                SET_SYSCALL_RET0(tf, -1);
+            }
         } else {
             printf("Error receiving syscall response\n");
             SET_SYSCALL_RET0(tf, -1);
@@ -118,4 +156,5 @@ void init_syscalls_filesystem(void) {
     register_syscall(SYS_MKDIR, syscall_mkdir);
     register_syscall(SYS_CLOSE, syscall_close);
     register_syscall(SYS_CHDIR, syscall_chdir);
+    register_syscall(SYS_FS_RM, syscall_rmdir);
 }

@@ -40,6 +40,7 @@ void kmain()
 
     #ifdef IS_RISC
     #else
+    kbd_hw_enable();
     kbd_init();
     #endif
 

@@ -33,6 +33,7 @@ if [[ "$ARCH" == "x86" ]]; then
         -no-pie
         -mno-red-zone
         -fno-asynchronous-unwind-tables
+        -march=i386 -mtune=i386
     "
     OBJFLAGS="-Oelf32-i386"
 else
@@ -86,7 +87,11 @@ for app_dir in $@; do
 
     ## Convert ELF to binary
     $OBJCOPY --set-section-flags .bss=alloc,contents -O binary $app_build_folder/app.elf $app_build_folder/app.bin
-    $OBJCOPY -Ibinary $OBJFLAGS $app_build_folder/app.bin $app_build_folder/app.bin.o
+    
+    # Copiar a temporal para forzar nombre de simbolo limpio
+    cp $app_build_folder/app.bin ${app_name}_app.bin
+    $OBJCOPY -Ibinary $OBJFLAGS ${app_name}_app.bin $app_build_folder/app.bin.o
+    rm ${app_name}_app.bin
 
     echo "'$app_name' build completed!"
 done
