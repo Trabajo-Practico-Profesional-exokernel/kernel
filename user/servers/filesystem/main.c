@@ -26,7 +26,6 @@ typedef struct {
     int offset;
 } fs_seek_req_t;
 
-// Helpers de respuesta
 void send_int_response(int pid_target, int value) {
     sys_try_send_msg(pid_target, (char*) &value, sizeof(int));
 }
@@ -34,8 +33,6 @@ void send_int_response(int pid_target, int value) {
 void send_data_response(int pid_target, void* data, int size) {
     sys_try_send_msg(pid_target, (char*) data, size);
 }
-
-// --- HANDLERS ---
 
 void handle_open(struct Message *msg) {
     int fd = fs_open(msg->content, FS_O_RDWR);
@@ -69,11 +66,25 @@ void handle_write(struct Message *msg) {
 
 void handle_mkdir(struct Message *msg) {
     int result = fs_mkdir(msg->content);
-
+    if (result == 0) {
+        fs_sync_current_dir();  // Sincronizar con disco
+    }
     shell_ls();
+    msg->content[0] = result;
     send_int_response(msg->sender_pid, result);
 }
 
+void handle_rmdir(struct Message *msg) {
+    printf("REMOVING DIR\n");
+    int result = fs_rmdir(msg->content);
+    if (result == 0) {
+        fs_sync_current_dir();  // Sincronizar con disco
+    }
+    printf("RESULT: [%d]\n", result);
+    shell_ls();
+    msg->content[0] = result;
+    send_int_response(msg->sender_pid, result);
+}
 
 void handle_rm(struct Message *msg) {
     int result = fs_unlink(msg->content);
@@ -108,29 +119,48 @@ void handle_chdir(struct Message *msg) {
     send_int_response(msg->sender_pid, res);
 }
 
-void handle_lseek(struct Message *msg) {
+/*void handle_lseek(struct Message *msg) {
     fs_seek_req_t *req = (fs_seek_req_t*) msg->content;
     int res = fs_lseek(req->fd, req->offset);
     send_int_response(msg->sender_pid, res);
+}*/
+
+
+
+void handle_mknod(struct Message *msg) {
+
 }
 
+
+void handle_lseek(struct Message *msg) {
+
+}
+
+#define MAX_HANDLERS (sizeof(dispatch_table) / sizeof(dispatch_table[0]))
+
+typedef void (*fs_handler_t)(struct Message*);
+
+static const fs_handler_t dispatch_table[] = {
+    [FS_TYPE_OPEN]   = handle_open,
+    [FS_TYPE_CLOSE]  = handle_close,
+    [FS_TYPE_READ]   = handle_read,
+    [FS_TYPE_WRITE]  = handle_write,
+    [FS_TYPE_MKDIR]  = handle_mkdir,
+    [FS_TYPE_RMDIR]  = handle_rmdir,
+    [FS_TYPE_UNLINK] = handle_rm,
+    [FS_TYPE_FSTAT]  = handle_fstat,
+    [FS_TYPE_LINK]   = handle_link,
+    [FS_TYPE_CHDIR]  = handle_chdir,
+    [FS_TYPE_LSEEK] = handle_lseek,
+    [FS_TYPE_MKNOD]  = handle_mknod
+};
+
 void dispatch_request(struct Message *msg) {
-    switch (msg->type) {
-        case FS_TYPE_OPEN:   handle_open(msg); break;
-        case FS_TYPE_CLOSE:  handle_close(msg); break;
-        //case FS_TYPE_READ:   handle_read(msg); break;  
-        //case FS_TYPE_WRITE:  handle_write(msg); break; 
-        case FS_TYPE_MKDIR:  handle_mkdir(msg); break;
-        case FS_TYPE_UNLINK: handle_rm(msg); break;
-        case FS_TYPE_FSTAT:  handle_fstat(msg); break;
-        case FS_TYPE_LINK:   handle_link(msg); break;
-        case FS_TYPE_CHDIR:  handle_chdir(msg); break;
-        //case FS_TYPE_LSEEK:  handle_lseek(msg); break; 
-        case FS_TYPE_MKNOD:  send_int_response(msg->sender_pid, -1); break;
-        default:
-            // printf("[FS] Unknown msg type %d\n", msg->type);
-            send_int_response(msg->sender_pid, -1); 
-            break;
+    if (msg->type >= 0 && msg->type < MAX_HANDLERS && dispatch_table[msg->type]) {
+        dispatch_table[msg->type](msg);
+    } else {
+        printf("[FS] Unknown msg type %d\n", msg->type);
+        send_int_response(msg->sender_pid, -1);
     }
 }
 

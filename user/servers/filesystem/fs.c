@@ -118,9 +118,9 @@ int fs_mkfs(void){
     char null_block[BLOCK_SIZE];
     bzero(null_block, BLOCK_SIZE);
     
-    /*for(int i = 0; i < FS_SIZE; i++){
+    for(int i = 0; i < FS_SIZE; i++){
         block_write(i, null_block);
-    }*/
+    }
 
     // define superblock
     super = (superblock_t) {.magic_number = MAGIC_NUMBER,
@@ -610,40 +610,41 @@ int fs_mkdir(char *fileName){
 }
 
 int fs_rmdir(char *fileName){
-
+    printf("----1\n");
     inode_t parent_inode = get_inode_per_inum(current_dir.files_inum[0]);
-
+    printf("----2\n");
     // check if fileName exists
     int relIndex;
+    printf("----3\n");
     int existFile = find_file_in_dir(parent_inode, fileName, &relIndex);
     if(existFile < 0){
         return -1;
     }
-
+    printf("----4\n");
     // check if directory is empty
     inode_t dir_inode = get_inode_per_inum(existFile);
     if(is_directory_empty(dir_inode) == FALSE){
         return -1;
     }
-
+    printf("----5\n");
     // remove subdirectory
     free_iblock(dir_inode.direct[0]); // free its only data block
     free_inode(existFile); // free its inode number
-
+    printf("----6\n");
     // remove link of parent dir to subdirectory
     remove_file_from_dir(&parent_inode, relIndex); 
     parent_inode.size--;
-
+    printf("----7\n");
     // load newest current dir
     Block aux;
     block_read(super.beg_data + parent_inode.direct[0], (char*) &aux);
     current_dir = aux.data_block.dir;
-
+    printf("----8\n");
     // write to disk
     save_inode(current_dir.files_inum[0], parent_inode); // save current dir inode
-
+    printf("----9\n");
     save_map();
-
+    printf("DIRECTORIO %s BORRADO\n", fileName);
     return 0;
 }
 

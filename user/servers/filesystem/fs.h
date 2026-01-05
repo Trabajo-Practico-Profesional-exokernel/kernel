@@ -10,7 +10,7 @@
 #define MAX_FILE_NAME 28
 #define MAX_PATH_NAME 256  
 #define MAX_OPEN_FILES 256
-#define MAGIC_NUMBER 0xEF99
+#define MAGIC_NUMBER 0x55
 
 #define INODES_BLOCKS 256
 #define INODES_PER_BLOCK 8 // Must be less than or equal to 8

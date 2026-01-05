@@ -1,2 +1,1 @@
-b syscall_disk_write
-b syscall_disk_read
+b fs_rmdir
