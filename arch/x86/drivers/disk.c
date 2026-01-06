@@ -56,6 +56,7 @@ void syscall_disk_read(FullTrapFrame *tf, uintptr_t pc) {
         SET_SYSCALL_RET0(tf, err);
         return;
     }
+	//PANIC("DEBUG");
     switch_to_kernel_tables();
     
     struct Proc * caller = get_curr();

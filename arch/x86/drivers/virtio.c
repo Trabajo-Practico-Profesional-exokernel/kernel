@@ -1,12 +1,18 @@
-
-
-
 #include "arch_inc/virtio.h"
 #include "arch_inc/virtio_blk.h"
+#include "arch_inc/x86.h"
 
 #include "inc/common.h"
 #include "arch/mem.h"
 #include "std/string.h"
+
+#define CONFIG_ADDRESS 	0xCF8
+#define CONFIG_DATA 	0xCFC
+
+#define PCI_COMMAND_IO     (1 << 0)
+#define PCI_COMMAND_MEM    (1 << 1)
+#define PCI_COMMAND_MASTER (1 << 2)
+
 
 uint32_t virtio_reg_read32(unsigned offset) {
     return *((volatile uint32_t *) (VIRTIO_BLK_PADDR + offset));
@@ -22,6 +28,50 @@ void virtio_reg_write32(unsigned offset, uint32_t value) {
 
 void virtio_reg_fetch_and_or32(unsigned offset, uint32_t value) {
     virtio_reg_write32(offset, virtio_reg_read32(offset) | value);
+}
+
+static inline uint32_t pci_config_read32(uint8_t bus, uint8_t dev, uint8_t fun, uint8_t off)
+{
+    uint32_t addr =
+        (1U << 31) |
+        ((uint32_t)bus << 16) |
+        ((uint32_t)dev << 11) |
+        ((uint32_t)fun << 8)  |
+        (off & 0xFC);
+
+    outl(CONFIG_ADDRESS, addr);
+ 	return inl(CONFIG_DATA);
+}
+
+static inline void pci_set_addr(uint8_t bus, uint8_t dev, uint8_t fun, uint8_t off)
+{
+    uint32_t addr =
+        (1U << 31) |
+        ((uint32_t)bus << 16) |
+        ((uint32_t)dev << 11) |
+        ((uint32_t)fun << 8)  |
+        (off & 0xFC);
+
+    outl(CONFIG_ADDRESS, addr);
+}
+
+
+static inline void pci_enable_device(uint8_t bus, uint8_t dev, uint8_t fun)
+{
+    uint32_t v = pci_config_read32(bus, dev, fun, 0x04);
+    uint16_t cmd = v & 0xFFFF;
+
+    cmd |= PCI_COMMAND_MEM;
+    cmd |= PCI_COMMAND_MASTER;
+
+    v = (v & 0xFFFF0000) | cmd;
+    outl(CONFIG_ADDRESS,
+        (1U << 31) |
+        ((uint32_t)bus << 16) |
+        ((uint32_t)dev << 11) |
+        ((uint32_t)fun << 8)  |
+        (0x04 & 0xFC));
+    outl(CONFIG_DATA, v);
 }
 
 
@@ -48,20 +98,91 @@ The driver MUST NOT send any buffer available notifications to the device before
  */
 #define VIRTIO_MAGIC_NUMBER 0x74726976 // Number used for checking all ok/no corruption
 
+uint32_t phys_base;
+uint32_t bar0_size;
+
+
 void virtio_init(void) {
+	static uint8_t virtio_blk_bus;
+	static uint8_t virtio_blk_dev;
+	static uint8_t virtio_blk_fun;
 
-    // Check magic number first
-    if (virtio_reg_read32(VIRTIO_REG_MAGIC) != VIRTIO_MAGIC_NUMBER)
-        PANIC("virtio: invalid magic value");
+	// STEP 1: scan PCI (discovery)
+	static int found = 0;
 
-    // Then version
-    if (virtio_reg_read32(VIRTIO_REG_VERSION) != 1)
-        PANIC("virtio: invalid version");
-    
-    // Then device id ... specified as param on qemu, from name
-    if (virtio_reg_read32(VIRTIO_REG_DEVICE_ID) != VIRTIO_DEVICE_BLK)
-        PANIC("virtio: invalid device id");
+	for (uint8_t bus = 0; !found && bus < 256; bus++) {
+		for (uint8_t dev = 0; !found && dev < 32; dev++) {
+			for (uint8_t fun = 0; !found && fun < 8; fun++) {
+				uint32_t id = pci_config_read32(bus, dev, fun, 0x00);
+				if ((id & 0xFFFF) == 0xFFFF)
+					continue;
 
+				uint16_t vendor = id & 0xFFFF;
+				uint16_t device = id >> 16;
+
+				if (vendor == 0x1AF4 && device == 0x1001 && !found) {
+						found = 1;
+						printf("CANDIDATO LEGACY\n");
+						virtio_blk_bus = bus;
+						virtio_blk_dev = dev;
+						virtio_blk_fun = fun;
+					// candidato virtio
+				}
+			}
+		}
+	}
+
+	// STEP 2: enable PCI device 
+	if (!found) {
+		PANIC("No virtio device found");	
+	}
+	printf("virtio device found");
+    pci_enable_device(virtio_blk_bus, virtio_blk_dev, virtio_blk_fun);		
+
+	// STEP 3: read and decode BAR0
+	uint32_t bar0;
+	uint32_t bar0_orig;
+	uint32_t bar0_size;
+	uint32_t phys_base;
+
+	/* 1. Leer BAR0 */
+	pci_set_addr(virtio_blk_bus, virtio_blk_dev, virtio_blk_fun, 0x10);
+	bar0 = inl(CONFIG_DATA);
+
+
+	/* 3. Extraer base física */
+	phys_base = bar0 & 0xFFFFFFF0;
+
+	/* 4. Calcular tamaño del BAR */
+	bar0_orig = bar0;
+
+	pci_set_addr(virtio_blk_bus, virtio_blk_dev, virtio_blk_fun, 0x10);
+	outl(CONFIG_DATA, 0xFFFFFFFF);
+
+	pci_set_addr(virtio_blk_bus, virtio_blk_dev, virtio_blk_fun, 0x10);
+	bar0_size = inl(CONFIG_DATA);
+
+	pci_set_addr(virtio_blk_bus, virtio_blk_dev, virtio_blk_fun, 0x10);
+	outl(CONFIG_DATA, bar0_orig);
+
+	/* 5. Decodificar tamaño */
+	bar0_size = ~(bar0_size & 0xFFFFFFF0) + 1;
+
+	/* Resultado:
+	 * phys_base  → base física MMIO del virtio-pci
+	 * bar0_size  → tamaño del bloque de registros
+	 */
+	// STEP 5: 
+	void *virtio_mmio = phys_base;
+	MMIO8(virtio_mmio, VIRTIO_PCI_STATUS) = 0;
+		
+	uint8_t st = MMIO8(virtio_mmio, VIRTIO_PCI_STATUS);
+	if (st != 0)
+	    PANIC("virtio-blk: reset fallido");
+
+	printf("Paso 5 completo");
+
+	// PASO 6
     // 1. Reset the device.
     virtio_reg_write32(VIRTIO_REG_DEVICE_STATUS, 0);
 
@@ -83,7 +204,6 @@ void virtio_init(void) {
     // 8. Set the DRIVER_OK status bit.
     virtio_reg_write32(VIRTIO_REG_DEVICE_STATUS, VIRTIO_STATUS_DRIVER_OK);
 }
-
 
 /*
 Virt queue also needs to be initialized... 

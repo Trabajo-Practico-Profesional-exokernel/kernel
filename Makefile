@@ -19,7 +19,9 @@ ifeq ($(ARCH),x86)
 	           -nostartfiles -nodefaultlibs -Wall -Wextra -c -g -DIS_X86 -march=i386 -mtune=i386 -ffreestanding
 	ASFLAGS = -f elf
 	LDFLAGS = -T arch/x86/drivers/linker/link.ld -melf_i386
-	QEMU    = qemu-system-i386 -cdrom os.iso  -m 64 -no-reboot -no-shutdown -nographic -serial mon:stdio
+	QEMU    = qemu-system-i386 -cdrom os.iso  -m 64 -no-reboot -no-shutdown -nographic -serial mon:stdio \
+								-drive id=drive0,file=$(KERNEL_DISK_PATH),format=raw,if=none \
+								-device virtio-blk-pci,drive=drive0
 else ifeq ($(ARCH),riscv)
 	CC      = clang
 

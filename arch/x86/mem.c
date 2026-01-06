@@ -2,6 +2,8 @@
 #include "arch_inc/mem_constants.h"
 #include "arch/mem.h"
 #include "std/string.h"
+#include "arch_inc/virtio.h"
+#include "arch_inc/virtio_blk.h"
 
 extern char __free_ram[], __free_ram_end[], __kernel_base[], __kernel_base_end[], __trampoline_end[];
 
@@ -73,6 +75,7 @@ void mem_init(void){
             0
     );
 
+    map_page(kernel_pde, VIRTIO_BLK_PADDR, VIRTIO_BLK_PADDR, KERNEL_PERMISSIONS_ALL); 
     // offset_map_range(kernel_pde, // Map first 4MB of kernel to 0xC000000 == VADDR_KERNEL_BASE
     //         (paddr_t) __kernel_base,
     //         (paddr_t) __kernel_base + (paddr_t) (1024 * PAGE_SIZE), 
@@ -160,6 +163,7 @@ void map_page(uint32_t *pd_table, vaddr_t vaddr, paddr_t paddr, uint32_t permiss
 
 }
 
+// TODO: check this func
 paddr_t get_paddr_for(uint32_t *pd_table, vaddr_t vaddr) {
     uint32_t pd_index = GET_INDEX_IN_PAGE_DIRECTORY(vaddr); // bits 0 to 9
     uint32_t pt_index = GET_INDEX_IN_PAGE_TABLE(vaddr); // bits 10 to 19

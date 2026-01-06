@@ -7,8 +7,9 @@
 
 /// Esta addr es tal ya que en qemu se maneja que los devices empiezen en 0x1000
 /// Y despues cada uno ocupa 4096 i.e 1 pagina, osea VIRTIO BLK seria el segundo device!
-#define VIRTIO_BLK_PADDR  0x10001000
+extern uint32_t phys_base;
 
+#define VIRTIO_BLK_PADDR (phys_base)
 
 #define SECTOR_SIZE       512
 #define VIRTQ_ENTRY_NUM   16
@@ -34,6 +35,21 @@
 #define VIRTQ_AVAIL_F_NO_INTERRUPT 1
 #define VIRTIO_BLK_T_IN  0
 #define VIRTIO_BLK_T_OUT 1
+
+#define VIRTIO_PCI_HOST_FEATURES   0x00  // 32-bit
+#define VIRTIO_PCI_GUEST_FEATURES  0x04  // 32-bit
+#define VIRTIO_PCI_QUEUE_PFN       0x08  // 32-bit
+#define VIRTIO_PCI_QUEUE_NUM       0x0C  // 16-bit (RO)
+#define VIRTIO_PCI_QUEUE_SEL       0x0E  // 16-bit
+#define VIRTIO_PCI_QUEUE_NOTIFY    0x10  // 16-bit
+#define VIRTIO_PCI_STATUS          0x12  // 8-bit
+#define VIRTIO_PCI_ISR             0x13  // 8-bit (RO)
+
+#define MMIO8(base, off)  (*(volatile uint8_t  *)((base) + (off)))
+#define MMIO16(base, off) (*(volatile uint16_t *)((base) + (off)))
+#define MMIO32(base, off) (*(volatile uint32_t *)((base) + (off)))
+
+
 
 // Virtqueue Descriptor area entry.
 struct virtq_desc {
