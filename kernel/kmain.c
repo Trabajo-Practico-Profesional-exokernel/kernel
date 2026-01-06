@@ -1,6 +1,6 @@
 #include "inc/common.h"
 #include "sched.h"
-
+#include "../test/testing.h"
 #include "arch/trap.h"
 #include "arch/stdio.h"
 #include "arch/arch_init.h"
@@ -15,7 +15,7 @@
 // return 0xDEADBEEF;
 void kmain()
 {
-
+    main_tests();
     init_arch();
 
     clear();
