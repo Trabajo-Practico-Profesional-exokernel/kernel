@@ -46,13 +46,13 @@ void init_sched(void) {
     //                     &_binary_apps[APP_IND_FILESYSTEM], DEF_ARGV);
 
     
-    printf("AT CREATE PROCESS SHELL expected pc= %x, ", (uint32_t)VADDR_USER_BASE);
+    debug_printf("AT CREATE PROCESS SHELL expected pc= %x, ", (uint32_t)VADDR_USER_BASE);
     printProc(proc_shell);
 
     
     // Start proc_shell!
     #ifdef IS_RISC
-    switch_proc(proc_fs);
+    switch_proc(proc_shell);
     #else
     switch_proc(proc_shell);
     #endif
@@ -62,7 +62,7 @@ void init_sched(void) {
 
 void init_sched2(void) {
     struct Proc * proc_def = create_process(APP_IND_KALLOC_PROGRAM, DEF_ARGV);
-    printf("AT CREATE PROCESS DEF expected pc= %x, ", (uint32_t)VADDR_USER_BASE);
+    debug_printf("AT CREATE PROCESS DEF expected pc= %x, ", (uint32_t)VADDR_USER_BASE);
     printProc(proc_def);
     
     switch_proc(proc_def);

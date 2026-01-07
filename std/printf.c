@@ -4,6 +4,14 @@ static char digits[] = "0123456789ABCDEF";
 
 void putchar(char ch);
 
+enum DebugPrintMode actual_debug_print_mode = OFF;
+
+void debug_printf(const char *fmt, ...){
+  if (actual_debug_print_mode == ON) {
+    printf(fmt);
+  }
+}
+
 static void
 printint(int32_t xx, int base, int sgn)
 {

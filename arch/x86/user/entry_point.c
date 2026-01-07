@@ -5,7 +5,7 @@
 extern void main(void);
 
 __attribute__((noreturn)) void do_exit(void) {
-    printf("-------> PROCESS EXITED NORMALLY!\n");
+    debug_printf("-------> PROCESS EXITED NORMALLY!\n");
     exit(0); // Syscall exit!
 }
 
@@ -28,13 +28,13 @@ void sleep(int delay) {
 
 // __attribute__((section(".text.start")))
 void _start(int argc, char** argv){
-    printf("Simple log!\n");
+    debug_printf("Simple log!\n");
     
-    printf("Prog got argc: %d and argv: %x\n", argc, argv);
+    debug_printf("Prog got argc: %d and argv: %x\n", argc, argv);
     int curr= 0;
     for(curr = 0; curr < argc; curr++) {
-        printf("Prog got arg pointer argv[%d]: %x ", curr, argv[curr]);    
-        printf("=> '%s'\n", argv[curr]);    
+        debug_printf("Prog got arg pointer argv[%d]: %x ", curr, argv[curr]);    
+        debug_printf("=> '%s'\n", argv[curr]);    
     }
     main();
     

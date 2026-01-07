@@ -33,12 +33,12 @@ void reverse(char *s);
 // uint64_t get_timer(void);
 
 // Adaptación de funciones de impresión para usar printf (ignoran fila/columna)
-#define print_char(l, c, ch) printf("%c", ch)
-#define print_int(l, c, num) printf("%d", num)
-#define print_hex(l, c, num) printf("%x", num)
-#define print_str(l, c, str) printf("%s", str)
+#define print_char(l, c, ch) debug_printf("%c", ch)
+#define print_int(l, c, num) debug_printf("%d", num)
+#define print_hex(l, c, num) debug_printf("%x", num)
+#define print_str(l, c, str) debug_printf("%s", str)
 
 // Debug print
-#define dprint(str) printf("%s\n", str)
+#define dprint(str) debug_printf("%s\n", str)
 
 #endif

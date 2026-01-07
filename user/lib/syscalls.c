@@ -18,7 +18,7 @@ int sys_try_recv_msg(char *msg, size_t len_msg) {
 }
 
 void sendchar(int proc_pid, char ch) {
-    printf("sending char\n");
+    debug_printf("sending char\n");
     syscall(SYS_SENDCHAR, proc_pid, ch, 0);
 }
 
@@ -35,7 +35,7 @@ int sys_recv_msg(struct Message *msg) {
 }
 
 void recvchar(int proc_pid, char ch) {
-    printf("receiving char\n");
+    debug_printf("receiving char\n");
     syscall(SYS_RECVCHAR, proc_pid, ch, 0);
 }
 

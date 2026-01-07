@@ -48,14 +48,14 @@ int try_add_page_for_proc(struct Proc * proc, paddr_t* allocated_paddr){
     struct UserProcPages* proc_pages = &procs_pages[proc->pid];
 
     if (proc_pages->used_pages >= USER_HEAP_MAX_PAGE_COUNT){
-        printf("Process %u reached max limit of heap pages! Cannot alloc\n", proc->pid);
+        debug_printf("Process %u reached max limit of heap pages! Cannot alloc\n", proc->pid);
         return -1;
     }
 
     int ret_value = try_alloc_user_page(allocated_paddr);
     
     if(ret_value < 0){
-        printf("Failed alloc page, no memory left!\n");
+        debug_printf("Failed alloc page, no memory left!\n");
         return ret_value;
     }
     int page_off = proc_pages->used_pages;
@@ -152,7 +152,7 @@ void syscall_sbrk(FullTrapFrame *tf, uintptr_t pc) {
     int page_count = SYSCALL_ARG0(tf);
     struct Proc* caller_proc = get_curr();
 
-    printf("Should alloc page count %d for %u\n", page_count, caller_proc->pid);
+    debug_printf("Should alloc page count %d for %u\n", page_count, caller_proc->pid);
     // Switch to kernel pages to be able to alloc pages
     int ret_value = -1; // By def set as error
 
@@ -165,7 +165,7 @@ void syscall_sbrk(FullTrapFrame *tf, uintptr_t pc) {
     
     if(ret_value >= 0){
         vaddr_t ret_vaddr = get_vaddr_user_page(ret_value);
-        printf("SBRK incremented by 1! Allocated page ind %d, vaddr= %x to paddr= %x\n", ret_value, ret_vaddr, allocated_page);
+        debug_printf("SBRK incremented by 1! Allocated page ind %d, vaddr= %x to paddr= %x\n", ret_value, ret_vaddr, allocated_page);
         ret_value = ret_vaddr;
     }
 

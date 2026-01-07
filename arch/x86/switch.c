@@ -136,7 +136,7 @@ void sleep(int delay) {
  */
 void init_trapframe(struct Proc *proc, vaddr_t user_sp) {
     TrapFrame *tf = &proc->tf;
-    printf("[INIT TRAPFRAME] Dir memoria trapframe: %p\n", tf);
+    debug_printf("[INIT TRAPFRAME] Dir memoria trapframe: %p\n", tf);
 
     tf->regs.edi = 0;
     tf->regs.esi = 0;
@@ -171,10 +171,10 @@ void init_trapframe(struct Proc *proc, vaddr_t user_sp) {
         // tf->cs = GD_KT; 
     // }
     
-    printf("[INIT TF] pid=%d eip=%x -> Ring %s\n", 
+    debug_printf("[INIT TF] pid=%d eip=%x -> Ring %s\n", 
            proc->pid, tf->eip, (tf->cs & 3) == 0 ? "0 (Kernel)" : "3 (User)");
 
-    printf("[INIT TRAPFRAME] entry_point = 0x%x, esp = 0x%x\n",tf->eip, tf->esp);
+    debug_printf("[INIT TRAPFRAME] entry_point = 0x%x, esp = 0x%x\n",tf->eip, tf->esp);
 }
 
 #include "arch/logging.h"

@@ -30,7 +30,7 @@ void fs_sync_current_dir(void)
     int block_index = dir_inode.direct[0];
 
     if (block_index < 0) {
-        printf("[FS] ERROR: current dir has no data block\n");
+        debug_printf("[FS] ERROR: current dir has no data block\n");
         return;
     }
 
@@ -50,8 +50,8 @@ void shell_ls(void) {
 
     int num_blocks = (dir_inode.size + super.pointers_per_dcb - 1) / super.pointers_per_dcb;
 
-    printf("Nombre          Tipo    Inum    Size\n");
-    printf("------------------------------------\n");
+    debug_printf("Nombre          Tipo    Inum    Size\n");
+    debug_printf("------------------------------------\n");
 
     for(i = 0; i < num_blocks; i++){
         int current_iblock = get_iblock(dir_inode, i);
@@ -76,7 +76,7 @@ void shell_ls(void) {
             // %d    : Imprime entero
             // \t    : Tabulador para alinear
             
-            printf("%-15s %s \t%d \t%d\n", 
+            debug_printf("%-15s %s \t%d \t%d\n", 
                    (char*)block.dir.files_name[j],           // Nombre
                    (file_inode.type == DIRECTORY ? "D" : "F"), // Tipo
                    (int)block.dir.files_inum[j],             // Inum
@@ -173,7 +173,7 @@ int fs_mkfs(void){
     Block block;
     block.sb = super;
 
-    printf("=== INFO SUPERBLOQUE ===\n"
+    debug_printf("=== INFO SUPERBLOQUE ===\n"
         "Magic Number:       0x%x\n"  // Hexadecimal para el magic number
         "Size Disk:          %d bloques\n"
         "Block Size:         %d bytes\n"
@@ -204,7 +204,7 @@ int fs_mkfs(void){
     block_write(0, (char *) &block); // writing superblock
     block_read(0, (char *) &block); 
 
-    printf("=== INFO SUPERBLOQUE ===\n"
+    debug_printf("=== INFO SUPERBLOQUE ===\n"
         "Magic Number:       0x%x\n"  // Hexadecimal para el magic number
         "Size Disk:          %d bloques\n"
         "Block Size:         %d bytes\n"
@@ -610,41 +610,41 @@ int fs_mkdir(char *fileName){
 }
 
 int fs_rmdir(char *fileName){
-    printf("----1\n");
+    debug_printf("----1\n");
     inode_t parent_inode = get_inode_per_inum(current_dir.files_inum[0]);
-    printf("----2\n");
+    debug_printf("----2\n");
     // check if fileName exists
     int relIndex;
-    printf("----3\n");
+    debug_printf("----3\n");
     int existFile = find_file_in_dir(parent_inode, fileName, &relIndex);
     if(existFile < 0){
         return -1;
     }
-    printf("----4\n");
+    debug_printf("----4\n");
     // check if directory is empty
     inode_t dir_inode = get_inode_per_inum(existFile);
     if(is_directory_empty(dir_inode) == FALSE){
         return -1;
     }
-    printf("----5\n");
+    debug_printf("----5\n");
     // remove subdirectory
     free_iblock(dir_inode.direct[0]); // free its only data block
     free_inode(existFile); // free its inode number
-    printf("----6\n");
+    debug_printf("----6\n");
     // remove link of parent dir to subdirectory
     remove_file_from_dir(&parent_inode, relIndex); 
     parent_inode.size--;
-    printf("----7\n");
+    debug_printf("----7\n");
     // load newest current dir
     Block aux;
     block_read(super.beg_data + parent_inode.direct[0], (char*) &aux);
     current_dir = aux.data_block.dir;
-    printf("----8\n");
+    debug_printf("----8\n");
     // write to disk
     save_inode(current_dir.files_inum[0], parent_inode); // save current dir inode
-    printf("----9\n");
+    debug_printf("----9\n");
     save_map();
-    printf("DIRECTORIO %s BORRADO\n", fileName);
+    debug_printf("DIRECTORIO %s BORRADO\n", fileName);
     return 0;
 }
 

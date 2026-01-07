@@ -25,7 +25,7 @@ int copy_argv_pointers_from_user(struct Proc * proc, paddr_t* argv_pointers, vad
                                     vaddr_argv);
     
     if (src_argv_paddr == 0){
-        printf("Invalid vaddr for argv error!!\n");
+        debug_printf("Invalid vaddr for argv error!!\n");
         return -2;
     }
     vaddr_t* src_argv = (vaddr_t*) src_argv_paddr;
@@ -33,7 +33,7 @@ int copy_argv_pointers_from_user(struct Proc * proc, paddr_t* argv_pointers, vad
 
     for(argc = 0; src_argv[argc]; argc++) { // While argv[ind] != 0
         if(argc >= MAXARG) {
-            printf("MORE THAN MAX PARAMS!\n");
+            debug_printf("MORE THAN MAX PARAMS!\n");
             return -1;
         }
 
@@ -43,7 +43,7 @@ int copy_argv_pointers_from_user(struct Proc * proc, paddr_t* argv_pointers, vad
                                         (uint32_t *) proc->pde_paddr,
                                         vaddr_arg);
         if (paddr_arg == 0){
-            printf("Invalid vaddr for arg error!!\n");
+            debug_printf("Invalid vaddr for arg error!!\n");
             return -2;
         }
 
@@ -52,11 +52,11 @@ int copy_argv_pointers_from_user(struct Proc * proc, paddr_t* argv_pointers, vad
         size_t arg_len = strlen((char* ) paddr_arg) + 1; 
         
         if (arg_len > MAX_ARG_LEN){
-            printf("ARG LONGER THAN ALLOWED!\n");
+            debug_printf("ARG LONGER THAN ALLOWED!\n");
             return -1;            
         }
 
-        printf("MAPPED PARAM FOR PROGRAM pointer at %x!\n", paddr_arg);
+        debug_printf("MAPPED PARAM FOR PROGRAM pointer at %x!\n", paddr_arg);
         
         argv_pointers[argc] = paddr_arg;
     }
@@ -82,21 +82,21 @@ int set_init_parameters_for_proc(struct Proc * proc, char ** argv, paddr_t* sp_o
     for(argc = 0; argv[argc]; argc++) { // While argv[ind] != 0
 
         if(argc >= MAXARG) {
-            printf("MORE THAN MAX PARAMS!\n");
+            debug_printf("MORE THAN MAX PARAMS!\n");
             return -1;
         }
 
         size_t arg_len = strlen(argv[argc]) + 1; 
 
         if (arg_len > MAX_ARG_LEN){
-            printf("ARG LONGER THAN ALLOWED!\n");
+            debug_printf("ARG LONGER THAN ALLOWED!\n");
             return -1;            
         }
         sp -= arg_len;
         sp -= sp % 16; // riscv sp must be 16-byte aligned
 
         if(sp < proc->user_sp_start){
-            printf("STACK OVERFLOW!!\n");
+            debug_printf("STACK OVERFLOW!!\n");
             return -2;
         }
 
@@ -113,7 +113,7 @@ int set_init_parameters_for_proc(struct Proc * proc, char ** argv, paddr_t* sp_o
     sp -= sp % 16;
 
     if(sp < proc->user_sp_start){
-        printf("STACK OVERFLOW!!\n");
+        debug_printf("STACK OVERFLOW!!\n");
         return -2;
     }
 
@@ -138,7 +138,7 @@ void load_create_process_user(struct Proc * proc, const struct AppBinaryInfo * a
     proc->pde_paddr = (paddr_t)init_user_pde_table();
     uint32_t *pde_table = (uint32_t *) proc->pde_paddr;
     
-    printf("FOR PROC %u MAP PAGETABLE %x\n", proc->pid, proc->pde_paddr);
+    debug_printf("FOR PROC %u MAP PAGETABLE %x\n", proc->pid, proc->pde_paddr);
     
     
     //
@@ -146,10 +146,10 @@ void load_create_process_user(struct Proc * proc, const struct AppBinaryInfo * a
     //
 
     proc->user_sp_start = alloc_pages(USER_STACK_PAGE_COUNT);
-    printf("FOR PROC %u USER SP_START IS %x \n", proc->pid, proc->user_sp_start);
+    debug_printf("FOR PROC %u USER SP_START IS %x \n", proc->pid, proc->user_sp_start);
 
     // Map the code of the kernel so that when a syscall/trap happens there is no page fault. No permission for user. Direct map.
-    printf("FOR PROC %u MAP KERNEL CODE %x to %x\n", proc->pid, get_paddr_kernel_start(), get_paddr_kernel_end());
+    debug_printf("FOR PROC %u MAP KERNEL CODE %x to %x\n", proc->pid, get_paddr_kernel_start(), get_paddr_kernel_end());
     direct_map_range(pde_table, 
             get_paddr_kernel_start(),
             get_paddr_kernel_end(),
@@ -193,7 +193,7 @@ void load_create_process_user(struct Proc * proc, const struct AppBinaryInfo * a
     for (uint32_t off = 0; off < app_info->size; off += PAGE_SIZE) {
         paddr_t page = alloc_pages(1); // Alloc pages throws PANIC ALREADY!
         if(off == 0){
-            printf("PADDR START OF PROCESS 0x%x\n",page);
+            debug_printf("PADDR START OF PROCESS 0x%x\n",page);
         }
 
         // Handle the case where the data to be copied is smaller than the page size.
@@ -221,7 +221,7 @@ void load_create_process_user(struct Proc * proc, const struct AppBinaryInfo * a
     // Sets on the trapframe th pc to the right vl
 
     vaddr_t params_vaddr = VADDR_USER_STACK_HARD_END - params_total_len;
-    printf("Proc has sp top 0x%x after params at: 0x%x, len: %u so vaddr 0x%x\n", paddr_sp_end, final_user_sp_top, params_total_len, params_vaddr);
+    debug_printf("Proc has sp top 0x%x after params at: 0x%x, len: %u so vaddr 0x%x\n", paddr_sp_end, final_user_sp_top, params_total_len, params_vaddr);
     // Sets sp to the virtual stack end - len of params.. params start vaddr, so that it does not use it for the proc
     init_trapframe(proc, params_vaddr); 
     proc->status = PROC_RUNNABLE;

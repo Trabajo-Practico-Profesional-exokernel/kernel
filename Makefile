@@ -25,7 +25,7 @@ else ifeq ($(ARCH),riscv)
 
 	## Notice we also add meta/gen as include folder ! to inclider meta/apps_info.h ! with the define of the struct and apps indexs
 	CFLAGS  = $(DEF_INCS) -Imeta/gen -Iarch/riscV -std=c11 -O2 -g3 -Wall -Wextra --target=riscv32-unknown-elf \
-	           -fno-stack-protector -ffreestanding -nostdlib -DIS_RISC
+                   -fno-stack-protector -ffreestanding -nostdlib -DIS_RISC -fno-pic -fno-pie -mcmodel=medany
 
 	# If riscv then add -DIS_RISC that deifines the constant IS_RISC for conditional compiling
 	

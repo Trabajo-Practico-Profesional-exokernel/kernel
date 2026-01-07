@@ -15,16 +15,16 @@ int start_program(char* program_name){
 
     for (int ind_program = 0; ind_program < APP_COUNT; ind_program++) {
         if (strncmp(program_name, _app_names[ind_program] , strlen(program_name)) == 0) {
-            printf("SHOULD RUN AT INDEX! %d: '%s' args '%s'\n", ind_program, program_name, args);
+            debug_printf("SHOULD RUN AT INDEX! %d: '%s' args '%s'\n", ind_program, program_name, args);
             
             int proc_pid= exec(ind_program, &args);
 
-            printf("Program %s started proc_id is ... %d\n", program_name, proc_pid);
+            debug_printf("Program %s started proc_id is ... %d\n", program_name, proc_pid);
             return proc_pid;
         }
     }
     
-    printf("At exec '%s' program not recognized\n", program_name);
+    debug_printf("At exec '%s' program not recognized\n", program_name);
     return ERR_CODE;
 }
 
@@ -35,7 +35,7 @@ int handle_exec(char* args){
         return ERR_CODE;
     }
     // Wait for the child!
-    printf("Should wait for  proc %d end!\n", pid_child);
+    debug_printf("Should wait for  proc %d end!\n", pid_child);
     return OK_CODE;
 }
 
@@ -57,6 +57,6 @@ int exec_command(char * action, char* args){
             return commands[i].handler(args);
         }
     }        
-    printf("\nUnknown Command: '%s' args '%s'\n", action, args);
+    debug_printf("\nUnknown Command: '%s' args '%s'\n", action, args);
     return ERR_CODE;
 }

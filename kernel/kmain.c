@@ -20,7 +20,7 @@ void kmain()
 
     clear();
     move_cursor(0);
-    printf("HOLIS\n");
+    debug_printf("HOLIS\n");
 
     init_trap();
 
@@ -38,7 +38,7 @@ void kmain()
     init_syscalls_proc();
     init_user_pages_alloc();
 
-    printf("\n\nHello World!\n");
+    debug_printf("\n\nHello World!\n");
     
     init_sched();
 

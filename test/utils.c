@@ -37,7 +37,7 @@ CTest init_ctx(){
 }
 
 int test_run(CTest* ctx) {
-    printf("\n=== INIT TESTS ===\n");
+    debug_printf("\n=== INIT TESTS ===\n");
 
     for (int i = 0; i < ctx->count; i++) {
         Test* t = &ctx->tests[i];

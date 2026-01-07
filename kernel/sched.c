@@ -75,9 +75,9 @@ void switch_proc(struct Proc* next) {
     // Now we are not using kernel stack pointers of process at this point... so no need to switch stack
     // SWITCH_TO_STACK(&trampoline_stacks[curr->cpunum][TRAMPOLINE_STACK_SIZE])
     // SSCRATCH_STACK() // Save for next trap to use this stack pointer i.e trampoline
-    // printf("----> trampoline sscratch stack top %p \n", &trampoline_stacks[curr->cpunum][TRAMPOLINE_STACK_SIZE]);
+    // debug_printf("----> trampoline sscratch stack top %p \n", &trampoline_stacks[curr->cpunum][TRAMPOLINE_STACK_SIZE]);
     // BUUT you have to sscratch it for next trap since its not being restored like the end of trapentry would.
-    printf("--------------------------- SWITCH TO PROC %u \n", curr->pid);
+    debug_printf("--------------------------- SWITCH TO PROC %u \n", curr->pid);
     
     SSCRATCH_NEW_STACK(&trampoline_stacks[curr->cpunum][TRAMPOLINE_STACK_SIZE])
 
@@ -85,11 +85,11 @@ void switch_proc(struct Proc* next) {
     switch_page_table((uint32_t *)curr->pde_paddr);
 
     #else
-    printf("[NEXT PROC BEFORE SWITCH_CONTEXT] ");
+    debug_printf("[NEXT PROC BEFORE SWITCH_CONTEXT] ");
     printProc(next);
-    printf("\n\n");
+    debug_printf("\n\n");
     switch_page_table(curr->pde_paddr);
-    printf("[DEBUG] Target EIP: %x | Target ESP: %x\n", curr->tf.eip, curr->tf.esp);
+    debug_printf("[DEBUG] Target EIP: %x | Target ESP: %x\n", curr->tf.eip, curr->tf.esp);
     #endif
     switch_context(curr);
 }
