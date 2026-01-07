@@ -16,6 +16,7 @@ Hardware facts (x86 PS/2)
 #define KBD_BUFFER_SIZE 512
 
 /* Alphabet */
+/* Standard Letters */
 #define KBD_SC_A        0x1e
 #define KBD_SC_B        0x30
 #define KBD_SC_C        0x2e
@@ -55,29 +56,35 @@ Hardware facts (x86 PS/2)
 #define KBD_SC_9        0x0a
 #define KBD_SC_0        0x0b
 
-/* Special keys */
+/* Special keys - Physical Locations */
 #define KBD_SC_ENTER    0x1c
 #define KBD_SC_SPACE    0x39
 #define KBD_SC_BS       0x0e
 #define KBD_SC_LSHIFT   0x2a
 #define KBD_SC_RSHIFT   0x36
-#define KBD_SC_DASH     0x0c
-#define KBD_SC_EQUALS   0x0d
-#define KBD_SC_LBRACKET 0x1a
-#define KBD_SC_RBRACKET 0x1b
-#define KBD_SC_BSLASH   0x2b
-#define KBD_SC_SCOLON   0x27
-#define KBD_SC_QUOTE    0x28
-#define KBD_SC_COMMA    0x33
-#define KBD_SC_DOT      0x34
-#define KBD_SC_FSLASH   0x35
-#define KBD_SC_TILDE    0x29
 #define KBD_SC_CAPSLOCK 0x3a
 #define KBD_SC_TAB      0x0f
+
+/* Layout Specific Mapping (LatAm uses these physical keys differently) */
+#define KBD_SC_DASH     0x0c  // Fila Numérica, derecha del 0 (LatAm: ' ?)
+#define KBD_SC_EQUALS   0x0d  // Fila Numérica, derecha del ' (LatAm: ¿ ¡)
+#define KBD_SC_LBRACKET 0x1a  // Derecha de P (LatAm: ´ ¨)
+#define KBD_SC_RBRACKET 0x1b  // Derecha de ´ (LatAm: + *)
+#define KBD_SC_SCOLON   0x27  // Derecha de L (LatAm: Ñ)
+#define KBD_SC_QUOTE    0x28  // Derecha de Ñ (LatAm: { [)
+#define KBD_SC_BSLASH   0x2b  // Izquierda de Backspace o Enter (LatAm: } ])
+#define KBD_SC_COMMA    0x33
+#define KBD_SC_DOT      0x34
+#define KBD_SC_FSLASH   0x35  // Derecha de punto (LatAm: - _)
+#define KBD_SC_TILDE    0x29  // Izquierda de 1 (LatAm: | °)
+#define KBD_SC_LESS     0x56  // Izquierda de Z (LatAm: < >)
 
 static uint8_t is_lshift_down       = 0;
 static uint8_t is_rshift_down       = 0;
 static uint8_t is_caps_lock_pressed = 0;
+
+uint8_t get_char_ready = 0;
+int actual_char = -1;
 
 struct kbd_buffer {
     uint8_t buffer[KBD_BUFFER_SIZE];
@@ -157,14 +164,14 @@ void interrupt_handler(cpu_state_t state, idt_info_t info, stack_state_t exec)
 
 void keyboard_handle_interrupt(void)
 {
-    uint8_t sc = inb(KBD_DATA_PORT);
-
-    if (kbd_buffer.count < KBD_BUFFER_SIZE) {
-        *kbd_buffer.tail++ = sc;
-        kbd_buffer.count++;
-        if (kbd_buffer.tail == kbd_buffer.buffer + KBD_BUFFER_SIZE)
-            kbd_buffer.tail = kbd_buffer.buffer;
+    uint8_t scan_code = inb(KBD_DATA_PORT);
+    if (get_char_ready){
+        if (actual_char == -1) {
+           actual_char = kbd_scan_code_to_ascii(scan_code); 
+        }
     }
+    pic_acknowledge(1);
+    enable_interrupts();
 }
 
 static int kbd_open(vnode_t *n)
@@ -373,159 +380,73 @@ static char kbd_scan_code_to_ascii(uint8_t scan_code)
     }
 
     switch (scan_code) {
-        case KBD_SC_A:
-            ch = 'a';
-            break;
-        case KBD_SC_B:
-            ch = 'b';
-            break;
-        case KBD_SC_C:
-            ch = 'c';
-            break;
-        case KBD_SC_D:
-            ch = 'd';
-            break;
-        case KBD_SC_E:
-            ch = 'e';
-            break;
-        case KBD_SC_F:
-            ch = 'f';
-            break;
-        case KBD_SC_G:
-            ch = 'g';
-            break;
-        case KBD_SC_H:
-            ch = 'h';
-            break;
-        case KBD_SC_I:
-            ch = 'i';
-            break;
-        case KBD_SC_J:
-            ch = 'j';
-            break;
-        case KBD_SC_K:
-            ch = 'k';
-            break;
-        case KBD_SC_L:
-            ch = 'l';
-            break;
-        case KBD_SC_M:
-            ch = 'm';
-            break;
-        case KBD_SC_N:
-            ch = 'n';
-            break;
-        case KBD_SC_O:
-            ch = 'o';
-            break;
-        case KBD_SC_P:
-            ch = 'p';
-            break;
-        case KBD_SC_Q:
-            ch = 'q';
-            break;
-        case KBD_SC_R:
-            ch = 'r';
-            break;
-        case KBD_SC_S:
-            ch = 's';
-            break;
-        case KBD_SC_T:
-            ch = 't';
-            break;
-        case KBD_SC_U:
-            ch = 'u';
-            break;
-        case KBD_SC_V:
-            ch = 'v';
-            break;
-        case KBD_SC_W:
-            ch = 'w';
-            break;
-        case KBD_SC_X:
-            ch = 'x';
-            break;
-        case KBD_SC_Y:
-            ch = 'y';
-            break;
-        case KBD_SC_Z:
-            ch = 'z';
-            break;
-        case KBD_SC_0:
-            ch = '0';
-            break;
-        case KBD_SC_1:
-            ch = '1';
-            break;
-        case KBD_SC_2:
-            ch = '2';
-            break;
-        case KBD_SC_3:
-            ch = '3';
-            break;
-        case KBD_SC_4:
-            ch = '4';
-            break;
-        case KBD_SC_5:
-            ch = '5';
-            break;
-        case KBD_SC_6:
-            ch = '6';
-            break;
-        case KBD_SC_7:
-            ch = '7';
-            break;
-        case KBD_SC_8:
-            ch = '8';
-            break;
-        case KBD_SC_9:
-            ch = '9';
-            break;
-        case KBD_SC_ENTER:
-            ch = '\n';
-            break;
-        case KBD_SC_SPACE:
-            ch = ' ';
-            break;
-        case KBD_SC_BS:
-            ch = 8;
-            break;
-        case KBD_SC_DASH:
-            ch = '-';
-            break;
-        case KBD_SC_EQUALS:
-            ch = '=';
-            break;
-        case KBD_SC_LBRACKET:
-            ch = '[';
-            break;
-        case KBD_SC_RBRACKET:
-            ch = ']';
-            break;
-        case KBD_SC_BSLASH:
-            ch = '\\';
-            break;
-        case KBD_SC_SCOLON:
-            ch = ';';
-            break;
-        case KBD_SC_QUOTE:
-            ch = '\'';
-            break;
-        case KBD_SC_COMMA:
-            ch = ',';
-            break;
-        case KBD_SC_DOT:
-            ch = '.';
-            break;
-        case KBD_SC_FSLASH:
-            ch = '/';
-            break;
-        case KBD_SC_TILDE:
-            ch = '`';
-            break;
-        case KBD_SC_TAB:
-            ch = '\t';
-            break;
+        case KBD_SC_A: ch = 'a'; break;
+        case KBD_SC_B: ch = 'b'; break;
+        case KBD_SC_C: ch = 'c'; break;
+        case KBD_SC_D: ch = 'd'; break;
+        case KBD_SC_E: ch = 'e'; break;
+        case KBD_SC_F: ch = 'f'; break;
+        case KBD_SC_G: ch = 'g'; break;
+        case KBD_SC_H: ch = 'h'; break;
+        case KBD_SC_I: ch = 'i'; break;
+        case KBD_SC_J: ch = 'j'; break;
+        case KBD_SC_K: ch = 'k'; break;
+        case KBD_SC_L: ch = 'l'; break;
+        case KBD_SC_M: ch = 'm'; break;
+        case KBD_SC_N: ch = 'n'; break;
+        case KBD_SC_O: ch = 'o'; break;
+        case KBD_SC_P: ch = 'p'; break;
+        case KBD_SC_Q: ch = 'q'; break;
+        case KBD_SC_R: ch = 'r'; break;
+        case KBD_SC_S: ch = 's'; break;
+        case KBD_SC_T: ch = 't'; break;
+        case KBD_SC_U: ch = 'u'; break;
+        case KBD_SC_V: ch = 'v'; break;
+        case KBD_SC_W: ch = 'w'; break;
+        case KBD_SC_X: ch = 'x'; break;
+        case KBD_SC_Y: ch = 'y'; break;
+        case KBD_SC_Z: ch = 'z'; break;
+        
+        case KBD_SC_0: ch = '0'; break;
+        case KBD_SC_1: ch = '1'; break;
+        case KBD_SC_2: ch = '2'; break;
+        case KBD_SC_3: ch = '3'; break;
+        case KBD_SC_4: ch = '4'; break;
+        case KBD_SC_5: ch = '5'; break;
+        case KBD_SC_6: ch = '6'; break;
+        case KBD_SC_7: ch = '7'; break;
+        case KBD_SC_8: ch = '8'; break;
+        case KBD_SC_9: ch = '9'; break;
+        
+        case KBD_SC_ENTER: ch = '\r'; break;
+        case KBD_SC_SPACE: ch = ' '; break;
+        case KBD_SC_BS:    ch = 8; break; // Backspace
+        case KBD_SC_TAB:   ch = '\t'; break;
+        
+        case KBD_SC_DASH:     ch = '\''; break; 
+
+        case KBD_SC_EQUALS:   ch = 168; break; 
+        
+        case KBD_SC_LBRACKET: ch = '\''; break; // Representado simple
+        
+        case KBD_SC_RBRACKET: ch = '+'; break; 
+        
+        case KBD_SC_BSLASH:   ch = '}'; break; 
+        
+        case KBD_SC_SCOLON:   ch = 164; break; 
+        
+        case KBD_SC_QUOTE:    ch = '{'; break; 
+        
+        case KBD_SC_COMMA:    ch = ','; break; 
+        
+        case KBD_SC_DOT:      ch = '.'; break; 
+        
+        case KBD_SC_FSLASH:   ch = '-'; break; 
+        
+        case KBD_SC_TILDE:    ch = '|'; break;
+        
+        case KBD_SC_LESS:     ch = '<'; break;
+
         case KBD_SC_LSHIFT:
             toggle_left_shift();
             break;
@@ -568,26 +489,46 @@ void kbd_hw_enable(void)
     outb(0x60, status);
 }
 
-long kgetchar(void)
+static void enable_get_char(){
+    get_char_ready = 1;
+}
+
+static void disable_get_char(){
+    get_char_ready = 0;
+    actual_char = -1;
+}
+
+static void enable_only_keyboard_interrupt(void) {
+    outb(0x21, 0xFD);
+}
+
+void disable_timer_interrupt(void) {
+    uint8_t mask = inb(0x21);
+    mask = mask | 0x01;
+    outb(0x21, mask);
+}
+
+void enable_timer_interrupt(void) {
+    uint8_t mask = inb(0x21);
+    mask = mask & ~0x01;
+    outb(0x21, mask);
+}
+
+uint8_t kgetchar(void)
 {
+    enable_interrupts();
+    disable_timer_interrupt();
+    enable_get_char();
     for (;;) {
-        disable_interrupts();
 
-        if (kbd_buffer.count > 0) {
-            uint8_t sc = *kbd_buffer.head++;
-            if (kbd_buffer.head == kbd_buffer.buffer + KBD_BUFFER_SIZE)
-                kbd_buffer.head = kbd_buffer.buffer;
-
-            kbd_buffer.count--;
-
+        if (actual_char != -1) {
+            disable_interrupts();
+            char new_char = actual_char;
+            disable_get_char();
             enable_interrupts();
-
-            char ch = kbd_scan_code_to_ascii(sc);
-            if (ch >= 0)
-                return (long)ch;
+            enable_timer_interrupt();
+            return (uint8_t)new_char;
         }
-
-        enable_interrupts();
-        // sched_yield();
     }
 }
+

@@ -48,7 +48,12 @@ void create_user_idt_gate(uint8_t n, uint32_t handler) {
 //         (0 << 3) |
 //         IDT_TRAP_GATE;    // <-- trap, not interrupt
 // }
-
+void pic_acknowledge(int irq)
+{
+    if (irq >= 8)
+        outb(0xA0, 0x20);
+    outb(0x20, 0x20);
+}
 //TODO: check
 // void pic_acknowledge()
 // {

@@ -44,7 +44,6 @@ void putchar(char ch) {
 }
 
 int getchar(void) {
-    printf("user getchar\n");
     return syscall(SYS_GETCHAR, 0, 0, 0);
 }
 

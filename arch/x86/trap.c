@@ -78,10 +78,7 @@ void handle_trap(FullTrapFrame *tf) {
             // PANIC("\n[TRAP] Dont know how to go back wiuth new pc %x\n", user_pc);
             break;
         case KEYBOARD_PRESS:
-            printf("[HANDLE TRAP] Key was pressed");
-            outb(0xE9, 'K'); //debug a ver si hace getchar
             keyboard_handle_interrupt();
-            pic_acknowledge(1);
             break;
         case PAGE_FAULT_NUM: 
             unsigned long addr_fault = get_cr2_value();
