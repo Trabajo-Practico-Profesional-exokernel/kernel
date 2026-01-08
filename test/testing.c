@@ -43,7 +43,7 @@ int run_user_tests(void) {
 }
 
 int main_tests(){
-
+    disable_debug_print();
     int success_1 = run_early_boot_tests();
     int success_2 = run_hardware_tests();
     int success_3 = run_kernel_tests();
@@ -61,5 +61,5 @@ int main_tests(){
         printRed("============================\n\n");
         for(;;){}
     }
-    
+    enable_debug_print();
 }
