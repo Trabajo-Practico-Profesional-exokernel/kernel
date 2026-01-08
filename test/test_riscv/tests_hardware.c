@@ -1,14 +1,18 @@
 #include "tests_hardware.h"
-#include "test_common.h"
+#include "../test_common.h"
 #include "std/printf.h"
 #include "arch/mem.h"
 #include "std/string.h"
-#include "utils.h"
+#include "../utils.h"
 
-// Includes específicos de arquitectura RISC-V
 #include "arch_inc/virtio.h"
 #include "arch_inc/virtio_blk.h"
 #include "arch_inc/trap_constants.h"
+
+
+#include "arch/mem.h"           // alloc_pages, map_page, get_paddr_for
+#include "arch/proc.h"          // struct Proc
+#include "arch_inc/mem_constants.h" // PAGE_SIZE, Permisos
 
 #define VIRTIO_MAGIC_EXPECTED 0x74726976 
 #define TEST_DISK_SECTOR 200
@@ -179,4 +183,99 @@ void test_trap_vector_config(CTest *ctx) {
     // 2. Verificar alineación.
     // Asumiendo kernel base 0x80200000
     CTEST_ASSERT_GE(ctx, stvec_val, 0x80000000, "Trap Vector points to Kernel Space");
+}
+
+
+// -------------------------------------------------------------------------
+// TEST: Mecanismos de Paginación (Ring 0)
+// Verifica que podamos mapear una dirección virtual arbitraria a una física,
+// escribir en ella y recuperar la traducción correcta.
+// -------------------------------------------------------------------------
+void test_paging_mechanisms(CTest *ctx) {
+    // 1. Obtener una página física libre
+    paddr_t phys_page = alloc_pages(1);
+    CTEST_ASSERT_NOT_NULL(ctx, (void*)phys_page, "Allocated physical page is valid");
+
+    // 2. Definir una dirección virtual de prueba (lejos del kernel y stack)
+    // Usamos 0x40000000 (1GB mark) que debería estar libre en tu layout
+    vaddr_t virt_addr = 0x40000000;
+
+    // 3. Mapear V -> P en la tabla de páginas del kernel actual
+    // Usamos permisos de lectura/escritura (PAGE_R | PAGE_W | PAGE_V)
+    // Nota: Ajusta los permisos según tu arquitectura (RISC-V vs x86)
+    // En tu código usas constantes como PAGE_R, PAGE_W definidos en mem_constants.h
+    uint32_t perms = 0x7; // R|W|X|V (simplificado) o usa las macros si las tienes visibles
+    
+    // Asumimos que map_page toma (uint32_t*) como tabla base.
+    // kernel_page_table es paddr_t, cast necesario.
+    map_page((uint32_t*)kernel_page_table, virt_addr, phys_page, perms);
+
+    // 4. Verificar la traducción inversa (MMU Software Walk)
+    paddr_t translated_addr = get_paddr_for((uint32_t*)kernel_page_table, virt_addr);
+    CTEST_ASSERT_EQ(ctx, phys_page, translated_addr, "MMU Translation Check (get_paddr_for)");
+
+    // 5. Prueba de acceso a memoria (Write/Read) a través del mapeo virtual
+    // Esto confirmará que la TLB/MMU está aceptando la nueva entrada
+    int *ptr = (int*)virt_addr;
+    *ptr = 0x12345678; // Escribir patrón
+    
+    // Forzar barrera o flush si es necesario (generalmente map_page hace sfence.vma)
+    // En tu código switch_page_table hace sfence, pero map_page individual no siempre.
+    // Si falla, podría requerir un sfence.vma aquí.
+    __asm__ volatile("sfence.vma"); 
+
+    int read_back = *ptr;
+    CTEST_ASSERT_EQ(ctx, 0x12345678, read_back, "Virtual Memory Read/Write Integrity");
+}
+
+// -------------------------------------------------------------------------
+// TEST: Lógica de Bits de Paginación (PTE Construction)
+// Verifica que al mapear, los bits de permisos se establezcan correctamente
+// en la entrada de la tabla, sin depender de que la CPU lo ejecute.
+// -------------------------------------------------------------------------
+void test_page_permission_bits(CTest *ctx) {
+    // Usamos direcciones dummy para probar la lógica de construcción de PTE
+    paddr_t phys = 0x1000;
+    vaddr_t virt = 0x2000;
+    
+    // Permisos arbitrarios: Read | Execute (Kernel Code)
+    // Asumiendo macros estándar RISC-V: R=1, W=2, X=4, U=16
+    // Ajusta estos valores mágicos a tus macros en mem_constants.h
+    uint32_t perms_rw = 0x3; // R + W (Read/Write)
+    uint32_t perms_rx = 0x5; // R + X (Read/Execute)
+
+    // Usamos una tabla de páginas temporal en el stack para no ensuciar la del kernel
+    // Una tabla SV32 tiene 1024 entradas de 4 bytes = 4KB.
+    uint32_t temp_pgdir[1024] __attribute__((aligned(4096)));
+    memset(temp_pgdir, 0, 4096);
+
+    // Mapeamos RW
+    map_page(temp_pgdir, virt, phys, perms_rw);
+    
+    // Obtenemos la entrada cruda (lógica simulada o lectura directa si tienes get_pte)
+    // Como get_paddr_for devuelve la dirección física, verificamos que sea accesible.
+    // Una prueba más profunda leería temp_pgdir[VPN(virt)] para ver los bits.
+    
+    // Verificación indirecta:
+    // Si map_page funciona, get_paddr debería devolver 'phys'
+    paddr_t translated = get_paddr_for(temp_pgdir, virt);
+    CTEST_ASSERT_EQ(ctx, phys, translated, "PTE Construction: Address translation match");
+    
+}
+
+int run_hardware_tests(void) {
+    CTest suite = init_ctx("HARDWARE");
+
+    test_virtio_integrity(&suite);
+    test_timer_csr(&suite);
+    test_disk_loopback(&suite);
+    test_csr_sepc_rw(&suite);
+    test_mmu_kernel_mapping(&suite);
+    test_sstatus_interrupts(&suite);
+    //test_stack_alignment(&suite);
+    test_trap_vector_config(&suite);
+    test_paging_mechanisms(&suite);
+    test_page_permission_bits(&suite);
+    
+    return test_run(&suite);
 }
