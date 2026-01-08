@@ -12,12 +12,12 @@ int run_early_boot_tests(void) {
     CTEST_ASSERT_TRUE(&suite, 1, "Assert TRUE test");
     CTEST_ASSERT_FALSE(&suite, 0, "Assert FALSE test");
     CTEST_ASSERT_NOT_NULL(&suite, (void*)0x1234, "Assert NOT NULL test");
-    CTEST_ASSERT_GT(&suite, 2, 1, "Assert GREATER THAN test (2 > 1)");
-    CTEST_ASSERT_GE(&suite, 1, 1, "Assert GREATER EQUAL test (1 >= 1)");
-    CTEST_ASSERT_GE(&suite, 2, 1, "Assert GREATER EQUAL test (2 >= 1)");
-    CTEST_ASSERT_LT(&suite, 1, 2, "Assert LESS THAN test (1 < 2)");
-    CTEST_ASSERT_LE(&suite, 1, 1, "Assert LESS EQUAL test (1 <= 1)");
-    CTEST_ASSERT_LE(&suite, 1, 2, "Assert LESS EQUAL test (1 <= 2)");
+    CTEST_ASSERT_GT(&suite, 2, 1, "Assert GREATER THAN test");
+    CTEST_ASSERT_GE(&suite, 1, 1, "Assert GREATER EQUAL test");
+    CTEST_ASSERT_GE(&suite, 2, 1, "Assert GREATER EQUAL test");
+    CTEST_ASSERT_LT(&suite, 1, 2, "Assert LESS THAN test");
+    CTEST_ASSERT_LE(&suite, 1, 1, "Assert LESS EQUAL test");
+    CTEST_ASSERT_LE(&suite, 1, 2, "Assert LESS EQUAL test");
 
     return test_run(&suite);
 }
