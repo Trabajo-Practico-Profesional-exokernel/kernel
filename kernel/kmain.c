@@ -15,9 +15,8 @@
 // return 0xDEADBEEF;
 void kmain()
 {
-    main_tests();
+    
     init_arch();
-
     clear();
     move_cursor(0);
     debug_printf("HOLIS\n");
@@ -33,6 +32,8 @@ void kmain()
     switch_to_kernel_tables();
     #endif
     
+    main_tests();
+
     init_syscalls_filesystem();
     init_syscalls_ipc();
     init_syscalls_proc();

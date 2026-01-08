@@ -4,6 +4,7 @@
 #define MAX_TESTS 50
 #define TEST_MSG_SIZE 128
 #define MAX_FILE_NAME_SIZE 32
+#define MAX_LEN_TESTS_NAME 64
 
 // Test status
 typedef enum {
@@ -28,6 +29,7 @@ typedef struct {
 
 // Main Test
 typedef struct {
+    char test_name[MAX_LEN_TESTS_NAME];
     Test tests[MAX_TESTS];         // Limit of 50 tests per parent, might change later
     int elements;           // Counter of elements
     int count;
@@ -46,5 +48,17 @@ typedef struct {
 
 #define CTEST_ASSERT_NOT_NULL(ctx, ptr, desc) \
     record_result(ctx, (ptr) != NULL, desc, __FILE__, __LINE__, "NULL detected", 0, 0)
+
+#define CTEST_ASSERT_GT(ctx, val1, val2, desc) \
+    record_result(ctx, (val1) > (val2), desc, __FILE__, __LINE__, "Expected: %d > %d", (int)(val1), (int)(val2))
+
+#define CTEST_ASSERT_GE(ctx, val1, val2, desc) \
+    record_result(ctx, (val1) >= (val2), desc, __FILE__, __LINE__, "Expected: %d >= %d", (int)(val1), (int)(val2))
+
+#define CTEST_ASSERT_LT(ctx, val1, val2, desc) \
+    record_result(ctx, (val1) < (val2), desc, __FILE__, __LINE__, "Expected: %d < %d", (int)(val1), (int)(val2))
+
+#define CTEST_ASSERT_LE(ctx, val1, val2, desc) \
+    record_result(ctx, (val1) <= (val2), desc, __FILE__, __LINE__, "Expected: %d <= %d", (int)(val1), (int)(val2))
 
 #endif

@@ -27,17 +27,19 @@ int record_result(CTest* ctx, int condition, const char* desc,
     return 1;
 }
 
-CTest init_ctx(){
+CTest init_ctx(const char* test_name){
     CTest ctx;
+    memset(&ctx, 0, sizeof(CTest));
+    strcpy(ctx.test_name, test_name);
     ctx.elements = 0;
     ctx.count = 0;
     ctx.passed_count = 0;
     ctx.failed_count = 0;
-    memset(&ctx, 0, sizeof(CTest));
+    return ctx;
 }
 
 int test_run(CTest* ctx) {
-    debug_printf("\n=== INIT TESTS ===\n");
+    printf("\n=== INIT %s TESTS ===\n", ctx->test_name);
 
     for (int i = 0; i < ctx->count; i++) {
         Test* t = &ctx->tests[i];
@@ -57,11 +59,14 @@ int test_run(CTest* ctx) {
     printGreen("Passed: "); printf("%d | ", ctx->passed_count);
     printRed("Failed: "); printf("%d\n", ctx->failed_count);
 
-    if (ctx->failed_count > 0) {
-        printRed("\n>>> TESTS FAILED <<<\n");
-        return 0;
-    } else {
+    int success = ctx->failed_count == 0;
+
+    if (success) {
         printGreen("\n>>> TESTS SUCCESSED <<<\n");
-        return 1;
+    } else {
+        printRed("\n>>> TESTS FAILED <<<\n");
     }
+    printf("\n=== FINISH %s TESTS ===\n\n\n", ctx->test_name);
+    
+    return success;
 }

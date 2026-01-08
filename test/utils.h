@@ -8,5 +8,5 @@ int record_result(CTest* ctx, int condition, const char* desc,
 
 int test_run(CTest* ctx);
 
-CTest init_ctx();
+CTest init_ctx(const char* test_name);
 #endif
