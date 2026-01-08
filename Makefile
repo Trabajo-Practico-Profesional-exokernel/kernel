@@ -19,7 +19,7 @@ ifeq ($(ARCH),x86)
 	           -nostartfiles -nodefaultlibs -Wall -Wextra -c -g -DIS_X86 -march=i386 -mtune=i386
 	ASFLAGS = -f elf
 	LDFLAGS = -T arch/x86/drivers/linker/link.ld -melf_i386
-	QEMU    = qemu-system-i386 -cdrom os.iso  -m 64 -no-reboot -no-shutdown
+	QEMU    = qemu-system-i386 -cdrom os.iso  -m 64 -no-reboot -no-shutdown -nographic -serial mon:stdio
 else ifeq ($(ARCH),riscv)
 	CC      = clang
 

@@ -31,6 +31,7 @@ global isr30
 global isr31
 global isr32
 global isr33
+global isr36
 global syscall_handler
 
 extern trap_entry
@@ -208,6 +209,12 @@ isr33:
     out 0xE9, al
     push 0
     push 33
+    jmp trap_entry
+
+; Serial COM1 (IRQ 4 -> IDT 36)
+isr36:
+    push 0          ; Push dummy error code
+    push 36         ; Push interrupt number
     jmp trap_entry
 
 ; mock syscall

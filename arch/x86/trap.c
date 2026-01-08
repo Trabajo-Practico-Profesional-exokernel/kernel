@@ -64,7 +64,7 @@ unsigned long get_cr2_value(void) {
 #define PAGE_FAULT_NUM 14
 #define TIMER_NUM 32
 #define KEYBOARD_PRESS 33
-
+#define SERIAL1_INT 36
 //No toca sti (eso se hace en el stub después del iret)
 void handle_trap(FullTrapFrame *tf) {
     switch (tf->int_no) {
@@ -78,7 +78,12 @@ void handle_trap(FullTrapFrame *tf) {
             // PANIC("\n[TRAP] Dont know how to go back wiuth new pc %x\n", user_pc);
             break;
         case KEYBOARD_PRESS:
+            printf("KA");
             keyboard_handle_interrupt();
+            break;
+        case SERIAL1_INT:
+            keyboard_handle_interrupt();
+            pic_acknowledge(4); // Notificar al PIC (IRQ 4)
             break;
         case PAGE_FAULT_NUM: 
             unsigned long addr_fault = get_cr2_value();

@@ -118,6 +118,7 @@ void idt_init(void) {
 
     create_idt_gate(32, (uint32_t)isr32); // timer
     create_idt_gate(33, (uint32_t)isr33); // keyboard
+    create_idt_gate(36, (uint32_t)isr36);
 
     // mock proc
     create_user_idt_gate(0x80, (uint32_t)syscall_handler);
