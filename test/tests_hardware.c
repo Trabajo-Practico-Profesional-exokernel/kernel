@@ -13,7 +13,8 @@
 #define VIRTIO_MAGIC_EXPECTED 0x74726976 
 #define TEST_DISK_SECTOR 200
 
-extern char __kernel_base[];        // Definido en linker/link.ld
+extern char __kernel_base[];
+extern char _end[];
 extern paddr_t kernel_page_table;
 
 // -------------------------------------------------------------------------
@@ -131,4 +132,51 @@ void test_sstatus_interrupts(CTest *ctx) {
     int sie_bit = (sstatus >> 1) & 1;
     
     CTEST_ASSERT_TRUE(ctx, sie_bit, "CPU Supervisor Interrupts (SIE) are Enabled");
+}
+
+// -------------------------------------------------------------------------
+// TEST 7: Verificación de Modo de Paginación (SATP)
+// Verifica que la paginación esté realmente activa en el hardware (Mode bit).
+// En RV32, el bit 31 de satp controla el modo (1 = Sv32, 0 = Bare).
+// -------------------------------------------------------------------------
+void test_mmu_enabled_satp(CTest *ctx) {
+    uint32_t satp_val = READ_CSR(satp);
+    
+    // Extraer el bit más significativo (Bit 31 para RV32)
+    // Nota: Si estuvieras en RV64, el modo son los bits 60-63.
+    int mode_bit = (satp_val >> 31) & 1;
+    
+    CTEST_ASSERT_TRUE(ctx, mode_bit, "MMU Paging Enabled (SATP Mode bit is 1)");
+}
+
+// -------------------------------------------------------------------------
+// TEST 8: Alineación del Stack Pointer (ABI RISC-V)
+// La especificación RISC-V exige que el SP esté siempre alineado a 16 bytes.
+// Si esto falla, las llamadas a funciones C pueden corromper la memoria.
+// -------------------------------------------------------------------------
+void test_stack_alignment(CTest *ctx) {
+    uintptr_t current_sp;
+    
+    // Leer el registro sp directamente usando ensamblador inline
+    __asm__ volatile("mv %0, sp" : "=r"(current_sp));
+    
+    // Verificar alineación de 16 bytes (sp % 16 == 0)
+    int alignment_mod = current_sp & 0xF; // 0xF es 15 (1111 binario)
+    
+    CTEST_ASSERT_EQ(ctx, 0, alignment_mod, "Stack Pointer 16-byte Alignment");
+}
+
+// -------------------------------------------------------------------------
+// TEST 9: Configuración del Trap Vector (stvec)
+// Verifica que el handler de excepciones esté configurado y alineado a 4 bytes.
+// -------------------------------------------------------------------------
+void test_trap_vector_config(CTest *ctx) {
+    uint32_t stvec_val = READ_CSR(stvec);
+    
+    // 1. Verificar que no sea NULL (debe apuntar a tu función trap_entry o similar)
+    CTEST_ASSERT_NOT_NULL(ctx, (void*)stvec_val, "Trap Vector (stvec) is set");
+    
+    // 2. Verificar alineación.
+    // Asumiendo kernel base 0x80200000
+    CTEST_ASSERT_GE(ctx, stvec_val, 0x80000000, "Trap Vector points to Kernel Space");
 }

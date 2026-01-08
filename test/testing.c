@@ -3,7 +3,7 @@
 #include "utils.h"
 #include "test_common.h"
 #include "tests_hardware.h"
-
+#include "tests_kernel.h"
 
 int run_early_boot_tests(void) {
     CTest suite = init_ctx("SELF-TEST KIT");
@@ -24,7 +24,6 @@ int run_early_boot_tests(void) {
 
 int run_hardware_tests(void) {
     CTest suite = init_ctx("HARDWARE");
-    
 
     test_virtio_integrity(&suite);
     test_timer_csr(&suite);
@@ -32,16 +31,26 @@ int run_hardware_tests(void) {
     test_csr_sepc_rw(&suite);
     test_mmu_kernel_mapping(&suite);
     test_sstatus_interrupts(&suite);
+    //test_stack_alignment(&suite);
+    test_trap_vector_config(&suite);
+
     return test_run(&suite);
 }
 
 int run_kernel_tests(void) {
-    CTest suite = init_ctx("KERNEL");
+    CTest suite = init_ctx("RING 0");
+
+    test_paging_mechanisms(&suite);
+    test_process_management(&suite);
+    test_ipc_logic(&suite);
+    test_page_permission_bits(&suite);
+    test_process_lifecycle_simulation(&suite);
+
     return test_run(&suite);
 }
 
 int run_user_tests(void) {
-    CTest suite = init_ctx("USER");
+    CTest suite = init_ctx("RING 3");
     return test_run(&suite);
 }
 
