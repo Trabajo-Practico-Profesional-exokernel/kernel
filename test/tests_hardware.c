@@ -13,6 +13,9 @@
 #define VIRTIO_MAGIC_EXPECTED 0x74726976 
 #define TEST_DISK_SECTOR 200
 
+extern char __kernel_base[];        // Definido en linker/link.ld
+extern paddr_t kernel_page_table;
+
 // -------------------------------------------------------------------------
 // TEST 1: Integridad de VirtIO (MMIO)
 // -------------------------------------------------------------------------
@@ -80,4 +83,52 @@ void test_disk_loopback(CTest *ctx) {
     int len_read = strlen(read_buf);
     int len_expected = strlen(pattern);
     CTEST_ASSERT_EQ(ctx, len_expected, len_read, "Disk Data Length Check");
+}
+
+// -------------------------------------------------------------------------
+// TEST 4: Integridad de Registros CSR (sepc)
+// Escribe un valor en un registro de control seguro y lo lee de vuelta.
+// -------------------------------------------------------------------------
+void test_csr_sepc_rw(CTest *ctx) {
+    uint32_t original_sepc = READ_CSR(sepc); // Guardar valor original
+    uint32_t test_val = 0xCAFEBABE;
+
+    WRITE_CSR(sepc, test_val);
+    uint32_t read_back = READ_CSR(sepc);
+
+    CTEST_ASSERT_EQ(ctx, test_val, read_back, "CSR 'sepc' Read/Write Integrity");
+
+    WRITE_CSR(sepc, original_sepc); // Restaurar valor original por seguridad
+}
+
+// -------------------------------------------------------------------------
+// TEST 5: Integridad de MMU (Paging)
+// Verifica que la dirección virtual del Kernel traduce a la física correcta.
+// -------------------------------------------------------------------------
+void test_mmu_kernel_mapping(CTest *ctx) {
+    // La dirección virtual del inicio del kernel
+    vaddr_t kbase_vaddr = (vaddr_t)__kernel_base;
+    
+    // Obtenemos la dirección física real mirando la tabla de páginas del kernel
+    paddr_t mapped_paddr = get_paddr_for((uint32_t*)kernel_page_table, kbase_vaddr);
+
+    // Virt 0x80200000 debe mapear a Phys 0x80200000.
+    
+    CTEST_ASSERT_EQ(ctx, (paddr_t)kbase_vaddr, mapped_paddr, "MMU Kernel Base Identity Mapping");
+    
+    // Verificamos también que NO devuelva 0 (que significaría no mapeado)
+    CTEST_ASSERT_NOT_NULL(ctx, (void*)mapped_paddr, "Kernel Page Table Entry exists");
+}
+
+// -------------------------------------------------------------------------
+// TEST 6: Estado de Interrupciones (sstatus)
+// Verifica que el bit SIE (Supervisor Interrupt Enable) esté activo.
+// -------------------------------------------------------------------------
+void test_sstatus_interrupts(CTest *ctx) {
+    uint32_t sstatus = READ_CSR(sstatus);
+    
+    // Bit 1 de sstatus es SIE (Supervisor Interrupt Enable)
+    int sie_bit = (sstatus >> 1) & 1;
+    
+    CTEST_ASSERT_TRUE(ctx, sie_bit, "CPU Supervisor Interrupts (SIE) are Enabled");
 }

@@ -29,7 +29,9 @@ int run_hardware_tests(void) {
     test_virtio_integrity(&suite);
     test_timer_csr(&suite);
     test_disk_loopback(&suite);
-
+    test_csr_sepc_rw(&suite);
+    test_mmu_kernel_mapping(&suite);
+    test_sstatus_interrupts(&suite);
     return test_run(&suite);
 }
 

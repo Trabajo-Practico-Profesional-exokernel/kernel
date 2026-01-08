@@ -44,7 +44,7 @@ int test_run(CTest* ctx) {
     for (int i = 0; i < ctx->count; i++) {
         Test* t = &ctx->tests[i];
 
-        printf("[TEST %x] %s ",i, t->description);
+        printf("[TEST %d] %s ",i+1, t->description);
 
         if (t->status == PASSED) {
             printGreen(" PASSED \n");
@@ -66,7 +66,7 @@ int test_run(CTest* ctx) {
     } else {
         printRed("\n>>> TESTS FAILED <<<\n");
     }
-    printf("\n=== FINISH %s TESTS ===\n\n\n", ctx->test_name);
+    printf("=== FINISH %s TESTS ===\n\n\n", ctx->test_name);
     
     return success;
 }
