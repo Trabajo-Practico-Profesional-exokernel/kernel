@@ -37,13 +37,13 @@ static void pic_remap(void) {
 }
 
 void init_trap(void) {
-    printf("[TRAP] Initializing IDT and PIC...\n");
+    debug_printf("[TRAP] Initializing IDT and PIC...\n");
 
     //idt_init();
     pic_remap();
 
     __asm__ __volatile__("sti"); // CHECK: if doesn't need to be here, only in switch_context
-    printf("[TRAP] Interrupts enabled\n");
+    debug_printf("[TRAP] Interrupts enabled\n");
 }
 
 

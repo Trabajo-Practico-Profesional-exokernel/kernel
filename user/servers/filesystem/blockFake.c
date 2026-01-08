@@ -19,7 +19,7 @@ int block_read(int block, char *mem) {
 
 
     if (res < 0) {
-        printf("[BLOCK READ ERROR] Sector: %d\n", block);
+        debug_printf("[BLOCK READ ERROR] Sector: %d\n", block);
         return res;
     }
     memcpy(mem, local_buffer, BLOCK_SIZE);

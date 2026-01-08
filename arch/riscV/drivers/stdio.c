@@ -4,7 +4,7 @@
 #include "inc/types.h"
 #include "inc/common.h"
 #include "std/string.h"
-
+#include "std/printf.h"
 #include "drivers/opensbi.h"
 #include "arch/mem.h"
 
@@ -14,7 +14,7 @@ void init_arch(void){
     // bss supposed to be 0s but just in case
     memset(__bss, 0, (size_t) __bss_end - (size_t) __bss);    
 
-    printf("SOME EXTRA LOG? end bss: %x stack top: %x trap stack top : %x \n", (size_t) __bss_end, (size_t) __stack_top, (size_t) __trap_stack_top);
+    debug_printf("SOME EXTRA LOG? end bss: %x stack top: %x trap stack top : %x \n", (size_t) __bss_end, (size_t) __stack_top, (size_t) __trap_stack_top);
 }
 
 #define SBI_PUTCHAR 1

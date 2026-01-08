@@ -19,7 +19,7 @@ struct Proc* curr_caller = NULL; // For now just a single one. Always one since 
 
 int copy_valid_bytes(vaddr_t bytes_pointer, struct Proc * caller){
     if (fs_handler == NULL){
-        printf("Failed there is no registered FS handler!\n");
+        debug_printf("Failed there is no registered FS handler!\n");
         return -2;
     }
 
@@ -28,13 +28,13 @@ int copy_valid_bytes(vaddr_t bytes_pointer, struct Proc * caller){
                                     );
 
     if (real_pointer == 0){
-        printf("Failed invalid vaddr for name = %x not mapped for proc %d\n", bytes_pointer, caller->pid);
+        debug_printf("Failed invalid vaddr for name = %x not mapped for proc %d\n", bytes_pointer, caller->pid);
         return -1;
     }
     size_t len_name = strlen((char *) real_pointer);
 
     if (len_name > buffer_max_len){
-        printf("Failed path name was too long %u, max allowed is %u \n", len_name, buffer_max_len);
+        debug_printf("Failed path name was too long %u, max allowed is %u \n", len_name, buffer_max_len);
         return -2;
     }
 
@@ -45,13 +45,13 @@ int copy_valid_bytes(vaddr_t bytes_pointer, struct Proc * caller){
 
 void syscall_handle_ret(FullTrapFrame *tf, uintptr_t pc) {
     if (curr_caller == NULL){
-        printf("Filesystem or other proc called fs ret but no current caller yielding \n");
+        debug_printf("Filesystem or other proc called fs ret but no current caller yielding \n");
         sched_yield();
     }
     struct Proc * returner = get_curr();
 
     if (fs_manager_proc != returner){
-        printf("Non fs manager proc called fs ret.. yielding \n");
+        debug_printf("Non fs manager proc called fs ret.. yielding \n");
         sched_yield();
     }
     returner->status = PROC_NOT_RUNNABLE;
@@ -66,7 +66,7 @@ void syscall_handle_ret(FullTrapFrame *tf, uintptr_t pc) {
     struct TrapFrame* caller_tf = &curr_caller->tf;
     SET_SYSCALL_RET0(caller_tf, ret_code);
 
-    printf("Fs manager returned %d to caller %d \n",ret_code, curr_caller->pid);
+    debug_printf("Fs manager returned %d to caller %d \n",ret_code, curr_caller->pid);
     curr_caller = NULL;
     sched_yield();
 
@@ -80,7 +80,7 @@ void syscall_touch(FullTrapFrame *tf, uintptr_t pc) {
     switch_to_kernel_tables();// You need to be on kernel pages to be able to map/get real paddr
     #endif
 
-    printf("Touch ");
+    debug_printf("Touch ");
     int err = copy_valid_bytes(vaddr_bytes_pointer, caller);
 
     if (err < 0){
@@ -92,7 +92,7 @@ void syscall_touch(FullTrapFrame *tf, uintptr_t pc) {
 
     fs_manager_proc->status = PROC_RUNNING;
     fs_manager_proc->pc = (uintptr_t) fs_handler->on_touch; // Set where to jump back to
-    printf("Handling... path '%s' .. jumping to %x\n", (char*) event_buffer, fs_manager_proc->pc);
+    debug_printf("Handling... path '%s' .. jumping to %x\n", (char*) event_buffer, fs_manager_proc->pc);
     
     save_curr_proc_state(tf, pc + 4); // Skip this ins that called syscall
 
@@ -107,7 +107,7 @@ void syscall_remove(FullTrapFrame *tf, uintptr_t pc) {
     switch_to_kernel_tables();// You need to be on kernel pages to be able to map/get real paddr
     #endif
 
-    printf("Remove ");
+    debug_printf("Remove ");
     int err = copy_valid_bytes(vaddr_bytes_pointer, caller);
 
     if (err < 0){
@@ -119,7 +119,7 @@ void syscall_remove(FullTrapFrame *tf, uintptr_t pc) {
 
     fs_manager_proc->status = PROC_RUNNING;
     fs_manager_proc->pc = (uintptr_t) fs_handler->on_rm; // Set where to jump back to
-    printf("Handling... path '%s' .. jumping to %x\n", (char*) event_buffer, fs_manager_proc->pc);
+    debug_printf("Handling... path '%s' .. jumping to %x\n", (char*) event_buffer, fs_manager_proc->pc);
     
     save_curr_proc_state(tf, pc + 4); // Skip this ins that called syscall
 
@@ -134,7 +134,7 @@ void syscall_stat(FullTrapFrame *tf, uintptr_t pc) {
     switch_to_kernel_tables();// You need to be on kernel pages to be able to map/get real paddr
     #endif
 
-    printf("Stat ");
+    debug_printf("Stat ");
     int err = copy_valid_bytes(vaddr_bytes_pointer, caller);
 
     if (err < 0){
@@ -146,7 +146,7 @@ void syscall_stat(FullTrapFrame *tf, uintptr_t pc) {
 
     fs_manager_proc->status = PROC_RUNNING;
     fs_manager_proc->pc = (uintptr_t) fs_handler->on_stat; // Set where to jump back to
-    printf("Handling... path '%s' .. jumping to %x\n", (char*) event_buffer, fs_manager_proc->pc);
+    debug_printf("Handling... path '%s' .. jumping to %x\n", (char*) event_buffer, fs_manager_proc->pc);
     
     save_curr_proc_state(tf, pc + 4); // Skip this ins that called syscall
 
@@ -159,7 +159,7 @@ void syscall_stat(FullTrapFrame *tf, uintptr_t pc) {
 void syscall_register_handler(FullTrapFrame *tf, uintptr_t pc) {
     
     if (fs_handler != NULL){
-        printf("Already registered FS handler! cannot have another one!\n");
+        debug_printf("Already registered FS handler! cannot have another one!\n");
         SET_SYSCALL_RET0(tf, -2)
         return;
     }
@@ -171,23 +171,23 @@ void syscall_register_handler(FullTrapFrame *tf, uintptr_t pc) {
 
     struct Proc * proc = get_curr();
 
-    // printf("Registering FS handler!? vaddr handler_pointer= %x in curr proc %d\n", handler_pointer, proc->pid);
+    // debug_printf("Registering FS handler!? vaddr handler_pointer= %x in curr proc %d\n", handler_pointer, proc->pid);
 
     paddr_t real_paddr = get_paddr_for((uint32_t *) proc->pde_paddr,
                                     handler_pointer 
                                     );
     if (real_paddr == 0){
-        printf("Registering FS handler failed invalid vaddr handler_pointer= %x not mapped for proc %d\n", handler_pointer, proc->pid);
+        debug_printf("Registering FS handler failed invalid vaddr handler_pointer= %x not mapped for proc %d\n", handler_pointer, proc->pid);
         // Invalid or not accessible for user proc vaddr
         SET_SYSCALL_RET0(tf, -1);
         return;
     }
 
     struct FilesystemEventsHandler* handler = (struct FilesystemEventsHandler*) real_paddr; 
-    // printf("real paddr= %x pointer? %p\n", real_paddr, handler);
+    // debug_printf("real paddr= %x pointer? %p\n", real_paddr, handler);
 
     if(handler->buffer_len > PAGE_SIZE){
-        printf("Registering FS handler failed invalid buffer max len %u greater than a page size\n", handler->buffer_len);
+        debug_printf("Registering FS handler failed invalid buffer max len %u greater than a page size\n", handler->buffer_len);
         // MAX buffer len allowed is page size just for convinience
         SET_SYSCALL_RET0(tf, -3);
         return;        
@@ -197,7 +197,7 @@ void syscall_register_handler(FullTrapFrame *tf, uintptr_t pc) {
                                     );
 
     if (real_buffer == 0){
-        printf("Registering FS handler failed invalid vaddr buffer= %x not mapped for proc %d\n", handler->buffer, proc->pid);
+        debug_printf("Registering FS handler failed invalid vaddr buffer= %x not mapped for proc %d\n", handler->buffer, proc->pid);
         // Invalid or not accessible for buffer vaddr
         SET_SYSCALL_RET0(tf, -1);
         return;
@@ -208,7 +208,7 @@ void syscall_register_handler(FullTrapFrame *tf, uintptr_t pc) {
     event_buffer = (void *)real_buffer;
     buffer_max_len = handler->buffer_len;
     fs_handler = handler;
-    printf("Registered FS handler handler= %x buffer at %x max len %u .. proc %d\n", fs_handler, event_buffer, buffer_max_len, proc->pid);
+    debug_printf("Registered FS handler handler= %x buffer at %x max len %u .. proc %d\n", fs_handler, event_buffer, buffer_max_len, proc->pid);
 
     save_curr_proc_state(tf, pc);
     proc->status = PROC_NOT_RUNNABLE; // Keep the process waiting for messages

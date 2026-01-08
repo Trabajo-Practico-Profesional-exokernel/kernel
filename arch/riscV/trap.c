@@ -43,7 +43,7 @@ void init_trap(){
 
     WRITE_CSR(stvec, (uint32_t) trap_entry); // riscv5 , set in case of interruption trap entry to be exec 
 
-    printf("Initing superviser mode/enable clock?! \n");
+    debug_printf("Initing superviser mode/enable clock?! \n");
     //uint32_t mcount = READ_CSR(mideleg);
     //printf("mideleg vl %u \n", mcount);
 
@@ -190,7 +190,7 @@ void handle_trap(FullTrapFrame *tf) {
         user_pc += 4;  // Skip illegal instruction
         WRITE_CSR(sepc, user_pc);
     } else if(IS_CLOCK_INTERRUPT(scause)) {
-        // printf("Clock interrupt ins scause=%x, stval=%x, sepc=%x\n", scause, stval, user_pc);
+        // debug_printf("Clock interrupt ins scause=%x, stval=%x, sepc=%x\n", scause, stval, user_pc);
         SET_NEXT_INTERRUPT(DELAY_INTERRUPT);
         clock_yield(tf, user_pc);
     } else {

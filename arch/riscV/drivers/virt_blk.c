@@ -26,7 +26,7 @@ void virtio_blk_init(void){
     // Get the disk capacity.
     blk_capacity = virtio_reg_read64(VIRTIO_REG_DEVICE_CONFIG + 0) * SECTOR_SIZE;
     
-    printf("virtio-blk: capacity is %d bytes\n", (int)blk_capacity);
+    debug_printf("virtio-blk: capacity is %d bytes\n", (int)blk_capacity);
 
     // Allocate a region to store requests to the device... round up size of blk
     blk_req_paddr = alloc_pages(align_up(sizeof(*blk_req), PAGE_SIZE) / PAGE_SIZE);
@@ -47,7 +47,7 @@ void virtio_blk_init(void){
 int read_write_disk(void *buf, virt_blk_sector_t sector, int is_write){
 
     if (sector >= blk_capacity / SECTOR_SIZE) {
-        printf("virtio: tried to read/write sector=%d, but capacity is %d\n",
+        debug_printf("virtio: tried to read/write sector=%d, but capacity is %d\n",
               sector, blk_capacity / SECTOR_SIZE);
         return -1;
     }
@@ -89,7 +89,7 @@ int read_write_disk(void *buf, virt_blk_sector_t sector, int is_write){
 
     // virtio-blk: If a non-zero value is returned, it's an error.
     if (blk_req->status != 0) {
-        printf("virtio: warn: failed to read/write sector=%d status=%d\n",
+        debug_printf("virtio: warn: failed to read/write sector=%d status=%d\n",
                sector, blk_req->status);
         return -2;
     }

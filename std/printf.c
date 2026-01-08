@@ -4,6 +4,14 @@ static char digits[] = "0123456789ABCDEF";
 
 void putchar(char ch);
 
+enum DebugPrintMode actual_debug_print_mode = OFF;
+
+void debug_printf(const char *fmt, ...){
+  if (actual_debug_print_mode == ON) {
+    printf(fmt);
+  }
+}
+
 static void
 printint(int32_t xx, int base, int sgn)
 {
@@ -109,4 +117,115 @@ void printf(const char *fmt, ...) {
     va_start(vargs, fmt);
     vprintf(fmt, vargs);
     va_end(vargs);
+}
+
+void printGreen(const char* text) {
+  printf("\033[0;32m%s\033[0m", text);
+}
+
+void printRed(const char* text) {
+  printf("\033[0;31m%s\033[0m", text);
+}
+
+void printYellow(const char* text) {
+  printf("\033[0;33m%s\033[0m", text);
+}
+
+static int string_print_num(char *buf, size_t size, size_t *pos, long value, int base, bool sign) {
+  char tmp[32];
+  int i = 0;
+  unsigned long uval = value;
+
+  if (sign && (long)value < 0) {
+      uval = -value;
+      if (*pos < size - 1) buf[(*pos)++] = '-';
+  }
+
+  if (uval == 0) {
+      tmp[i++] = '0';
+  } else {
+      while (uval > 0) {
+          int digit = uval % base;
+          tmp[i++] = (digit < 10) ? (digit + '0') : (digit - 10 + 'a');
+          uval /= base;
+      }
+  }
+
+  int chars_written = 0;
+  while (i > 0) {
+      i--;
+      if (*pos < size - 1) {
+          buf[(*pos)++] = tmp[i];
+          chars_written++;
+      }
+  }
+  return chars_written;
+}
+
+int vsnprintf(char *buf, size_t size, const char *fmt, va_list args) {
+  size_t pos = 0;
+  
+  if (size == 0) return 0;
+
+  for (const char *p = fmt; *p != '\0'; p++) {
+      if (*p != '%') {
+          if (pos < size - 1) buf[pos++] = *p;
+          continue;
+      }
+
+      p++; 
+      
+      switch (*p) {
+          case 'd': 
+          case 'i': {
+              int val = va_arg(args, int);
+              string_print_num(buf, size, &pos, val, 10, true);
+              break;
+          }
+          case 'u': { 
+              unsigned int val = va_arg(args, unsigned int);
+              string_print_num(buf, size, &pos, val, 10, false);
+              break;
+          }
+          case 'x': 
+          case 'p': {
+              unsigned long val = va_arg(args, unsigned long);
+              string_print_num(buf, size, &pos, val, 16, false);
+              break;
+          }
+          case 's': { 
+              const char *s = va_arg(args, const char *);
+              if (!s) s = "(null)";
+              while (*s) {
+                  if (pos < size - 1) buf[pos++] = *s;
+                  s++;
+              }
+              break;
+          }
+          case 'c': { 
+              int c = va_arg(args, int);
+              if (pos < size - 1) buf[pos++] = (char)c;
+              break;
+          }
+          case '%': { 
+              if (pos < size - 1) buf[pos++] = '%';
+              break;
+          }
+          default:
+              if (pos < size - 1) buf[pos++] = '%';
+              if (pos < size - 1) buf[pos++] = *p;
+              break;
+      }
+  }
+
+  buf[pos] = '\0';
+  return pos;
+}
+
+int snprintf(char *buf, size_t size, const char *fmt, ...) {
+  va_list args;
+  va_start(args, fmt);
+  int ret = vsnprintf(buf, size, fmt, args);
+  va_end(args);
+  return ret;
 }

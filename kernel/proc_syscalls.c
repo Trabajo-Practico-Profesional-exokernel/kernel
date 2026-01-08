@@ -72,7 +72,7 @@ void syscall_exec(FullTrapFrame *tf, uintptr_t pc) {
 
     int prog_ind = SYSCALL_ARG0(tf);
     if (prog_ind < 0 || prog_ind>= APP_COUNT){
-        printf("Invalid exec call ind %d \n", prog_ind);
+        debug_printf("Invalid exec call ind %d \n", prog_ind);
         SET_SYSCALL_RET0(tf, DEF_ERR_CODE)        
         return;
     }
@@ -92,11 +92,11 @@ void syscall_exec(FullTrapFrame *tf, uintptr_t pc) {
             return;
         }
     } else {
-        printf("NO proc params exec\n");
+        debug_printf("NO proc params exec\n");
         argv_pointers[0] = 0;
     }
 
-    printf("Should run program at ind %d \n", prog_ind);
+    debug_printf("Should run program at ind %d \n", prog_ind);
 
     //int set_init_parameters_for_proc(struct Proc * proc, char ** argv, paddr_t* sp_out);
     
@@ -109,7 +109,7 @@ void syscall_exec(FullTrapFrame *tf, uintptr_t pc) {
         return;
     }
 
-    printf("Should run free proc %p binary: %p \n", proc, &_binary_apps[prog_ind]);
+    debug_printf("Should run free proc %p binary: %p \n", proc, &_binary_apps[prog_ind]);
 
     #ifdef IS_RISC
     load_create_process_user(proc, &_binary_apps[prog_ind], (char **) &argv_pointers[0]);
@@ -144,7 +144,7 @@ void syscall_exit(FullTrapFrame *tf, uintptr_t pc){
     int exit_code = SYSCALL_ARG0(tf);
     struct Proc * exited_proc = get_curr();
     
-    printf("Process %u exited with code %d ", exited_proc->pid, exit_code);
+    debug_printf("Process %u exited with code %d ", exited_proc->pid, exit_code);
 
     #ifdef IS_RISC
     switch_to_kernel_tables();
@@ -153,7 +153,7 @@ void syscall_exit(FullTrapFrame *tf, uintptr_t pc){
     struct ProcExitStatus* exit_status = &exit_statuses[PROCX(exited_proc->pid)];
 
     if (exit_status->waiters_head == NULL){
-        printf("had no waiters.. orphan process until awaited\n");
+        debug_printf("had no waiters.. orphan process until awaited\n");
         // No waiter means, orphan proc until somebody waits it?
         exited_proc->status = PROC_DYING;
         exit_status->ret_code = exit_code;
@@ -161,7 +161,7 @@ void syscall_exit(FullTrapFrame *tf, uintptr_t pc){
         sched_yield();
         return; // Not reachable but for clarity
     }
-    printf("had waiters.. notified and free\n");
+    debug_printf("had waiters.. notified and free\n");
 
     notify_exited(exit_status, exit_code);
 
@@ -176,18 +176,18 @@ void syscall_exit(FullTrapFrame *tf, uintptr_t pc){
 void syscall_wait(FullTrapFrame *tf, uintptr_t pc){
     procid_t waited_proc_pid = SYSCALL_ARG0(tf);
     struct Proc * waiter_proc = get_curr();
-    printf("Process %d should wait at pc: %x(ret to %x) for %d: ",waiter_proc->pid, pc, pc+4, waited_proc_pid);
+    debug_printf("Process %d should wait at pc: %x(ret to %x) for %d: ",waiter_proc->pid, pc, pc+4, waited_proc_pid);
 
     struct Proc* waited_proc = get_proc(waited_proc_pid);
 
     if(waited_proc == NULL || waited_proc->status == PROC_FREE){
-        printf("Error waited proc was non valid, or was on a invalid state\n");
+        debug_printf("Error waited proc was non valid, or was on a invalid state\n");
         SET_SYSCALL_RET0(tf, -1) // Error
         return;
     }
     struct ProcExitStatus* waited_exit_status = &exit_statuses[PROCX(waited_proc_pid)];
     if(waited_proc->status == PROC_DYING){
-        printf("already exited, cleaning orphan and returning to waiter!\n");
+        debug_printf("already exited, cleaning orphan and returning to waiter!\n");
         // Already finished! So notify directly and return to curr process? no need for sched yield
         SET_SYSCALL_RET0(tf, waited_exit_status->ret_code)
         
@@ -198,7 +198,7 @@ void syscall_wait(FullTrapFrame *tf, uintptr_t pc){
     }
 
     struct ProcExitStatus* waiter_exit_status = &exit_statuses[PROCX(waiter_proc->pid)];
-    printf("not exited yet, wait blocked!\n");
+    debug_printf("not exited yet, wait blocked!\n");
 
     waiter_proc->status = PROC_NOT_RUNNABLE;
     add_waiter_for(waited_exit_status, waiter_exit_status);
@@ -222,7 +222,7 @@ void syscall_getpid(FullTrapFrame *tf, uintptr_t pc){
 
 
 void syscall_trysendmsg(FullTrapFrame *tf, uintptr_t pc){
-    printf("syscall send_msg...\n");
+    debug_printf("syscall send_msg...\n");
     struct Proc * sender_proc = get_curr();
 
     int receiver_proc_pid = SYSCALL_ARG0(tf);
@@ -234,14 +234,14 @@ void syscall_trysendmsg(FullTrapFrame *tf, uintptr_t pc){
 }
 
 void syscall_tryrecvmsg(FullTrapFrame *tf, uintptr_t pc) {
-    printf("syscall tryrecvmsg...\n");
+    debug_printf("syscall tryrecvmsg...\n");
     uint32_t msg_addr = SYSCALL_ARG0(tf);
     int result = recv_msg(tf, pc, false, msg_addr);
     SET_SYSCALL_RET0(tf, result);
 }
 
 void syscall_recvmsg(FullTrapFrame *tf, uintptr_t pc) {
-    printf("syscall recvmsg...\n");
+    debug_printf("syscall recvmsg...\n");
     uint32_t msg_addr = SYSCALL_ARG0(tf);
     int result = recv_msg(tf, pc, true, msg_addr);
     SET_SYSCALL_RET0(tf, result);

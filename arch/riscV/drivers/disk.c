@@ -19,12 +19,12 @@ char disk_request_content_buffer[SECTOR_SIZE];
 
 int check_valid_size_read(size_t len){
     if (len > SECTOR_SIZE){
-        printf("Error content len was too long %u, max allowed is %u \n", len, SECTOR_SIZE);
+        debug_printf("Error content len was too long %u, max allowed is %u \n", len, SECTOR_SIZE);
         return -2;
     }
 
     // if (len < SECTOR_SIZE){
-    //     printf("Error content len was less than buffer size %u < %u, for now not allowed\n", len, SECTOR_SIZE);
+    //     debug_printf("Error content len was less than buffer size %u < %u, for now not allowed\n", len, SECTOR_SIZE);
     //     return -3;
     // }
 
@@ -33,12 +33,12 @@ int check_valid_size_read(size_t len){
 
 int check_valid_size_write(size_t len){
     if (len > SECTOR_SIZE){
-        printf("Error content len was too long %u, max allowed is %u \n", len, SECTOR_SIZE);
+        debug_printf("Error content len was too long %u, max allowed is %u \n", len, SECTOR_SIZE);
         return -2;
     }
 
     if (len < SECTOR_SIZE){
-        printf("Error content len was less than buffer size %u < %u, for now not allowed\n", len, SECTOR_SIZE);
+        debug_printf("Error content len was less than buffer size %u < %u, for now not allowed\n", len, SECTOR_SIZE);
         return -3;
     }
 
@@ -66,7 +66,7 @@ void syscall_disk_read(FullTrapFrame *tf, uintptr_t pc) {
                                     trg_buffer_vaddr);
 
     if (trg_buffer_paddr == 0){
-        printf("Failed invalid vaddr for name = %x not mapped for proc %d\n", trg_buffer_vaddr, caller->pid);
+        debug_printf("Failed invalid vaddr for name = %x not mapped for proc %d\n", trg_buffer_vaddr, caller->pid);
         SET_SYSCALL_RET0(tf, -1);
         save_curr_proc_state(tf, pc + 4); // Skip this ins that called syscall
         sched_yield();
@@ -74,7 +74,7 @@ void syscall_disk_read(FullTrapFrame *tf, uintptr_t pc) {
     }
 
 
-	printf("Got read disk sector: %u to buffer at %x len: %u from proc %u\n", src_disk_sector, 
+	debug_printf("Got read disk sector: %u to buffer at %x len: %u from proc %u\n", src_disk_sector, 
             trg_buffer_paddr, read_len, caller->pid);	
 
 
@@ -87,7 +87,7 @@ void syscall_disk_read(FullTrapFrame *tf, uintptr_t pc) {
         return;
     }
 
-    printf("first sector: '%s'\n", &disk_request_content_buffer[0]);
+    debug_printf("first sector: '%s'\n", &disk_request_content_buffer[0]);
 
     memcpy((char*)trg_buffer_paddr, &disk_request_content_buffer[0], read_len);
     
@@ -117,14 +117,14 @@ void syscall_disk_write(FullTrapFrame *tf, uintptr_t pc) {
                                     src_buffer_vaddr);
 
     if (src_buffer_paddr == 0){
-        printf("Failed invalid vaddr for name = %x not mapped for proc %d\n", src_buffer_vaddr, caller->pid);
+        debug_printf("Failed invalid vaddr for name = %x not mapped for proc %d\n", src_buffer_vaddr, caller->pid);
         SET_SYSCALL_RET0(tf, -1);
         save_curr_proc_state(tf, pc + 4); // Skip this ins that called syscall
         sched_yield();
         return;
     }
 
-	printf("Got write buffer at %x to disk sector: %u len: %u \n", 
+	debug_printf("Got write buffer at %x to disk sector: %u len: %u \n", 
         src_buffer_paddr, trg_disk_sector, write_len);	
 
     memcpy(&disk_request_content_buffer[0], (char*)src_buffer_paddr, write_len);
@@ -144,14 +144,14 @@ void syscall_disk_write(FullTrapFrame *tf, uintptr_t pc) {
 }
 
 void init_disk(void){
-    printf("INITING VIRTIO\n");
+    debug_printf("INITING VIRTIO\n");
     virtio_init();
 
-    printf("INITING VIRTIO BLK data\n");
+    debug_printf("INITING VIRTIO BLK data\n");
     virtio_blk_init();
 
 
-    printf("INITING RISCV SYSCALLS READ/WRITE\n");
+    debug_printf("INITING RISCV SYSCALLS READ/WRITE\n");
 
     register_syscall(SYS_DISK_READ, syscall_disk_read);
     register_syscall(SYS_DISK_WRITE, syscall_disk_write);

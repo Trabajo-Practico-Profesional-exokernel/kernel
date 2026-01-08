@@ -1,6 +1,6 @@
 #include "inc/common.h"
 #include "sched.h"
-
+#include "../test/testing.h"
 #include "arch/trap.h"
 #include "arch/stdio.h"
 #include "arch/arch_init.h"
@@ -15,12 +15,11 @@
 // return 0xDEADBEEF;
 void kmain()
 {
-
+    
     init_arch();
-
     clear();
     move_cursor(0);
-    printf("HOLIS\n");
+    debug_printf("HOLIS\n");
 
     init_trap();
 
@@ -33,6 +32,8 @@ void kmain()
     switch_to_kernel_tables();
     #endif
     
+    main_tests();
+
     init_syscalls_filesystem();
     init_syscalls_ipc();
     init_syscalls_proc();
@@ -44,7 +45,7 @@ void kmain()
     kbd_init();
     #endif
 
-    printf("\n\nHello World!\n");
+    debug_printf("\n\nHello World!\n");
     
     init_sched();
 

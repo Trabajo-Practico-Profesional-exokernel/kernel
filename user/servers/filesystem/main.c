@@ -75,12 +75,12 @@ void handle_mkdir(struct Message *msg) {
 }
 
 void handle_rmdir(struct Message *msg) {
-    printf("REMOVING DIR\n");
+    debug_printf("REMOVING DIR\n");
     int result = fs_rmdir(msg->content);
     if (result == 0) {
         fs_sync_current_dir();  // Sincronizar con disco
     }
-    printf("RESULT: [%d]\n", result);
+    debug_printf("RESULT: [%d]\n", result);
     shell_ls();
     msg->content[0] = result;
     send_int_response(msg->sender_pid, result);
@@ -159,7 +159,7 @@ void dispatch_request(struct Message *msg) {
     if (msg->type >= 0 && msg->type < MAX_HANDLERS && dispatch_table[msg->type]) {
         dispatch_table[msg->type](msg);
     } else {
-        printf("[FS] Unknown msg type %d\n", msg->type);
+        debug_printf("[FS] Unknown msg type %d\n", msg->type);
         send_int_response(msg->sender_pid, -1);
     }
 }

@@ -51,6 +51,6 @@ SECTIONS {
     . += 2 * 4096; /* 2* 4096 == 8KB for trampoline */
     . = ALIGN(4096); /* align to page size */
     __trampoline_end = .;
-    
+    PROVIDE(_end = .);
 
 }

@@ -46,8 +46,8 @@ void mem_init(void){
     // First map page for page table as direct map
     // map_page(page_table,kernel_page_table, kernel_page_table, KERNEL_PERMISSIONS_ALL);
     
-    printf("SETTING UP KERNEL PAGETABLE at %x\n", kernel_page_table);
-    printf("MAP IN KERNEL from kernel base to ram end: %x to %x\n", (paddr_t) __kernel_base, (paddr_t) __free_ram_end);
+    debug_printf("SETTING UP KERNEL PAGETABLE at %x\n", kernel_page_table);
+    debug_printf("MAP IN KERNEL from kernel base to ram end: %x to %x\n", (paddr_t) __kernel_base, (paddr_t) __free_ram_end);
     direct_map_range(page_table, 
             (paddr_t) __kernel_base,
             (paddr_t) __trampoline_end, // User trampoline is the last thing in physical mem
@@ -63,7 +63,7 @@ uint32_t * init_user_pde_table(void) {
 }
 
 void switch_to_kernel_tables(void){
-    // printf("SHOULD SWITCH TO KERNEL PAGES? IS THAT IT? %x\n", (uint32_t *) kernel_page_table);
+    // debug_printf("SHOULD SWITCH TO KERNEL PAGES? IS THAT IT? %x\n", (uint32_t *) kernel_page_table);
 
     switch_page_table((uint32_t *) kernel_page_table);
 }
@@ -153,7 +153,7 @@ paddr_t get_paddr_for(uint32_t *pd_table, vaddr_t vaddr) {
 paddr_t direct_map_range(uint32_t *pde_table, paddr_t range_start, paddr_t range_end, uint32_t permissions){
     paddr_t paddr = range_start;
     while (paddr < range_end){
-        // printf("MAPPING PAGE %x < %x\n", paddr, range_end);
+        // debug_printf("MAPPING PAGE %x < %x\n", paddr, range_end);
         map_page(pde_table, paddr, paddr, permissions); // Direct map        
         paddr += PAGE_SIZE;
     }
