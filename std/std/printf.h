@@ -4,8 +4,8 @@
 #include "inc/types.h"
 
 enum DebugPrintMode {
-    ON,
-    OFF  
+    OFF,
+    ON
 };
 
 extern enum DebugPrintMode actual_debug_print_mode;

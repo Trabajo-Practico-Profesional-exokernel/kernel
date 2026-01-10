@@ -48,7 +48,7 @@ int copy_argv_pointers_from_user(struct Proc * proc, paddr_t* argv_pointers, vad
             return -1;            
         }
 
-        printf("MAPPED PARAM FOR PROGRAM pointer at %x!\n", paddr_arg);
+        debug_printf("MAPPED PARAM FOR PROGRAM pointer at %x!\n", paddr_arg);
         
         argv_pointers[argc] = paddr_arg;
     }
@@ -75,11 +75,11 @@ int set_init_parameters_for_proc(struct Proc * proc, char ** argv, paddr_t* sp_o
     for(argc = 0; argv[argc]; argc++) { // While argv[ind] != 0
 
         if(argc >= MAXARG) {
-            printf("MORE THAN MAX PARAMS!\n");
+            debug_printf("MORE THAN MAX PARAMS!\n");
             return -1;
         }
-        printf("Pushing ARG at 0x%x to stack ", argv[argc]);
-        printf("'%s'!\n", argv[argc]);
+        debug_printf("Pushing ARG at 0x%x to stack ", argv[argc]);
+        debug_printf("'%s'!\n", argv[argc]);
         size_t arg_len = strlen(argv[argc]) + 1; 
 
         if (arg_len > MAX_ARG_LEN){
@@ -96,8 +96,8 @@ int set_init_parameters_for_proc(struct Proc * proc, char ** argv, paddr_t* sp_o
 
         memcpy( (void *) sp, (void *) argv[argc], arg_len);
         argv_pointers[argc] = VADDR_USER_STACK_HARD_END- (paddr_sp_end- sp);
-        printf("Copied arg to 0x%x, vaddr: 0x%x", sp, argv_pointers[argc]);
-        printf(" value: '%s'\n", sp);
+        debug_printf("Copied arg to 0x%x, vaddr: 0x%x", sp, argv_pointers[argc]);
+        debug_printf(" value: '%s'\n", sp);
     }
     argv_pointers[argc] = 0;
 

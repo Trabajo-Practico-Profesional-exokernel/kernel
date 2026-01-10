@@ -44,7 +44,7 @@ void kmain()
     kbd_hw_enable();
     kbd_init();
     #endif
-
+    enable_debug_print();
     debug_printf("\n\nHello World!\n");
     
     init_sched();

@@ -7,9 +7,15 @@ void putchar(char ch);
 enum DebugPrintMode actual_debug_print_mode = ON;
 
 void debug_printf(const char *fmt, ...){
-  if (actual_debug_print_mode == ON) {
-    printf(fmt);
-  }
+  if (actual_debug_print_mode != ON) return;
+
+  char buf[256]; 
+  va_list args;
+  va_start(args, fmt);
+  
+  vsnprintf(buf, sizeof(buf), fmt, args);
+  va_end(args);
+  printf("[DEBUG] %s", buf); 
 }
 
 static void

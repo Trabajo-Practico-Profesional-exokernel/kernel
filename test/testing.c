@@ -53,6 +53,7 @@ int main_tests(){
         printGreen("=============================\n");
         printGreen("===== KIT TESTS SUCCESS =====\n");
         printGreen("=============================\n\n");
+        enable_debug_print();
         return 0;
     } else {
 
@@ -61,5 +62,4 @@ int main_tests(){
         printRed("============================\n\n");
         for(;;){}
     }
-    enable_debug_print();
 }
