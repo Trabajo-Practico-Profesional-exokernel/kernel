@@ -52,7 +52,7 @@ void init_sched(void) {
     
     // Start proc_shell!
     #ifdef IS_RISC
-    switch_proc(proc_shell);
+    switch_proc(proc_fs);
     #else
     switch_proc(proc_shell);
     #endif

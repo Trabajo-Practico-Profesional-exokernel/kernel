@@ -72,7 +72,7 @@ void syscall_mkdir(FullTrapFrame *tf, uintptr_t pc) {
     debug_printf("syscall_mkdir called path_ptr=%x", path_vaddr);
     // switch_to_kernel_tables();// You need to be on kernel pages to be able to map/get real paddr
     
-    int send_msg_success = send_msg(actual_proc, filesystem_PID, path_vaddr, MSG_SIZE_MAX, FS_TYPE_MKDIR);
+    int send_msg_success = send_msg(actual_proc, filesystem_PID, path_vaddr, FS_TYPE_MKDIR);
     if (send_msg_success) {
         char msg_recv_content[MSG_SIZE_MAX];
 
@@ -105,7 +105,7 @@ void syscall_rmdir(FullTrapFrame *tf, uintptr_t pc) {
     debug_printf("syscall_rmdir called path_ptr=%x", path_vaddr);
     // switch_to_kernel_tables();// You need to be on kernel pages to be able to map/get real paddr
     
-    int send_msg_success = send_msg(actual_proc, filesystem_PID, path_vaddr, MSG_SIZE_MAX, FS_TYPE_RMDIR);
+    int send_msg_success = send_msg(actual_proc, filesystem_PID, path_vaddr, FS_TYPE_RMDIR);
     
     if (send_msg_success) {
         char msg_recv_content[MSG_SIZE_MAX];

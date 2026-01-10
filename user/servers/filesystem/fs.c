@@ -50,8 +50,8 @@ void shell_ls(void) {
 
     int num_blocks = (dir_inode.size + super.pointers_per_dcb - 1) / super.pointers_per_dcb;
 
-    debug_printf("Nombre          Tipo    Inum    Size\n");
-    debug_printf("------------------------------------\n");
+    printf("Nombre          Tipo    Inum    Size\n");
+    printf("------------------------------------\n");
 
     for(i = 0; i < num_blocks; i++){
         int current_iblock = get_iblock(dir_inode, i);
@@ -76,7 +76,7 @@ void shell_ls(void) {
             // %d    : Imprime entero
             // \t    : Tabulador para alinear
             
-            debug_printf("%-15s %s \t%d \t%d\n", 
+            printf("%-15s %s \t%d \t%d\n", 
                    (char*)block.dir.files_name[j],           // Nombre
                    (file_inode.type == DIRECTORY ? "D" : "F"), // Tipo
                    (int)block.dir.files_inum[j],             // Inum

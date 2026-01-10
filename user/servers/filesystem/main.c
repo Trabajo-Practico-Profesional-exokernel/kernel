@@ -27,11 +27,11 @@ typedef struct {
 } fs_seek_req_t;
 
 void send_int_response(int pid_target, int value) {
-    sys_try_send_msg(pid_target, (char*) &value, sizeof(int));
+    sys_try_send_msg(pid_target, (char*) &value, 1);
 }
 
 void send_data_response(int pid_target, void* data, int size) {
-    sys_try_send_msg(pid_target, (char*) data, size);
+    sys_try_send_msg(pid_target, (char*) data, 1);
 }
 
 void handle_open(struct Message *msg) {
@@ -70,7 +70,6 @@ void handle_mkdir(struct Message *msg) {
         fs_sync_current_dir();  // Sincronizar con disco
     }
     shell_ls();
-    msg->content[0] = result;
     send_int_response(msg->sender_pid, result);
 }
 
@@ -169,12 +168,14 @@ void server_listen(){
     while(1) {
         int res = sys_recv_msg(&msg); 
         if (res == 0) { 
+            printf("mensaje recibido con contenido: [%d], [%s]", msg.type, msg.content);
             dispatch_request(&msg);
         }
     }
 }
 
 void main(){
+    printf("FILESYSTEM!");
     fs_init();
     server_listen();
 }

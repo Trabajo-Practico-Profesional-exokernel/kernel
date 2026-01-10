@@ -67,21 +67,23 @@ struct Message extract_msg(struct Proc *receiver_proc){
     return msg;
 }
 
-int send_msg(struct Proc * sender_proc, int receiver_proc_pid, uint32_t msg_addr, int len_msg, int msg_type){
+int send_msg(struct Proc * sender_proc, int receiver_proc_pid, uint32_t msg_addr, int type_msg){
     struct Message msg;
+    int content_size = copyin_msg(sender_proc, msg.content, msg_addr, MSG_SIZE_MAX);
+
+    if (content_size < 0) {
+        return 0;
+    }
+
     msg.sender_pid = sender_proc->pid;
-    msg.content_size = len_msg;
-    msg.type = msg_type;
-    copyin_msg(sender_proc, msg.content, msg_addr, len_msg);
+    msg.content_size = content_size;
+    msg.type = type_msg;
 
     struct Proc* receiver_proc = get_proc(receiver_proc_pid);
     
     int success = insert_msg(receiver_proc, msg);
     if (success) {
-
-        if (receiver_proc->status == PROC_NOT_RUNNABLE){
-            receiver_proc->status = PROC_RUNNABLE;
-        }
+        receiver_proc->status = PROC_RUNNABLE;
         return 1;
     } else {
         return 0;
@@ -93,7 +95,7 @@ int recv_msg(FullTrapFrame *tf, uintptr_t pc, bool blocking, uint32_t msg_addr) 
 
     struct Message msg = extract_msg(receiver_proc);
 
-    if (msg.content_size == 0) {
+    if (msg.type == 0) {
         if (blocking) {
             receiver_proc->status = PROC_NOT_RUNNABLE;
             save_curr_proc_state(tf, pc);
