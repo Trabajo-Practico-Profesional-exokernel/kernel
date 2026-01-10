@@ -224,12 +224,14 @@ void syscall_getpid(FullTrapFrame *tf, uintptr_t pc){
 void syscall_trysendmsg(FullTrapFrame *tf, uintptr_t pc){
     debug_printf("syscall send_msg...\n");
     struct Proc * sender_proc = get_curr();
-
     int receiver_proc_pid = SYSCALL_ARG0(tf);
     uint32_t msg_addr = SYSCALL_ARG1(tf);
-    int len_msg = SYSCALL_ARG2(tf);
+    int type_msg = SYSCALL_ARG2(tf);
 
-    int result = send_msg(sender_proc, receiver_proc_pid, msg_addr, len_msg, 0);
+    if (receiver_proc_pid == 99) {
+        receiver_proc_pid = filesystem_PID;
+    }
+    int result = send_msg(sender_proc, receiver_proc_pid, msg_addr, type_msg);
     SET_SYSCALL_RET0(tf, result);
 }
 

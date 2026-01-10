@@ -19,7 +19,7 @@ void main() {
 
     char content_2[64];
     printf("RECEIVING MSG\n");
-    int success = sys_try_recv_msg(&content_2[0], 64);
+    int success = sys_try_recv_msg(&content_2[0]);
     if (success){
         printf("MSG RECEIVED WITH CONTENT: [%s]\n", content_2);
     } else {

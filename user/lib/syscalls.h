@@ -35,9 +35,9 @@ int sys_stat(char* filepath);
 
 
 
-int sys_try_send_msg(int pid_proc, char * msg_out, size_t len_msg_out);
+int sys_try_send_msg(int proc_pid, char *msg, int type_msg) ;
 
-int sys_try_recv_msg(char *msg, size_t len_msg);
+int sys_try_recv_msg(char *msg);
 
 int sys_recv_msg(struct Message *msg);
 // int recv_ipc_msg(char* msg, size_t max_len);
@@ -77,7 +77,7 @@ int unlink(const char *path);
 int link(const char *old_path, const char *new_path);
 
 int mkdir(const char *path);
-
+int rmdir(const char *path);
 int chdir(const char *path);
 
 void * sbrk(const int count_pages);

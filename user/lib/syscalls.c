@@ -9,12 +9,12 @@ int exec(int prog_ind, char ** args){
 }
 
 
-int sys_try_send_msg(int proc_pid, char *msg, size_t len_msg) {
-    return syscall(SYS_TRY_SEND_MSG, proc_pid, (int)(msg), len_msg);
+int sys_try_send_msg(int proc_pid, char *msg, int type_msg) {
+    return syscall(SYS_TRY_SEND_MSG, proc_pid, (int)(msg), type_msg);
 }
 
-int sys_try_recv_msg(char *msg, size_t len_msg) {
-    return syscall(SYS_TRY_RECV_MSG, (int)(msg), len_msg, 0);
+int sys_try_recv_msg(char *msg) {
+    return syscall(SYS_TRY_RECV_MSG, (int)(msg), 0, 0);
 }
 
 void sendchar(int proc_pid, char ch) {
@@ -129,9 +129,36 @@ int link(const char *old_path, const char *new_path) {
     return syscall(SYS_LINK, (int)old_path, (int)new_path, 0);
 }
 
+
+int mkdir(const char *path) {
+    int res = sys_try_send_msg(99, (void*)path, FS_TYPE_MKDIR);
+    if (res == 0) {
+        return -1;
+    }
+    struct Message respuesta;
+    res = sys_recv_msg(&respuesta);
+    if (res >= 0) {
+        return (int)((signed char)respuesta.content[0]);
+    }
+    return -1;
+}
+
+int rmdir(const char *path) {
+    int res = sys_try_send_msg(99, (void*)path, FS_TYPE_RMDIR);
+    if (res == 0) {
+        return -1;
+    }
+    struct Message respuesta;
+    res = sys_recv_msg(&respuesta);
+    if (res >= 0) {
+        return (int)((signed char)respuesta.content[0]);
+    }
+    return -1;
+}
+/*
 int mkdir(const char *path) {
     return syscall(SYS_MKDIR, (int)path, 0, 0);
-}
+}*/
 
 int chdir(const char *path) {
     return syscall(SYS_CHDIR, (int)path, 0, 0);

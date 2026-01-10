@@ -98,7 +98,7 @@ int handle_mkdir(char* args) {
 }
 
 int handle_rmdir(char* args) {
-    if (sys_rm(args) == 0) {
+    if (rmdir(args) == 0) {
         printf("rmdir success: %s\n", args);
         return OK_CODE;
     }
