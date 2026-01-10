@@ -28,13 +28,15 @@ void sleep(int delay) {
 
 // __attribute__((section(".text.start")))
 void _start(int argc, char** argv){
-    debug_printf("Simple log!\n");
-    
-    debug_printf("Prog got argc: %d and argv: %x\n", argc, argv);
-    int curr= 0;
-    for(curr = 0; curr < argc; curr++) {
-        debug_printf("Prog got arg pointer argv[%d]: %x ", curr, argv[curr]);    
-        debug_printf("=> '%s'\n", argv[curr]);    
+    printf("Prog got argc: %d and argv: %x\n", argc, argv);
+
+    if(argc > 0){
+        printf("GOT ARGS:\n");
+        int curr= 0;
+        for(curr = 0; curr < argc; curr++) {
+            printf("Prog got arg pointer argv[%d]: %x ", curr, argv[curr]);    
+            printf("=> '%s'\n", argv[curr]);    
+        }
     }
     main();
     
