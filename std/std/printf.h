@@ -4,8 +4,8 @@
 #include "inc/types.h"
 
 enum DebugPrintMode {
-    OFF,
-    ON
+    ON,
+    OFF  
 };
 
 extern enum DebugPrintMode actual_debug_print_mode;
@@ -19,6 +19,8 @@ void printGreen(const char* text);
 void printRed(const char* text);
   
 void printYellow(const char* text);
+
+void printPurple(const char* text);
 
 int snprintf(char *buf, size_t size, const char *fmt, ...);
 

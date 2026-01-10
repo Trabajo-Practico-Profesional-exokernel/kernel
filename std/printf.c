@@ -15,7 +15,8 @@ void debug_printf(const char *fmt, ...){
   
   vsnprintf(buf, sizeof(buf), fmt, args);
   va_end(args);
-  printf("[DEBUG] %s", buf); 
+  printPurple("[DEBUG] ");
+  printf("%s", buf); 
 }
 
 static void
@@ -135,6 +136,10 @@ void printRed(const char* text) {
 
 void printYellow(const char* text) {
   printf("\033[0;33m%s\033[0m", text);
+}
+
+void printPurple(const char* text) {
+  printf("\033[0;35m%s\033[0m", text);
 }
 
 void disable_debug_print(void){
