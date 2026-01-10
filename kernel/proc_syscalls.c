@@ -111,7 +111,6 @@ void syscall_exec(FullTrapFrame *tf, uintptr_t pc) {
 
     debug_printf("Should run free proc %p binary: %p \n", proc, &_binary_apps[prog_ind]);
 
-    #ifdef IS_RISC
     load_create_process_user(proc, &_binary_apps[prog_ind], (char **) &argv_pointers[0]);
 
     reset_exit_status(&exit_statuses[PROCX(proc->pid)]);
@@ -127,16 +126,6 @@ void syscall_exec(FullTrapFrame *tf, uintptr_t pc) {
     
     switch_proc(proc);
 
-
-    // Another alternative would be to go back to parent proc!
-    // switch_page_table((uint32_t *)(get_curr()->pde_paddr));
-    #else
-
-    load_create_process_user(proc, &_binary_apps[prog_ind], (char **) &argv_pointers[0]);
-    // Now do switch? or not? naaa If you want you could wait for it! after ret.
-    SET_SYSCALL_RET0(tf, proc->pid)
-    #endif
-
 }
 
 
@@ -146,9 +135,7 @@ void syscall_exit(FullTrapFrame *tf, uintptr_t pc){
     
     debug_printf("Process %u exited with code %d ", exited_proc->pid, exit_code);
 
-    #ifdef IS_RISC
     switch_to_kernel_tables();
-    #endif
     
     struct ProcExitStatus* exit_status = &exit_statuses[PROCX(exited_proc->pid)];
 

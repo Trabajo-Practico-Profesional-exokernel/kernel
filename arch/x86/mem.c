@@ -141,23 +141,13 @@ void map_page(uint32_t *pd_table, vaddr_t vaddr, paddr_t paddr, uint32_t permiss
 
     // 
     uint32_t pt_index = GET_INDEX_IN_PAGE_TABLE(vaddr);
+
     
     uint32_t* pt_table = (uint32_t *) (pd_table[pd_index] & I86_PDE_FRAME);
 
     pt_table[pt_index] = (I86_PTE_FRAME & paddr) | I86_PTE_PRESENT | permissions;
 
-    // Other options
-    // pt_table[pt_index] = I86_PTE_FRAME & paddr;
-    // pt_table[pt_index] |= I86_PTE_PRESENT | permissions;
-    
-    // pt_table[pt_index] = I86_PTE_PRESENT | permissions;
-    // pt_table[pt_index] = (pt_table[pt_index] & ~I86_PTE_FRAME) | paddr;
-
-    if(pt_index == 4){
-        debug_printf("Allocate pt entry table %x, ind: %u (%x) == %x\n", pt_table, pt_index, pt_index* 4, pt_table[pt_index]);
-    }
-    // pt_table[pt_index] |= SET_ENTRY_OFFSET_PTE(paddr);
-
+    // debug_printf("Mapping vaddr %x to paddr %x at pd_index %u (%x), pt_index %u (%x) value: %x \n", vaddr, paddr, pd_index, pd_index*4, pt_index, pt_index*4, pt_table[pt_index]);
 }
 
 paddr_t get_paddr_for(uint32_t *pd_table, vaddr_t vaddr) {
@@ -165,21 +155,27 @@ paddr_t get_paddr_for(uint32_t *pd_table, vaddr_t vaddr) {
     uint32_t pt_index = GET_INDEX_IN_PAGE_TABLE(vaddr); // bits 10 to 19
     uint32_t pt_offset = GET_VADDR_OFFSET(vaddr);  // bits 20 to 31
     
+
+    // printf("Getting paddr for vaddr %x at pd_index %u (%x), pt_index %u (%x) offset: %x\n", vaddr, pd_index, pd_index*4, pt_index, pt_index*4, pt_offset);
     uint32_t page_table_config = pd_table[pd_index];
     
     // Directory page not mapped
     if (IS_NOT_PRESENT(page_table_config)) { 
+        printf("Error: Page directory entry not present for vaddr %x\n", vaddr);
         return 0; // or PANIC / page fault
     }
     
-    uint32_t* pt_table = (uint32_t*) GET_ENTRY_OFFSET(page_table_config); 
+    uint32_t* pt_table = (uint32_t *) (pd_table[pd_index] & I86_PDE_FRAME); 
 
     uint32_t pte_config = pt_table[pt_index];
     if (IS_NOT_PRESENT(pte_config)) { // Not mapped! second level page
+        printf("Error: Page table entry not present for vaddr %x value: %x\n", vaddr, pte_config);
         return 0; // page fault
     }
     
-    paddr_t page_paddr = (paddr_t) GET_ENTRY_OFFSET(pte_config);
+    paddr_t page_paddr = (paddr_t) (I86_PTE_FRAME & pte_config);
+
+    
     return page_paddr + pt_offset;
 }
 

@@ -30,7 +30,6 @@
 #define PAGE_P_DIRTY      0x040 // Bit 6: (Usado por la CPU) Fue escrita (solo en PTE)
 #define PAGE_P_PAGE_SIZE  0x080 // Bit 7: (Solo en PDE) 0=Página de 4KiB, 1=Página de 4MiB
 
-
 ///// From guide
 /*
 On the x86 architecture, the virtual address format actually uses three sections instead of two: The entry number in a page directory table,
@@ -161,5 +160,9 @@ typedef uint32_t pd_entry;
 // ptables and pdirectories are just arrays of entries. they are 4kb of size! == 1 PAGE
 typedef pt_entry* ptable_t;
 typedef pd_entry* pdirectory_t;
+
+
+#define KERNEL_PERMISSIONS_ALL (I86_PTE_WRITABLE) // I86_PTE_PRESENT  no HACE FALTA! Ya se setea en el map_page.
+#define USER_PERMISSIONS_ALL (I86_PTE_WRITABLE | I86_PTE_USER)
 
 #endif /* !*/

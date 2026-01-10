@@ -39,5 +39,7 @@ offset = 12 bits = 19 to 31
 // This is used in both page table entries and page directory entries! 
 #define SET_ENTRY_OFFSET(paddr) (((paddr / PAGE_SIZE) << 10) | PAGE_V)
 
+#define KERNEL_PERMISSIONS_ALL (PAGE_R | PAGE_W | PAGE_X)
+#define USER_PERMISSIONS_ALL (PAGE_U | PAGE_R | PAGE_W | PAGE_X)
 
 #endif /* !*/

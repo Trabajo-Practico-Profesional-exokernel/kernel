@@ -104,7 +104,6 @@ isr13:
     jmp trap_entry
 
 isr14:
-    push 0
     push 14
     jmp trap_entry
 

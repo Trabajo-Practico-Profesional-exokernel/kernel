@@ -11,14 +11,6 @@
 
 extern char __trampoline_start[], __trampoline_end[];
 
-#ifdef IS_RISC
-    #define KERNEL_PERMISSIONS_ALL (PAGE_R | PAGE_W | PAGE_X)
-    #define USER_PERMISSIONS_ALL (PAGE_U | PAGE_R | PAGE_W | PAGE_X)
-#else
-    #define KERNEL_PERMISSIONS_ALL (I86_PTE_WRITABLE) // I86_PTE_PRESENT  no HACE FALTA! Ya se setea en el map_page.
-    #define USER_PERMISSIONS_ALL (I86_PTE_WRITABLE | I86_PTE_USER)
-#endif
-
 int copy_argv_pointers_from_user(struct Proc * proc, paddr_t* argv_pointers, vaddr_t vaddr_argv){
     paddr_t src_argv_paddr = get_paddr_for(
                                     (uint32_t *) proc->pde_paddr,
@@ -185,6 +177,17 @@ void load_create_process_user(struct Proc * proc, const struct AppBinaryInfo * a
             (paddr_t) __trampoline_start,
             (paddr_t) __trampoline_end,
             USER_PERMISSIONS_ALL
+    );
+
+
+    size_t test_num = VADDR_USER_BASE * 2;
+    printf("\n==================\nTest num vaddr to paddr translation before mapping: 0x%x -> 0x%x\n", test_num,
+        get_paddr_for(pde_table, test_num)
+    );
+    map_page(pde_table, test_num, proc->user_sp_start, KERNEL_PERMISSIONS_ALL);
+    
+    printf("Test num vaddr to paddr translation after mapping: 0x%x -> 0x%x == 0x%x ?\n", test_num,
+        get_paddr_for(pde_table, test_num), proc->user_sp_start
     );
 
 

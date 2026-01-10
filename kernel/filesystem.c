@@ -76,9 +76,8 @@ void syscall_handle_ret(FullTrapFrame *tf, uintptr_t pc) {
 void syscall_touch(FullTrapFrame *tf, uintptr_t pc) {
     struct Proc * caller = get_curr();
     vaddr_t vaddr_bytes_pointer = SYSCALL_ARG0(tf);
-    #ifdef IS_RISC
+    
     switch_to_kernel_tables();// You need to be on kernel pages to be able to map/get real paddr
-    #endif
 
     debug_printf("Touch ");
     int err = copy_valid_bytes(vaddr_bytes_pointer, caller);
@@ -103,9 +102,7 @@ void syscall_touch(FullTrapFrame *tf, uintptr_t pc) {
 void syscall_remove(FullTrapFrame *tf, uintptr_t pc) {
     struct Proc * caller = get_curr();
     vaddr_t vaddr_bytes_pointer = SYSCALL_ARG0(tf);
-    #ifdef IS_RISC
     switch_to_kernel_tables();// You need to be on kernel pages to be able to map/get real paddr
-    #endif
 
     debug_printf("Remove ");
     int err = copy_valid_bytes(vaddr_bytes_pointer, caller);
@@ -130,9 +127,7 @@ void syscall_remove(FullTrapFrame *tf, uintptr_t pc) {
 void syscall_stat(FullTrapFrame *tf, uintptr_t pc) {
     struct Proc * caller = get_curr();
     vaddr_t vaddr_bytes_pointer = SYSCALL_ARG0(tf);
-    #ifdef IS_RISC
     switch_to_kernel_tables();// You need to be on kernel pages to be able to map/get real paddr
-    #endif
 
     debug_printf("Stat ");
     int err = copy_valid_bytes(vaddr_bytes_pointer, caller);
@@ -165,9 +160,7 @@ void syscall_register_handler(FullTrapFrame *tf, uintptr_t pc) {
     }
     
     vaddr_t handler_pointer = SYSCALL_ARG0(tf);
-    #ifdef IS_RISC
     switch_to_kernel_tables();// You need to be on kernel pages to be able to map/get real paddr
-    #endif
 
     struct Proc * proc = get_curr();
 

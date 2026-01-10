@@ -6,7 +6,7 @@ ARCH        ?= x86                        # o riscv
 BUILD_DIR   = build/$(ARCH)
 DEF_INCS     = -Ipublic -Istd
 
-KERNEL_DISK_PATH=.kernel_disk/lorem.txt
+KERNEL_DISK_PATH=.kernel_disk/disk.txt
 # ----------------------------
 # Compiladores por arquitectura
 # ----------------------------
