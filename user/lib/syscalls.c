@@ -131,19 +131,28 @@ int link(const char *old_path, const char *new_path) {
 
 
 int mkdir(const char *path) {
-    printf("1");
     int res = sys_try_send_msg(99, (void*)path, FS_TYPE_MKDIR);
-    printf("2");
     if (res == 0) {
         return -1;
     }
-    printf("3");
     struct Message respuesta;
     res = sys_recv_msg(&respuesta);
     if (res >= 0) {
         return (int)((signed char)respuesta.content[0]);
     }
-    printf("4");
+    return -1;
+}
+
+int rmdir(const char *path) {
+    int res = sys_try_send_msg(99, (void*)path, FS_TYPE_RMDIR);
+    if (res == 0) {
+        return -1;
+    }
+    struct Message respuesta;
+    res = sys_recv_msg(&respuesta);
+    if (res >= 0) {
+        return (int)((signed char)respuesta.content[0]);
+    }
     return -1;
 }
 /*

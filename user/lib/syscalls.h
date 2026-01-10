@@ -77,7 +77,7 @@ int unlink(const char *path);
 int link(const char *old_path, const char *new_path);
 
 int mkdir(const char *path);
-
+int rmdir(const char *path);
 int chdir(const char *path);
 
 void * sbrk(const int count_pages);

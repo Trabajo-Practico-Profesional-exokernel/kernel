@@ -74,12 +74,12 @@ void handle_mkdir(struct Message *msg) {
 }
 
 void handle_rmdir(struct Message *msg) {
-    debug_printf("REMOVING DIR\n");
+    printf("REMOVING DIR\n");
     int result = fs_rmdir(msg->content);
     if (result == 0) {
         fs_sync_current_dir();  // Sincronizar con disco
     }
-    debug_printf("RESULT: [%d]\n", result);
+    printf("RESULT: [%d]\n", result);
     shell_ls();
     msg->content[0] = result;
     send_int_response(msg->sender_pid, result);
