@@ -12,7 +12,8 @@
  
  void history_shift(char *new_cmd) {
      for (int i = MAX_HISTORY - 1; i > 1; i--) {
-         strcpy(history[i], history[i - 1]);
+        memset(&history[i], '\0', MAX_CMD_LEN);
+        strcpy(history[i], history[i - 1]);
      }
      
      strncpy(history[1], new_cmd, MAX_CMD_LEN - 1);

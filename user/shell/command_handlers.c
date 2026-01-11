@@ -241,7 +241,8 @@ int handle_pwd(char* args) {
     char path[128];
     
     if (getcwd(path, sizeof(path)) == 0) {
-        printf("%s\n", path);
+        printGreen(path);
+        printf("\n");
         return OK_CODE;
     }
     

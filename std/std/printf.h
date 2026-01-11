@@ -20,6 +20,8 @@ void printRed(const char* text);
   
 void printYellow(const char* text);
 
+void printBlue(const char* text);
+
 void printPurple(const char* text);
 
 int snprintf(char *buf, size_t size, const char *fmt, ...);

@@ -44,9 +44,6 @@ void shell_ls(int proc) {
 
     int num_blocks = (dir_inode.size + super.pointers_per_dcb - 1) / super.pointers_per_dcb;
 
-    printf("Nombre          Tipo    Inum    Size\n");
-    printf("------------------------------------\n");
-
     for (i = 0; i < num_blocks; i++) {
         int current_iblock = get_iblock(dir_inode, i);
         if (current_iblock < 0) {
@@ -64,13 +61,15 @@ void shell_ls(int proc) {
                 show_size -= 2;
             }
 
-            printf("%-15s %s \t%d \t%d\n",
-                   (char *)block.dir.files_name[j],
-                   (file_inode.type == DIRECTORY ? "D" : "F"),
-                   (int)block.dir.files_inum[j],
-                   show_size);
+            if (file_inode.type == DIRECTORY){
+                printBlue((char *)block.dir.files_name[j]);
+            } else {
+                printGreen((char *)block.dir.files_name[j]);
+            }
+            printf("    ");
         }
     }
+    printf("\n");
 }
 
 void fs_init(void) {

@@ -142,6 +142,10 @@ void printPurple(const char* text) {
   printf("\033[0;35m%s\033[0m", text);
 }
 
+void printBlue(const char* text) {
+  printf("\033[0;34m%s\033[0m", text);
+}
+
 void disable_debug_print(void){
   actual_debug_print_mode = OFF;
 }
