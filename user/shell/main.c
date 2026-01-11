@@ -14,7 +14,7 @@ char input_buf[MAX_INPUT];
 
 void main() {
     static char input_buf[MAX_INPUT];
-
+    disable_debug_print();
     printf("SHELL Started registered apps are:\n");
 
     for (int i = 0; i < APP_COUNT; i++) {

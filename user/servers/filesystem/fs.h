@@ -24,7 +24,10 @@
 #define DMAP_BYTES ((DATA_BLOCKS+7)/8)
 #define MAP_BLOCK (1 + INODES_BLOCKS)
 
-
+#define LOG2NPROC 4
+#define NPROC (1 << LOG2NPROC)
+#define PROCS_MAX NPROC        
+#define PROCX(procid) ((procid) & (PROCS_MAX - 1))
 
 // Superblock
 typedef struct{
@@ -115,21 +118,22 @@ int fs_mkfs(void);
 
 // Funciones principales del FS (Internal Logic)
 // Estas funciones serán invocadas por el dispatcher de IPC
-int fs_open(char *fileName, int flags);
-int fs_close(int fd);
-int fs_read(int fd, char *buf, int count);
-int fs_write(int fd, char *buf, int count);
-int fs_lseek(int fd, int offset);
-int fs_mkdir(char *fileName); 
-int fs_rmdir(char *fileName); 
-int fs_cd(char *dirName);
-int fs_link(char *old_fileName, char *new_fileName);
-int fs_unlink(char *fileName);
-int fs_stat(char *fileName, fileStat *buf);
+int fs_open(char *fileName, int flags, int proc);
+int fs_close(int fd, int proc);
+int fs_read(int fd, char *buf, int count, int proc);
+int fs_write(int fd, char *buf, int count, int proc);
+int fs_lseek(int fd, int offset, int proc);
+int fs_mkdir(char *fileName, int proc);
+int fs_rmdir(char *fileName, int proc);
+int fs_cd(char *dirName, int proc);
+int fs_link(char *old_fileName, char *new_fileName, int proc);
+int fs_unlink(char *fileName, int proc);
+int fs_stat(char *fileName, fileStat *buf, int proc);
 int fs_fsck(fsCheck *buf);
 
-void fs_ls_buffered(void);
-void shell_ls(void);
-void fs_sync_current_dir(void);
-void fs_reload_current_dir(void);
+void fs_ls_buffered(int proc);
+void shell_ls(int proc);
+void fs_sync_current_dir(int proc);
+void fs_reload_current_dir(int proc);
+void fs_pwd(int proc);
 #endif

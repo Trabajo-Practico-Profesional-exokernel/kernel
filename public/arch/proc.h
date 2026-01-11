@@ -4,6 +4,7 @@
 #include "arch_inc/trapframe.h"
 #include "arch_inc/mem_constants.h"
 #include "communication.h"
+#include "arch/fd.h"
 
 // Forward declaration of MessageQueue if not already defined
 
@@ -12,7 +13,7 @@
 // Include constants defining positions in memory, for the utility of whom includes proc.h
 #include "arch/mem_layout.h"
 
-#define LOG2NPROC 10
+#define LOG2NPROC 4
 #define NPROC (1 << LOG2NPROC)
 
 #define PROCS_MAX NPROC//8       // Maximum number of processes
@@ -23,7 +24,8 @@
 #define MAXARG 8
 #define MAX_ARG_LEN 256 
 
-
+#define MAX_FILES 16
+#define MAX_SIZE_PATH 256 
 
 typedef int32_t procid_t;
 

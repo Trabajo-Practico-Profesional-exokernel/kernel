@@ -20,4 +20,16 @@ struct stat {
     uint32_t size; //tamaño en bytes
 };
 
+// Estructuras auxiliares
+typedef struct {
+    int fd;
+    int count;
+    char data[0];
+} fs_rw_req_t;
+
+typedef struct {
+    int fd;
+    int offset;
+} fs_seek_req_t;
+
 #endif

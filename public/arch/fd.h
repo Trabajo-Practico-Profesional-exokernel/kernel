@@ -1,6 +1,6 @@
 #ifndef FD
 #define FD
-/*
+
 #define MAX_SIZE_PATH 256
 
 typedef struct {
@@ -11,5 +11,5 @@ typedef struct {
     int flag;
     int is_directory;         // 1 if this is a directory descriptor 
 } File;
-*/
+
 #endif

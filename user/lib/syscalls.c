@@ -2,6 +2,7 @@
 #include "syscalls.h" // Def of syscalls implemented here.
 #include "lib.h" // For printf and syscall func
 #include "arch/communication.h"
+#include "inc/filesystem.h"
 
 int exec(int prog_ind, char ** args){
     // convert args pointer to int
@@ -90,11 +91,31 @@ int sys_touch(char* filepath){
 }
 
 int sys_rm(char* filepath){
-    return syscall(SYS_FS_RM, (int) filepath, 0, 0);
+    int res = sys_try_send_msg(99, filepath, FS_TYPE_UNLINK);
+    if (res == 0) {
+        return -1;
+    }
+    struct Message respuesta;
+    res = sys_recv_msg(&respuesta);
+    if (res >= 0) {
+        return (int)((signed char)respuesta.content[0]);
+    }
+    return -1;
 }
 
 int sys_stat(char* filepath){
-    return syscall(SYS_FS_STAT, (int) filepath, 0, 0);
+    int res = sys_try_send_msg(99, filepath, FS_TYPE_FSTAT);
+    if (res == 0) {
+        return -1;
+    }
+    struct Message respuesta;
+    res = sys_recv_msg(&respuesta);
+    
+    if (res >= 0 && respuesta.content_size > sizeof(int)) {
+        return 0;
+    }
+    
+    return -1;
 }
 
 int getpid(void) {
@@ -106,11 +127,30 @@ int uptime(void) {
 }
 
 int open(const char *path, int mode) {
-    return syscall(SYS_OPEN, (int)path, mode, 0);
+    int res = sys_try_send_msg(99, (void*)path, FS_TYPE_OPEN);
+    if (res == 0) {
+        return -1;
+    }
+    struct Message respuesta;
+    res = sys_recv_msg(&respuesta);
+    if (res >= 0) {
+        // El FS devuelve el FD como un int
+        return *(int*)respuesta.content;
+    }
+    return -1;
 }
 
 int close(int fd) {
-    return syscall(SYS_CLOSE, fd, 0, 0);
+    int res = sys_try_send_msg(99, &fd, FS_TYPE_CLOSE);
+    if (res == 0) {
+        return -1;
+    }
+    struct Message respuesta;
+    res = sys_recv_msg(&respuesta);
+    if (res >= 0) {
+        return (int)((signed char)respuesta.content[0]);
+    }
+    return -1;
 }
 
 int fstat(int fd, struct stat *st) {
@@ -118,15 +158,59 @@ int fstat(int fd, struct stat *st) {
 }
 
 int mknod(const char *path, short major, short minor) {
-    return syscall(SYS_MKNOD, (int)path, major, minor);
+    // El FS ignora major/minor en esta implementación
+    int res = sys_try_send_msg(99, (void*)path, FS_TYPE_MKNOD);
+    if (res == 0) {
+        return -1;
+    }
+    struct Message respuesta;
+    res = sys_recv_msg(&respuesta);
+    if (res >= 0) {
+        return (int)((signed char)respuesta.content[0]);
+    }
+    return -1;
 }
 
 int unlink(const char *path) {
-    return syscall(SYS_UNLINK, (int)path, 0, 0);
+    int res = sys_try_send_msg(99, (void*)path, FS_TYPE_UNLINK);
+    if (res == 0) {
+        return -1;
+    }
+    struct Message respuesta;
+    res = sys_recv_msg(&respuesta);
+    if (res >= 0) {
+        return (int)((signed char)respuesta.content[0]);
+    }
+    return -1;
 }
 
 int link(const char *old_path, const char *new_path) {
-    return syscall(SYS_LINK, (int)old_path, (int)new_path, 0);
+    char buf[256]; // Buffer para concatenar paths
+    int len_old = 0;
+    while(old_path[len_old] != '\0') len_old++;
+    
+    int i = 0;
+    // Copiar old_path
+    for(i=0; i < len_old; i++) buf[i] = old_path[i];
+    buf[i++] = '\0';
+    
+    // Copiar new_path justo después del terminador nulo de old_path
+    int j = 0;
+    while(new_path[j] != '\0') {
+        buf[i++] = new_path[j++];
+    }
+    buf[i] = '\0';
+
+    int res = sys_try_send_msg(99, buf, FS_TYPE_LINK);
+    if (res == 0) {
+        return -1;
+    }
+    struct Message respuesta;
+    res = sys_recv_msg(&respuesta);
+    if (res >= 0) {
+        return (int)((signed char)respuesta.content[0]);
+    }
+    return -1;
 }
 
 
@@ -155,11 +239,132 @@ int rmdir(const char *path) {
     }
     return -1;
 }
-/*
-int mkdir(const char *path) {
-    return syscall(SYS_MKDIR, (int)path, 0, 0);
-}*/
 
 int chdir(const char *path) {
-    return syscall(SYS_CHDIR, (int)path, 0, 0);
+    int res = sys_try_send_msg(99, (void*)path, FS_TYPE_CHDIR);
+    if (res == 0) {
+        return -1;
+    }
+    struct Message respuesta;
+    res = sys_recv_msg(&respuesta);
+    if (res >= 0) {
+        return (int)((signed char)respuesta.content[0]);
+    }
+    return -1;
+}
+
+int ls(char *path) {
+    // Se envía el path aunque la implementación actual de shell_ls use el CWD del proceso
+    int res = sys_try_send_msg(99, path, FS_TYPE_LS);
+    if (res == 0) {
+        return -1;
+    }
+    struct Message respuesta;
+    // Esperamos el ACK del filesystem tras imprimir en consola
+    res = sys_recv_msg(&respuesta);
+    if (res >= 0) {
+        return (int)((signed char)respuesta.content[0]);
+    }
+    return -1;
+}
+
+int read(int fd, char *buf, int size) {
+    fs_rw_req_t req;
+    req.fd = fd;
+    req.count = size;
+
+    int res = sys_try_send_msg(99, &req, FS_TYPE_READ);
+    if (res == 0) {
+        return -1;
+    }
+
+    struct Message respuesta;
+    res = sys_recv_msg(&respuesta);
+    
+    if (res < 0) {
+        return -1;
+    }
+
+    int bytes_read = respuesta.content_size;
+    
+    for (int i = 0; i < bytes_read && i < size; i++) {
+        buf[i] = respuesta.content[i];
+    }
+
+    return bytes_read;
+}
+
+int write(int fd, char *content, int len) {
+    char msg_buffer[MSG_SIZE_MAX]; 
+    fs_rw_req_t *req = (fs_rw_req_t *)msg_buffer;
+
+    req->fd = fd;
+    req->count = len;
+
+    int max_data_size = MSG_SIZE_MAX - sizeof(fs_rw_req_t);
+    int to_write = (len > max_data_size) ? max_data_size : len;
+
+    for (int i = 0; i < to_write; i++) {
+        req->data[i] = content[i];
+    }
+
+    int res = sys_try_send_msg(99, msg_buffer, FS_TYPE_WRITE);
+    if (res == 0) {
+        return -1;
+    }
+
+    struct Message respuesta;
+    res = sys_recv_msg(&respuesta);
+
+    if (res >= 0) {
+        return *(int*)respuesta.content;
+    }
+
+    return -1;
+}
+
+int lseek(int fd, int offset, int whence) {
+    fs_seek_req_t req;
+    req.fd = fd;
+    req.offset = offset;
+
+    int res = sys_try_send_msg(99, &req, FS_TYPE_LSEEK);
+    if (res == 0) {
+        return -1;
+    }
+
+    struct Message respuesta;
+    res = sys_recv_msg(&respuesta);
+
+    if (res >= 0) {
+        return *(int*)respuesta.content;
+    }
+
+    return -1;
+}
+
+int getcwd(char *buf, int size) {
+    int res = sys_try_send_msg(99, "pwd", FS_TYPE_PWD);
+
+    if (res == 0) {
+        return -1;
+    }
+
+    struct Message respuesta;
+    res = sys_recv_msg(&respuesta);
+
+    if (res >= 0) {
+        int len = respuesta.content_size;
+        if (len > size) len = size;
+        
+        for(int i = 0; i < len; i++) {
+            buf[i] = respuesta.content[i];
+        }
+
+        if (size > 0) buf[size - 1] = '\0';
+        
+        return 0;
+    }
+
+    return -1;
 }

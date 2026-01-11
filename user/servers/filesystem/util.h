@@ -8,10 +8,7 @@
 #include "std/printf.h"
 
 // Funciones de conversión
-int atoi(const char *s);
-void itoa(unsigned int n, char *s);
-void itohex(unsigned int n, char *s);
-void reverse(char *s);
+
 
 // Mapeo a funciones estándar del kernel (std/string.h)
 // int strlen(const char *s); // Ya definida en std/string.h

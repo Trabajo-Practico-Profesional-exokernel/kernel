@@ -15,7 +15,7 @@
 // return 0xDEADBEEF;
 void kmain()
 {
-    
+    disable_debug_print();
     init_arch();
     clear();
     move_cursor(0);
@@ -44,7 +44,7 @@ void kmain()
     kbd_hw_enable();
     kbd_init();
     #endif
-    enable_debug_print();
+    disable_debug_print();
     debug_printf("\n\nHello World!\n");
     
     init_sched();

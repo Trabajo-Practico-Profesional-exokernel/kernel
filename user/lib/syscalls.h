@@ -81,5 +81,11 @@ int rmdir(const char *path);
 int chdir(const char *path);
 
 void * sbrk(const int count_pages);
+int ls(char *path);
 
+
+int read(int fd, char *buf, int size);
+int write(int fd, char *content, int len);
+int lseek(int fd, int offset, int whence);
+int getcwd(char *path, int size);
 #endif

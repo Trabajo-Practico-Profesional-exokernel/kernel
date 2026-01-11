@@ -134,7 +134,7 @@ void syscall_exit(FullTrapFrame *tf, uintptr_t pc){
     int exit_code = SYSCALL_ARG0(tf);
     struct Proc * exited_proc = get_curr();
     
-    printf("Process %u exited with code %d ", exited_proc->pid, exit_code);
+    debug_printf("Process %u exited with code %d ", exited_proc->pid, exit_code);
 
     switch_to_kernel_tables();
     
@@ -169,7 +169,7 @@ void syscall_wait(FullTrapFrame *tf, uintptr_t pc){
     struct Proc* waited_proc = get_proc(waited_proc_pid);
 
     if(waited_proc == NULL || waited_proc->status == PROC_FREE){
-        printf("Error waited proc was non valid, or was on a invalid state\n");
+        debug_printf("Error waited proc was non valid, or was on a invalid state\n");
         SET_SYSCALL_RET0(tf, -1) // Error
         return;
     }

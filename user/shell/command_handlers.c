@@ -59,32 +59,100 @@ int handle_smile(char* args) {
 }
 
 int handle_clear(char* args) {
-    printf("\x1b[2J\x1b[H");
+    printf("\x1b[2J\x1b[3J\x1b[H");
     return OK_CODE;
 }
 
 int handle_mkfs(char* args) {
-    // TODO: Implement mkfs
-    return OK_CODE;
+    printf("Error: MKFS must be run from kernel/boot or dedicated tool.\n");
+    return ERR_CODE;
 }
 
 int handle_open(char* args) {
-    // TODO: Implement open file
+    if (args == NULL || strlen(args) == 0) {
+        printf("Usage: open <filename>\n");
+        return ERR_CODE;
+    }
+    int fd = open(args, 0); // 0 for default mode
+    if (fd < 0) {
+        printf("Failed to open file: %s\n", args);
+        return ERR_CODE;
+    }
+    printf("File opened. FD: %d\n", fd);
     return OK_CODE;
 }
 
 int handle_read(char* args) {
-    // TODO: Implement read file
+    char* size_str = strchr(args, ' ');
+    if (!size_str) {
+        printf("Usage: read <fd> <size>\n");
+        return ERR_CODE;
+    }
+    *size_str = 0;
+    size_str++;
+
+    int fd = atoi(args);
+    int size = atoi(size_str);
+    
+    if (size <= 0 || size > 1024) size = 1024; // Limit buffer
+
+    char buffer[1025];
+    int bytes = read(fd, buffer, size);
+    
+    if (bytes < 0) {
+        printf("Read error\n");
+        return ERR_CODE;
+    }
+    
+    buffer[bytes] = 0;
+    printf("Read (%d bytes):\n%s\n", bytes, buffer);
     return OK_CODE;
 }
 
 int handle_write(char* args) {
-    // TODO: Implement write file
+    char* content = strchr(args, ' ');
+    if (!content) {
+        printf("Usage: write <fd> <string>\n");
+        return ERR_CODE;
+    }
+    *content = 0;
+    content++;
+
+    int fd = atoi(args);
+    int len = strlen(content);
+    
+    int bytes = write(fd, content, len);
+    
+    if (bytes < 0) {
+        printf("Write error\n");
+        return ERR_CODE;
+    }
+    
+    printf("Written %d bytes to FD %d\n", bytes, fd);
     return OK_CODE;
 }
 
 int handle_lseek(char* args) {
-    // TODO: Implement lseek
+    char* offset_str = strchr(args, ' ');
+    if (!offset_str) {
+        printf("Usage: lseek <fd> <offset>\n");
+        return ERR_CODE;
+    }
+    *offset_str = 0;
+    offset_str++;
+
+    int fd = atoi(args);
+    int offset = atoi(offset_str);
+
+    // Asumiendo que existe un wrapper lseek similar a los otros
+    // Si no existe en lib.h, esto fallará al linkear, pero es la lógica correcta.
+    int res = lseek(fd, offset, 0); 
+    
+    if (res < 0) {
+        printf("Lseek error\n");
+        return ERR_CODE;
+    }
+    printf("New offset: %d\n", res);
     return OK_CODE;
 }
 
@@ -102,52 +170,129 @@ int handle_rmdir(char* args) {
         printf("rmdir success: %s\n", args);
         return OK_CODE;
     }
-    printf("mkdir failed\n");
+    printf("rmdir failed\n");
     return ERR_CODE;
 }
 
 int handle_cd(char* args) {
-    // TODO: Implement change directory
-    return OK_CODE;
+    if (chdir(args) == 0) {
+        printf("Changed directory to: %s\n", args);
+        return OK_CODE;
+    }
+    printf("cd failed\n");
+    return ERR_CODE;
 }
 
 int handle_close(char* args) {
-    // TODO: Implement close file
-    return OK_CODE;
+    if (args == NULL) {
+        printf("Usage: close <fd>\n");
+        return ERR_CODE;
+    }
+    int fd = atoi(args);
+    if (close(fd) == 0) {
+        printf("Closed FD %d\n", fd);
+        return OK_CODE;
+    }
+    printf("Close failed\n");
+    return ERR_CODE;
 }
 
 int handle_link(char* args) {
-    // TODO: Implement link
-    return OK_CODE;
+    char* new_path = strchr(args, ' ');
+    if (!new_path) {
+        printf("Usage: link <old_path> <new_path>\n");
+        return ERR_CODE;
+    }
+    *new_path = 0;
+    new_path++;
+
+    if (link(args, new_path) == 0) {
+        printf("Link created: %s -> %s\n", new_path, args);
+        return OK_CODE;
+    }
+    printf("Link failed\n");
+    return ERR_CODE;
 }
 
 int handle_unlink(char* args) {
-    // TODO: Implement unlink
-    return OK_CODE;
+    if (sys_rm(args) == 0) {
+        printf("Unlinked: %s\n", args);
+        return OK_CODE;
+    }
+    printf("Unlink failed\n");
+    return ERR_CODE;
 }
 
 int handle_stat(char* args) {
-    // TODO: Implement stat
-    return OK_CODE;
+    if (sys_stat(args) == 0) {
+        printf("File '%s' exists and is accessible.\n", args);
+        return OK_CODE;
+    }
+    printf("Stat failed or file not found\n");
+    return ERR_CODE;
 }
 
 int handle_fsck(char* args) {
-    // TODO: Implement fsck
-    return OK_CODE;
+    printf("FSCK not accessible from shell.\n");
+    return ERR_CODE;
+}
+
+int handle_pwd(char* args) {
+    char path[128];
+    
+    if (getcwd(path, sizeof(path)) == 0) {
+        printf("%s\n", path);
+        return OK_CODE;
+    }
+    
+    printf("Error getting pwd\n");
+    return ERR_CODE;
 }
 
 int handle_ls(char* args) {
-    // TODO: Implement ls
-    return OK_CODE;
+    if (ls(args) == 0) {
+        return OK_CODE;
+    }
+    return ERR_CODE;
 }
 
-int handle_create(char* args) {
-    // TODO: Implement create file
-    return OK_CODE;
+int handle_touch(char* args) {
+    if (args == NULL || strlen(args) == 0) {
+        printf("Usage: touch <filename>\n");
+        return ERR_CODE;
+    }
+
+    // Usamos mknod (FS_TYPE_MKNOD) que en el servidor realiza la lógica de crear el archivo
+    if (mknod(args, 0, 0) == 0) {
+        printf("File created: %s\n", args);
+        return OK_CODE;
+    }
+
+    printf("Touch failed\n");
+    return ERR_CODE;
 }
 
 int handle_cat(char* args) {
-    // TODO: Implement cat file
+    if (args == NULL) {
+        printf("Usage: cat <filename>\n");
+        return ERR_CODE;
+    }
+
+    int fd = open(args, 0);
+    if (fd < 0) {
+        printf("Error opening file\n");
+        return ERR_CODE;
+    }
+
+    char buf[128];
+    int bytes;
+    while ((bytes = read(fd, buf, 127)) > 0) {
+        buf[bytes] = 0;
+        printf("%s", buf);
+    }
+    printf("\n");
+
+    close(fd);
     return OK_CODE;
 }
 
@@ -177,8 +322,9 @@ struct CommandEntry commands[] = {
     { "stat",   handle_stat },
     { "fsck",   handle_fsck },
     { "ls",     handle_ls },
-    { "create", handle_create },
-    { "cat",    handle_cat }
+    { "touch", handle_touch },
+    { "cat",    handle_cat },
+    { "pwd",    handle_pwd }
 };
 
 // Auto-calculate command count

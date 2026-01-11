@@ -28,5 +28,8 @@ void *memfind(const void *s, int c, size_t len);
 
 long strtol(const char *s, char **endptr, int base);
 // int atoi(const char *str);
-
+int atoi(const char *s);
+void itoa(unsigned int n, char *s);
+void itohex(unsigned int n, char *s);
+void reverse(char *s);
 #endif /* not STRING_H */
