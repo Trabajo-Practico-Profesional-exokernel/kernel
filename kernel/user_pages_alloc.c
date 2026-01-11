@@ -11,68 +11,9 @@
 
 #include "user_pages_alloc.h"
 
-#include "user_pages_alloc.h"
-
-// VADDR_USER_HEAP_START, VADDR_USER_HEAP_HARD_END
-
-
-#ifdef IS_RISC
-    #define KERNEL_PERMISSIONS_ALL (PAGE_R | PAGE_W | PAGE_X)
-    #define USER_PERMISSIONS_ALL (PAGE_U | PAGE_R | PAGE_W | PAGE_X)
-#else
-    #define KERNEL_PERMISSIONS_ALL (I86_PTE_WRITABLE) // I86_PTE_PRESENT  no HACE FALTA! Ya se setea en el map_page.
-    #define USER_PERMISSIONS_ALL (I86_PTE_WRITABLE | I86_PTE_USER)
-#endif
-
-struct UserProcPages {
-    paddr_t pages[USER_HEAP_MAX_PAGE_COUNT];
-    int used_pages;
-};
-
-struct UserProcPages procs_pages[PROCS_MAX]; 
-
-
-paddr_t get_paddr_proc_page(struct Proc * proc, int ind){
-    struct UserProcPages* proc_pages = &procs_pages[proc->pid];
-    if(ind >= proc_pages->used_pages){
-        return 0; // Not mapped/used for proc.
-    }
-    
-    return proc_pages->pages[ind];
-}
-vaddr_t get_vaddr_user_page(int ind){
-    return VADDR_USER_HEAP_START + ind * PAGE_SIZE;
-}
-
-int try_add_page_for_proc(struct Proc * proc, paddr_t* allocated_paddr){
-    struct UserProcPages* proc_pages = &procs_pages[proc->pid];
-
-    if (proc_pages->used_pages >= USER_HEAP_MAX_PAGE_COUNT){
-        debug_printf("Process %u reached max limit of heap pages! Cannot alloc\n", proc->pid);
-        return -1;
-    }
-
-    int ret_value = try_alloc_user_page(allocated_paddr);
-    
-    if(ret_value < 0){
-        debug_printf("Failed alloc page, no memory left!\n");
-        return ret_value;
-    }
-    int page_off = proc_pages->used_pages;
-    proc_pages->pages[page_off] = *allocated_paddr;
-    proc_pages->used_pages+=1;
-
-
-    uint32_t *pde_table = (uint32_t *) proc->pde_paddr;
-
-    map_page(pde_table, get_vaddr_user_page(page_off), proc_pages->pages[page_off], USER_PERMISSIONS_ALL);
-    
-    return page_off;
-}
-
-
-
-
+///
+/// Paddr linked list manager for the user ram memory space i.e user_pages_alloc.h contract
+///
 extern char __user_ram_start[], __user_ram_end[];
 
 typedef struct free_page {
@@ -136,6 +77,7 @@ void free_user_page(paddr_t paddr) { //
     // free_pages_count+=1;
 }
 
+
 paddr_t get_paddr_user_page_ind(uint32_t ind){
     return ((paddr_t) __user_ram_start) + (PAGE_SIZE * ind);
 }
@@ -145,8 +87,177 @@ paddr_t get_paddr_user_last_page(){
 }
 
 
+///
+/// proc.h/ proc pages handling perse
+///
+
+// VADDR_USER_HEAP_START, VADDR_USER_HEAP_HARD_END
+vaddr_t get_vaddr_user_heap_page(size_t ind){
+    return VADDR_USER_HEAP_START + ind * PAGE_SIZE;
+}
+
+struct UserProcPages {
+    paddr_t vaddr_proc_heap_end;
+    // paddr_t vaddr_proc_code_end; // PODRIAN SER DINAMICOS! En vez de estaticos!
+    // paddr_t vaddr_proc_stack_end;
+};
+
+struct UserProcPages procs_pages[PROCS_MAX]; 
 
 
+void init_proc_pages(struct Proc* proc){
+
+    // Alloc user stack... still on non user alloc
+    proc->user_sp_start = alloc_pages(USER_STACK_PAGE_COUNT);
+    debug_printf("FOR PROC %u USER SP_START IS %x \n", proc->pid, proc->user_sp_start);
+
+    //
+    // Map user stack to vaddr
+    // [USER_PROG_HARD_END ..USER_STACK_PAGE_COUNT .. USER_STACK_HARD_END] ..    
+    // ... to avoid having to calculate dynamic start. Also ... no page for safeguard yet. 
+    //
+    paddr_t paddr_sp_end = proc->user_sp_start + USER_STACK_PAGE_COUNT * PAGE_SIZE;
+    
+    offset_map_range((uint32_t *) proc->pde_paddr, 
+            proc->user_sp_start, paddr_sp_end,
+            USER_PERMISSIONS_ALL, VADDR_USER_HARD_END); 
+
+
+    struct UserProcPages* proc_pages = &procs_pages[proc->pid];
+    proc_pages->vaddr_proc_heap_end = VADDR_USER_HEAP_START; // For now hardcoded hardlimit.. no dynamic setting.
+    
+}
+
+void free_proc_pages(struct Proc* proc){   
+    struct UserProcPages* proc_pages = &procs_pages[proc->pid];
+
+    // First free user code segment
+    vaddr_t _vaddr = VADDR_USER_BASE;
+
+    printf("=>Freeing process code segment!\n");
+    WALK_MEM_PAGES(
+        proc->pde_paddr,
+        VADDR_USER_BASE , VADDR_USER_HARD_END,
+        /* ON_MISSING_PDE */
+        {
+            printf("Missing PDE for user code vaddr %x\n", _vaddr);
+            break;
+        },
+
+        /* ON_MISSING_PTE */
+        {
+            printf("Missing PTE for user code vaddr %x\n", _vaddr);
+            break;
+        },
+
+        /* BODY */
+        {
+            printf("Should free user code page  %u paddr: 0x%x vaddr: 0x%x\n", proc->pid, _paddr, _vaddr);
+            _vaddr+=PAGE_SIZE;
+
+        }
+    );    
+
+    // If it was dynamic then stack page would be not needed to set to hardlimit!
+    _vaddr = VADDR_USER_HARD_END;
+
+    printf("=>Freeing process stack!\n");
+    
+    WALK_MEM_PAGES(
+        proc->pde_paddr,
+        VADDR_USER_HARD_END , VADDR_USER_STACK_HARD_END,
+        /* ON_MISSING_PDE */
+        {
+            printf("Missing PDE for proc stack vaddr 0x%x\n", _vaddr);
+            break;
+        },
+
+        /* ON_MISSING_PTE */
+        {
+            printf("Missing PTE for proc stack vaddr 0x%x\n", _vaddr);
+            break;
+        },
+
+        /* BODY */
+        {
+            printf("Should free proc stack page  %u paddr: 0x%x vaddr: 0x%x\n", proc->pid, _paddr, _vaddr);
+            _vaddr+=PAGE_SIZE;
+
+        }
+    );    
+
+    // If it was dynamic then it would be not needed to set to hardlimit!
+    _vaddr = VADDR_USER_HEAP_START;
+
+    printf("=>Freeing process heap!\n");
+    
+
+    WALK_MEM_PAGES(
+        proc->pde_paddr,
+        VADDR_USER_HEAP_START , proc_pages->vaddr_proc_heap_end,
+        /* ON_MISSING_PDE */
+        {
+            printf("Missing PDE for proc heap vaddr 0x%x\n", _vaddr);
+            break;
+        },
+
+        /* ON_MISSING_PTE */
+        {
+            printf("Missing PTE for proc heap vaddr 0x%x\n", _vaddr);
+            break;
+        },
+
+        /* BODY */
+        {
+            printf("Should free proc heap page  %u paddr: 0x%x vaddr: 0x%x\n", proc->pid, _paddr, _vaddr);
+            _vaddr+=PAGE_SIZE;
+        }
+    );    
+    
+}
+
+paddr_t get_paddr_proc_heap_page(struct Proc * proc, size_t ind){
+    vaddr_t trg_vaddr = VADDR_USER_HEAP_START + ind * PAGE_SIZE;
+     
+    struct UserProcPages* proc_pages = &procs_pages[proc->pid];
+    if(trg_vaddr >= proc_pages->vaddr_proc_heap_end){
+        return 0; // Not mapped/used for proc.
+    }
+    
+    return get_paddr_for((uint32_t *) proc->pde_paddr, trg_vaddr);
+}
+
+
+
+int try_add_heap_page_for_proc(struct Proc * proc, paddr_t* allocated_paddr){
+    struct UserProcPages* proc_pages = &procs_pages[proc->pid];
+
+    if (proc_pages->vaddr_proc_heap_end >= VADDR_USER_HEAP_HARD_END){
+        debug_printf("Process %u reached max limit of heap pages! Cannot alloc\n", proc->pid);
+        return -1;
+    }
+
+    int ret_value = try_alloc_user_page(allocated_paddr);
+    
+    if(ret_value < 0){
+        debug_printf("Failed alloc page, no memory left!\n");
+        return ret_value;
+    }
+
+    vaddr_t vaddr_new_page =proc_pages->vaddr_proc_heap_end;
+    proc_pages->vaddr_proc_heap_end+= PAGE_SIZE;
+    
+    map_page((uint32_t *) proc->pde_paddr, vaddr_new_page, *allocated_paddr, USER_PERMISSIONS_ALL);
+    
+    // offset/index of page
+    return (vaddr_new_page- VADDR_USER_HEAP_START)/ PAGE_SIZE;
+}
+
+
+
+///
+/// Syscalls
+///
 
 void syscall_sbrk(FullTrapFrame *tf, uintptr_t pc) {
     int page_count = SYSCALL_ARG0(tf);
@@ -161,10 +272,10 @@ void syscall_sbrk(FullTrapFrame *tf, uintptr_t pc) {
 
     paddr_t allocated_page;
     
-    ret_value = try_add_page_for_proc(caller_proc, &allocated_page);
+    ret_value = try_add_heap_page_for_proc(caller_proc, &allocated_page);
     
     if(ret_value >= 0){
-        vaddr_t ret_vaddr = get_vaddr_user_page(ret_value);
+        vaddr_t ret_vaddr = get_vaddr_user_heap_page(ret_value);
         debug_printf("SBRK incremented by 1! Allocated page ind %d, vaddr= %x to paddr= %x\n", ret_value, ret_vaddr, allocated_page);
         ret_value = ret_vaddr;
     }
@@ -174,6 +285,15 @@ void syscall_sbrk(FullTrapFrame *tf, uintptr_t pc) {
 
     SET_SYSCALL_RET0(tf, ret_value);
 }
+
+
+
+
+
+
+///
+/// Init method
+///
 
 void init_user_pages_alloc(void) {
     paddr_t start = (paddr_t)__user_ram_start;
@@ -196,7 +316,6 @@ void init_user_pages_alloc(void) {
     }
 
     first_page = free_list_head; // At the end free list points to first page lowest addr.
-
     /// Now register syscalls!
     register_syscall(SYS_SBRK, syscall_sbrk);
 

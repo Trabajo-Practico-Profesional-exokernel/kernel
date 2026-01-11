@@ -32,9 +32,9 @@ int handle_exec(char* args){
 int handle_wait(char* args){
 
     long pid_waited = strtol(args, NULL, 0);
-    int ret_code= 0;
-    // int ret_code= wait(pid_waited);
+    int ret_code= wait(pid_waited);
     printf("Waited for proc %d! exited with code %d\n", pid_waited, ret_code);
+    return ret_code;
 }
 
 int handle_exit(char* args) {

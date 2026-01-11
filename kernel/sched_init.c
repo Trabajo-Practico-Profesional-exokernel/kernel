@@ -7,6 +7,8 @@
 #include "arch_inc/mem_constants.h" //defines perms like PAGE_R and so on.
 #include "meta/apps_info.h" // Include auto generated app_info and indexs for apps  
 
+// #include "user_pages_alloc.h" 
+
 char *DEF_ARGV[] = { "sh_prog","parameter1", 0 };
 
 extern struct AppBinaryInfo _binary_apps[];
@@ -17,7 +19,7 @@ struct Proc * create_process(size_t ind, char ** argv){
     return proc;
 }
 
-void init_sched(void) {
+void init_sched2(void) {
 
     // Main user process
     // load_create_process_user(proc_shell, &_binary_apps[APP_IND_PROC_A]);
@@ -44,7 +46,7 @@ void init_sched(void) {
     // load_create_process_user(get_first_free_proc(), 
     //                     &_binary_apps[APP_IND_FILESYSTEM], DEF_ARGV);
 
-    
+    copy_pages_code_segment(proc_shell, proc_shell);
     debug_printf("AT CREATE PROCESS SHELL expected pc= %x, ", (uint32_t)VADDR_USER_BASE);
     printProc(proc_shell);
 
@@ -59,10 +61,14 @@ void init_sched(void) {
     PANIC("unreachable here!");
 }
 
-void init_sched2(void) {
+void init_sched(void) {
     struct Proc * proc_def = create_process(APP_IND_KALLOC_PROGRAM, DEF_ARGV);
+
+    create_process(APP_IND_SHELL, DEF_ARGV);
+
     debug_printf("AT CREATE PROCESS DEF expected pc= %x, ", (uint32_t)VADDR_USER_BASE);
     printProc(proc_def);
+
     
     switch_proc(proc_def);
     
