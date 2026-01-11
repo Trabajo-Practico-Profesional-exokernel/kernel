@@ -1,6 +1,6 @@
 #include "lib.h"
 #include "std/string.h"
-
+#include "utils.h"
 #include "app_names.h"
 extern char* _app_names[];
 
@@ -26,7 +26,7 @@ void main() {
         printf("user> ");
         
         // int len = 
-        get_string(input_buf, MAX_INPUT);
+        read_line(input_buf, MAX_INPUT);
 
         char * args= NULL; 
         split_by_once(input_buf, &args, ' ');
