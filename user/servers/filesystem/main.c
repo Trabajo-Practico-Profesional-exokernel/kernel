@@ -25,22 +25,39 @@ void send_data_response(int pid_target, void *data, int size) {
 
 void handle_open(struct Message *msg) {
     int fd = fs_open((char *)msg->content, FS_O_RDWR, msg->sender_pid);
-    send_int_response(msg->sender_pid, fd);
+    char fd_str[16]; 
+    int_to_string(fd, fd_str);
+    send_data_response(msg->sender_pid, fd_str, strlen(fd_str) + 1);
 }
 
 void handle_close(struct Message *msg) {
-    int fd = *(int *)msg->content;
+    int fd = atoi(msg->content);
     int res = fs_close(fd, msg->sender_pid);
-    send_int_response(msg->sender_pid, res);
+    char res_str[16];
+    int_to_string(res, res_str);
+    send_data_response(msg->sender_pid, res_str, strlen(res_str) + 1);
 }
 
 void handle_read(struct Message *msg) {
-    fs_rw_req_t *req = (fs_rw_req_t *)msg->content;
-    char buffer[1024];
-    // Limitamos la lectura al tamaño del buffer de stack o al solicitado
-    int to_read = (req->count > sizeof(buffer)) ? sizeof(buffer) : req->count;
+    char *args = (char *)msg->content;
     
-    int bytes_read = fs_read(req->fd, buffer, to_read, msg->sender_pid);
+    // Parsear fd
+    char *size_str = strchr(args, ' ');
+    if (size_str) {
+        *size_str = '\0'; // Terminar string del fd
+        size_str++;       // Avanzar al size
+    } else {
+        send_data_response(msg->sender_pid, NULL, 0);
+        return;
+    }
+
+    int fd = atoi(args);
+    int count = atoi(size_str);
+
+    char buffer[1024];
+    int to_read = (count > sizeof(buffer)) ? sizeof(buffer) : count;
+    
+    int bytes_read = fs_read(fd, buffer, to_read, msg->sender_pid);
 
     if (bytes_read < 0) {
         send_data_response(msg->sender_pid, NULL, 0);
@@ -50,41 +67,83 @@ void handle_read(struct Message *msg) {
 }
 
 void handle_write(struct Message *msg) {
-    fs_rw_req_t *req = (fs_rw_req_t *)msg->content;
+    char *args = (char *)msg->content;
 
-    int valid_len = msg->content_size - sizeof(fs_rw_req_t);
-    if (req->count > valid_len) {
-        req->count = valid_len;
+    // Parsear fd
+    char *len_str = strchr(args, ' ');
+    if (!len_str) return;
+    *len_str = '\0';
+    len_str++;
+
+    // Parsear len
+    char *data_ptr = strchr(len_str, ' ');
+    if (!data_ptr) return;
+    *data_ptr = '\0';
+    data_ptr++;
+
+    int fd = atoi(args);
+    int count = atoi(len_str);
+
+    // Validar size real vs header (seguridad)
+    // data_ptr apunta al inicio de los datos en el mensaje
+    // Calculamos cuanto espacio queda en el mensaje
+    int header_size = (data_ptr - args);
+    int valid_len = msg->content_size - header_size;
+    
+    if (count > valid_len) count = valid_len;
+
+    int bytes_written = fs_write(fd, data_ptr, count, msg->sender_pid);
+    
+    char res_str[16];
+    int_to_string(bytes_written, res_str);
+    send_data_response(msg->sender_pid, res_str, strlen(res_str) + 1);
+}
+
+void handle_lseek(struct Message *msg) {
+    char *args = (char *)msg->content;
+
+    // Parsear fd
+    char *offset_str = strchr(args, ' ');
+    if (offset_str) {
+        *offset_str = '\0';
+        offset_str++;
     }
 
-    int bytes_written = fs_write(req->fd, req->data, req->count, msg->sender_pid);
-    send_int_response(msg->sender_pid, bytes_written);
+    int fd = atoi(args);
+    int offset = atoi(offset_str);
+
+    int res = fs_lseek(fd, offset, msg->sender_pid);
+    
+    char res_str[16];
+    int_to_string(res, res_str);
+    send_data_response(msg->sender_pid, res_str, strlen(res_str) + 1);
 }
 
 void handle_mkdir(struct Message *msg) {
     int result = fs_mkdir((char *)msg->content, msg->sender_pid);
     if (result == 0) {
-        fs_sync_current_dir(msg->sender_pid); // Sincronizar con disco
+        fs_sync_current_dir(msg->sender_pid); 
     }
-    //shell_ls(msg->sender_pid);
-    send_int_response(msg->sender_pid, result);
+    char res_str[16];
+    int_to_string(result, res_str);
+    send_data_response(msg->sender_pid, res_str, strlen(res_str) + 1);
 }
 
 void handle_rmdir(struct Message *msg) {
-    //printf("REMOVING DIR\n");
     int result = fs_rmdir((char *)msg->content, msg->sender_pid);
     if (result == 0) {
-        fs_sync_current_dir(msg->sender_pid); // Sincronizar con disco
+        fs_sync_current_dir(msg->sender_pid); 
     }
-    //printf("RESULT: [%d]\n", result);
-    //shell_ls(msg->sender_pid);
-    send_int_response(msg->sender_pid, result);
+    char res_str[16];
+    int_to_string(result, res_str);
+    send_data_response(msg->sender_pid, res_str, strlen(res_str) + 1);
 }
 
 void handle_rm(struct Message *msg) {
     int result = fs_unlink((char *)msg->content, msg->sender_pid);
-
-    send_int_response(msg->sender_pid, result);
+    char res_str[16];
+    int_to_string(result, res_str);
+    send_data_response(msg->sender_pid, res_str, strlen(res_str) + 1);
 }
 
 void handle_fstat(struct Message *msg) {
@@ -94,46 +153,47 @@ void handle_fstat(struct Message *msg) {
         send_data_response(msg->sender_pid, &stat_buf, sizeof(fileStat));
     } else {
         int error = -1;
-        send_data_response(msg->sender_pid, &error, sizeof(int));
+        char res_str[16];
+        int_to_string(error, res_str);
+        send_data_response(msg->sender_pid, res_str, strlen(res_str) + 1);
     }
 }
 
 void handle_link(struct Message *msg) {
-    // Link recibe dos strings pegados. Hay que tener cuidado con strlen aquí.
     char *old = (char *)msg->content;
-    // Buscamos el null terminator del primer string para encontrar el segundo
     int old_len = strlen(old);
     char *new = (char *)msg->content + old_len + 1;
 
     int res = fs_link(old, new, msg->sender_pid);
-    send_int_response(msg->sender_pid, res);
+    char res_str[16];
+    int_to_string(res, res_str);
+    send_data_response(msg->sender_pid, res_str, strlen(res_str) + 1);
 }
 
 void handle_chdir(struct Message *msg) {
     int res = fs_cd((char *)msg->content, msg->sender_pid);
-    send_int_response(msg->sender_pid, res);
-}
-
-void handle_lseek(struct Message *msg) {
-    fs_seek_req_t *req = (fs_seek_req_t *)msg->content;
-    int res = fs_lseek(req->fd, req->offset, msg->sender_pid);
-    send_int_response(msg->sender_pid, res);
+    char res_str[16];
+    int_to_string(res, res_str);
+    send_data_response(msg->sender_pid, res_str, strlen(res_str) + 1);
 }
 
 void handle_mknod(struct Message *msg) {
-    // Simulamos mknod abriendo el archivo para crearlo y cerrandolo inmediatamente
     int fd = fs_open((char *)msg->content, FS_O_RDWR, msg->sender_pid);
+    char res_str[16];
     if (fd >= 0) {
         fs_close(fd, msg->sender_pid);
-        send_int_response(msg->sender_pid, 0);
+        int_to_string(0, res_str);
     } else {
-        send_int_response(msg->sender_pid, -1);
+        int_to_string(-1, res_str);
     }
+    send_data_response(msg->sender_pid, res_str, strlen(res_str) + 1);
 }
 
 void handle_shell_ls(struct Message *msg){
     shell_ls(msg->sender_pid);
-    send_int_response(msg->sender_pid, 0);
+    char res_str[16];
+    int_to_string(0, res_str);
+    send_data_response(msg->sender_pid, res_str, strlen(res_str) + 1);
 }
 
 void handle_pwd(struct Message *msg) {

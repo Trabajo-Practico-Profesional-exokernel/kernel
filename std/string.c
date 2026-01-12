@@ -417,3 +417,24 @@ void itohex(unsigned int n, char *s)
     s[i++] = 0;
     reverse(s);
 }
+
+
+void int_to_string(int n, char s[]) {
+    int i = 0, sign;
+    if ((sign = n) < 0) n = -n;
+    
+    do {
+        s[i++] = n % 10 + '0';
+    } while ((n /= 10) > 0);
+    
+    if (sign < 0) s[i++] = '-';
+    s[i] = '\0';
+
+    int j, k;
+    char temp;
+    for (j = 0, k = i - 1; j < k; j++, k--) {
+        temp = s[j];
+        s[j] = s[k];
+        s[k] = temp;
+    }
+}

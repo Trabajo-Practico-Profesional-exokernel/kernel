@@ -32,4 +32,5 @@ int atoi(const char *s);
 void itoa(unsigned int n, char *s);
 void itohex(unsigned int n, char *s);
 void reverse(char *s);
+void int_to_string(int n, char s[]);
 #endif /* not STRING_H */

@@ -3,7 +3,7 @@
 #include "lib.h" // For printf and syscall func
 #include "arch/communication.h"
 #include "inc/filesystem.h"
-
+#include "std/string.h"
 int exec(int prog_ind, char ** args){
     // convert args pointer to int
     return syscall(SYS_EXEC, prog_ind, (int)(args), 0);
@@ -98,7 +98,7 @@ int sys_rm(char* filepath){
     struct Message respuesta;
     res = sys_recv_msg(&respuesta);
     if (res >= 0) {
-        return (int)((signed char)respuesta.content[0]);
+        return atoi(respuesta.content);
     }
     return -1;
 }
@@ -127,28 +127,34 @@ int uptime(void) {
 }
 
 int open(const char *path, int mode) {
+    disable_debug_print();
     int res = sys_try_send_msg(99, (void*)path, FS_TYPE_OPEN);
     if (res == 0) {
         return -1;
     }
     struct Message respuesta;
     res = sys_recv_msg(&respuesta);
+    debug_printf("resultado receive: %d", res);
     if (res >= 0) {
+        debug_printf("fd obtenido de lado de proceso: %s\n", respuesta.content);
+        debug_printf("fd obtenido de lado de proceso en decimal: %d\n", atoi(respuesta.content));
         // El FS devuelve el FD como un int
-        return *(int*)respuesta.content;
+        return atoi(respuesta.content);
     }
     return -1;
 }
 
 int close(int fd) {
-    int res = sys_try_send_msg(99, &fd, FS_TYPE_CLOSE);
+    char fd_str[16]; 
+    int_to_string(fd, fd_str);
+    int res = sys_try_send_msg(99, fd_str, FS_TYPE_CLOSE);
     if (res == 0) {
         return -1;
     }
     struct Message respuesta;
     res = sys_recv_msg(&respuesta);
     if (res >= 0) {
-        return (int)((signed char)respuesta.content[0]);
+        return atoi(respuesta.content);
     }
     return -1;
 }
@@ -166,7 +172,7 @@ int mknod(const char *path, short major, short minor) {
     struct Message respuesta;
     res = sys_recv_msg(&respuesta);
     if (res >= 0) {
-        return (int)((signed char)respuesta.content[0]);
+        return atoi(respuesta.content);
     }
     return -1;
 }
@@ -179,7 +185,7 @@ int unlink(const char *path) {
     struct Message respuesta;
     res = sys_recv_msg(&respuesta);
     if (res >= 0) {
-        return (int)((signed char)respuesta.content[0]);
+        return atoi(respuesta.content);
     }
     return -1;
 }
@@ -208,7 +214,7 @@ int link(const char *old_path, const char *new_path) {
     struct Message respuesta;
     res = sys_recv_msg(&respuesta);
     if (res >= 0) {
-        return (int)((signed char)respuesta.content[0]);
+        return atoi(respuesta.content);
     }
     return -1;
 }
@@ -222,7 +228,7 @@ int mkdir(const char *path) {
     struct Message respuesta;
     res = sys_recv_msg(&respuesta);
     if (res >= 0) {
-        return (int)((signed char)respuesta.content[0]);
+        return atoi(respuesta.content);
     }
     return -1;
 }
@@ -235,7 +241,7 @@ int rmdir(const char *path) {
     struct Message respuesta;
     res = sys_recv_msg(&respuesta);
     if (res >= 0) {
-        return (int)((signed char)respuesta.content[0]);
+        return atoi(respuesta.content);
     }
     return -1;
 }
@@ -248,7 +254,7 @@ int chdir(const char *path) {
     struct Message respuesta;
     res = sys_recv_msg(&respuesta);
     if (res >= 0) {
-        return (int)((signed char)respuesta.content[0]);
+        return atoi(respuesta.content);
     }
     return -1;
 }
@@ -263,17 +269,24 @@ int ls(char *path) {
     // Esperamos el ACK del filesystem tras imprimir en consola
     res = sys_recv_msg(&respuesta);
     if (res >= 0) {
-        return (int)((signed char)respuesta.content[0]);
+        return atoi(respuesta.content);
     }
     return -1;
 }
 
 int read(int fd, char *buf, int size) {
-    fs_rw_req_t req;
-    req.fd = fd;
-    req.count = size;
+    char msg_buffer[MSG_SIZE_MAX];
+    char temp[16];
 
-    int res = sys_try_send_msg(99, &req, FS_TYPE_READ);
+    // Construir string "fd size"
+    int_to_string(fd, temp);
+    strcpy(msg_buffer, temp);
+    strcat(msg_buffer, " ");
+    
+    int_to_string(size, temp);
+    strcat(msg_buffer, temp);
+
+    int res = sys_try_send_msg(99, msg_buffer, FS_TYPE_READ);
     if (res == 0) {
         return -1;
     }
@@ -295,17 +308,25 @@ int read(int fd, char *buf, int size) {
 }
 
 int write(int fd, char *content, int len) {
-    char msg_buffer[MSG_SIZE_MAX]; 
-    fs_rw_req_t *req = (fs_rw_req_t *)msg_buffer;
+    char msg_buffer[MSG_SIZE_MAX];
+    char temp[16];
+    
+    // Construir header "fd len "
+    int_to_string(fd, temp);
+    strcpy(msg_buffer, temp);
+    strcat(msg_buffer, " ");
+    
+    int_to_string(len, temp);
+    strcat(msg_buffer, temp);
+    strcat(msg_buffer, " ");
 
-    req->fd = fd;
-    req->count = len;
-
-    int max_data_size = MSG_SIZE_MAX - sizeof(fs_rw_req_t);
-    int to_write = (len > max_data_size) ? max_data_size : len;
+    // Copiar contenido a continuación del header
+    int header_len = strlen(msg_buffer);
+    int max_data = MSG_SIZE_MAX - header_len;
+    int to_write = (len > max_data) ? max_data : len;
 
     for (int i = 0; i < to_write; i++) {
-        req->data[i] = content[i];
+        msg_buffer[header_len + i] = content[i];
     }
 
     int res = sys_try_send_msg(99, msg_buffer, FS_TYPE_WRITE);
@@ -317,18 +338,25 @@ int write(int fd, char *content, int len) {
     res = sys_recv_msg(&respuesta);
 
     if (res >= 0) {
-        return *(int*)respuesta.content;
+        return atoi(respuesta.content);
     }
 
     return -1;
 }
 
 int lseek(int fd, int offset, int whence) {
-    fs_seek_req_t req;
-    req.fd = fd;
-    req.offset = offset;
+    char msg_buffer[MSG_SIZE_MAX];
+    char temp[16];
 
-    int res = sys_try_send_msg(99, &req, FS_TYPE_LSEEK);
+    // Construir string "fd offset"
+    int_to_string(fd, temp);
+    strcpy(msg_buffer, temp);
+    strcat(msg_buffer, " ");
+
+    int_to_string(offset, temp);
+    strcat(msg_buffer, temp);
+
+    int res = sys_try_send_msg(99, msg_buffer, FS_TYPE_LSEEK);
     if (res == 0) {
         return -1;
     }
@@ -337,7 +365,7 @@ int lseek(int fd, int offset, int whence) {
     res = sys_recv_msg(&respuesta);
 
     if (res >= 0) {
-        return *(int*)respuesta.content;
+        return atoi(respuesta.content);
     }
 
     return -1;
