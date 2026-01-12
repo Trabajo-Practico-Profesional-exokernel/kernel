@@ -198,7 +198,7 @@ int link(const char *old_path, const char *new_path) {
     int i = 0;
     // Copiar old_path
     for(i=0; i < len_old; i++) buf[i] = old_path[i];
-    buf[i++] = '\0';
+    buf[i++] = ' ';
     
     // Copiar new_path justo después del terminador nulo de old_path
     int j = 0;

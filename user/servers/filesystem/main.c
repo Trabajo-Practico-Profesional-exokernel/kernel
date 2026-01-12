@@ -161,8 +161,17 @@ void handle_fstat(struct Message *msg) {
 
 void handle_link(struct Message *msg) {
     char *old = (char *)msg->content;
-    int old_len = strlen(old);
-    char *new = (char *)msg->content + old_len + 1;
+    char *new = strchr(old, ' ');
+
+    if (new != NULL) {
+        *new = '\0';
+        new++;
+    } else {
+        char res_str[16];
+        int_to_string(-1, res_str);
+        send_data_response(msg->sender_pid, res_str, strlen(res_str) + 1);
+        return;
+    }
 
     int res = fs_link(old, new, msg->sender_pid);
     char res_str[16];

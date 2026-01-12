@@ -652,6 +652,8 @@ int fs_cd(char *dirName, int proc) {
 }
 
 int fs_link(char *old_fileName, char *new_fileName, int proc) {
+    enable_debug_print();
+    debug_printf("path viejo: [%s] - path nuevo [%s]", old_fileName, new_fileName);
     // check if old_fileName and new_fileName exists
     inode_t parent_inode = get_inode_per_inum(current_dir[proc].files_inum[0]);
     int old_inode = find_file_in_dir(parent_inode, old_fileName, NULL);
@@ -688,7 +690,7 @@ int fs_link(char *old_fileName, char *new_fileName, int proc) {
     // save to disk
     save_inode(current_dir[proc].files_inum[0], parent_inode); // save changes in parent inode
     save_inode(old_inode, current_inode);                      // save changes in file inode
-
+    disable_debug_print();
     return 0;
 }
 
