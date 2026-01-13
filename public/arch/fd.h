@@ -19,14 +19,22 @@ typedef enum {
     ON  = 1
 } file_state_t;
 
+
+struct MemBuffer{
+    uint8_t references; //indica cuandos files tienen el buffer tomado
+    uint8_t buffer[MAX_BUFFER_BYTES]; //informacion que contiene el fd
+    uint8_t len_buffer; //numero que indican los bytes cargados
+    uint8_t write_idx; //indice bytes leidos
+    uint8_t read_idx; //indice bytes escritos
+};
+
 struct File {
     file_state_t state; //estado actual del fd que marca si esta siendo usado o no
     fd_type_t type; // tipo de fd
     uint8_t perms; //permisos lectura o escritura
-    uint8_t buffer[MAX_BUFFER_BYTES]; //informacion que contiene el fd
-    uint8_t len_buffer; //numero que indican los bytes cargados al fd
-    uint8_t index_readed; //indice bytes leidos
-    uint8_t index_readedwrited; //indice bytes escritos
+
+    struct MemBuffer *buffer;
+
     file_state_t readopen; //estado extremo escritura
     file_state_t writeopen; //estado extremo lectura
 };

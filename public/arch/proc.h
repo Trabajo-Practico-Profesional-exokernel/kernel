@@ -25,7 +25,6 @@
 #define MAX_ARG_LEN 256 
 
 #define MAX_FILES 16
-#define MAX_SIZE_PATH 256 
 
 typedef int32_t procid_t;
 

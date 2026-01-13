@@ -33,5 +33,20 @@ int fd_can_read(struct File *f);
 
 int fd_can_write(struct File *f);
 
+void membuffer_reset(struct MemBuffer *buffer);
+
+struct MemBuffer* membuffer_alloc(void);
+
+void membuffer_release(struct MemBuffer *mb);
+
+void membuffer_retain(struct MemBuffer *mb);
+
+int membuffer_write(struct MemBuffer *mb, const uint8_t *src, uint8_t len);
+
+int membuffer_read(struct MemBuffer *mb, uint8_t *dst, uint8_t len);
+
+int membuffer_is_full(struct MemBuffer *mb);
+
+int membuffer_is_empty(struct MemBuffer *mb);
 
 #endif /* FS_SYSCALLS_H */
