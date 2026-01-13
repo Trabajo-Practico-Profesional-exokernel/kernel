@@ -5,4 +5,5 @@
 *.img
 build/
 .kernel_disk/disk.img
+.kernel_disk/disk.txt
 dump
