@@ -13,6 +13,8 @@
 #define E_PERM    -3
 #define E_CLOSED  -4
 
+void init_files();
+
 void fd_reset(struct File *f);
 
 void fd_init(struct File *f, fd_type_t type, uint8_t perms);

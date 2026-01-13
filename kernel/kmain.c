@@ -7,7 +7,7 @@
 #include "arch/mem.h"
 #include "arch/trap_handling.h"
 #include "fs_syscalls.h"
-
+#include "fd.h"
 
 // void *mboot, unsigned int magic_number
 // UNUSED_ARGUMENT(mboot);
@@ -34,6 +34,7 @@ void kmain()
     
     main_tests();
 
+    init_files();
     init_syscalls_filesystem();
     init_syscalls_ipc();
     init_syscalls_proc();

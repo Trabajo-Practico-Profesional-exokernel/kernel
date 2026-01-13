@@ -1,6 +1,19 @@
 #include "arch/fd.h"
 #include "fd.h"
 #include "std/string.h"
+#include "arch/proc.h"
+
+struct File file[PROCS_MAX][MAX_FILES];
+
+void init_files(){
+    for (size_t i = 0; i < PROCS_MAX; i++)
+    {
+        for (size_t j = 0; j < MAX_FILES; j++)
+        {
+            fd_reset(&file[i][j]);
+        }
+    }
+}
 
 void fd_reset(struct File *f) {
     memset(f, 0, sizeof(struct File));
