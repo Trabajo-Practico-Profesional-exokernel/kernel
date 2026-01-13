@@ -49,6 +49,7 @@ struct Proc {
     int cpunum; // The CPU that the env is running on
 
     struct MessageQueue msgs_queue;
+    struct File *files[MAX_FILES];
 };
 
 // struct ProcMessageQueue*

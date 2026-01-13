@@ -4,10 +4,10 @@ static char digits[] = "0123456789ABCDEF";
 
 void putchar(char ch);
 
-enum DebugPrintMode actual_debug_print_mode = ON;
+enum DebugPrintMode actual_debug_print_mode = ENABLE;
 
 void debug_printf(const char *fmt, ...){
-  if (actual_debug_print_mode != ON) return;
+  if (actual_debug_print_mode != ENABLE) return;
 
   char buf[256]; 
   va_list args;
@@ -147,11 +147,11 @@ void printBlue(const char* text) {
 }
 
 void disable_debug_print(void){
-  actual_debug_print_mode = OFF;
+  actual_debug_print_mode = DISABLE;
 }
 
 void enable_debug_print(void){
-  actual_debug_print_mode = ON;
+  actual_debug_print_mode = ENABLE;
 }
 
 static int string_print_num(char *buf, size_t size, size_t *pos, long value, int base, bool sign) {

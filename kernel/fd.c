@@ -1,14 +1,21 @@
 #include "arch/fd.h"
+#include "fd.h"
+#include "std/string.h"
 
-#define MAX_BYTES 255
-#define PERM_READ  0x01
-#define PERM_WRITE 0x02
+void fd_reset(struct File *f) {
+    memset(f, 0, sizeof(struct File));
 
-#define E_OK       0
-#define E_FULL    -1
-#define E_EMPTY   -2
-#define E_PERM    -3
-#define E_CLOSED  -4
+    f->state = OFF;
+    f->type = FD_TYPE_NONE;
+    f->perms = 0;
+    
+    f->readopen = OFF;
+    f->writeopen = OFF;
+    
+    f->len_buffer = 0;
+    f->index_readed = 0;
+    f->index_readedwrited = 0;
+}
 
 void fd_init(struct File *f, fd_type_t type, uint8_t perms) {
     f->state = ON;
