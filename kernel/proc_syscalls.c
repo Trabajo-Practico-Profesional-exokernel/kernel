@@ -236,10 +236,18 @@ void syscall_recvmsg(FullTrapFrame *tf, uintptr_t pc) {
     int result = recv_msg(tf, pc, true, msg_addr);
     SET_SYSCALL_RET0(tf, result);
 }
+
+void syscall_pipe(FullTrapFrame *tf, uintptr_t pc) {
+    printf("syscall pipe...\n");
+    uint32_t vaddr_pipe = SYSCALL_ARG0(tf);
+    SET_SYSCALL_RET0(tf, 1);
+}
+
 void init_syscalls_ipc(void){
     register_syscall(SYS_TRY_SEND_MSG, syscall_trysendmsg);
     register_syscall(SYS_TRY_RECV_MSG, syscall_tryrecvmsg);
     register_syscall(SYS_RECV_MSG, syscall_recvmsg);
+    register_syscall(SYS_PIPE, syscall_pipe);    
 }
 
 void init_syscalls_proc(void) {

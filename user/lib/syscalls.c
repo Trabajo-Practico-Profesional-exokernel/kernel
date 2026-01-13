@@ -396,3 +396,7 @@ int getcwd(char *buf, int size) {
 
     return -1;
 }
+
+int pipe(int fds[2]){
+    return syscall(SYS_PIPE, (int)fds, 0, 0);
+}

@@ -49,6 +49,12 @@
 
 #define SYS_SBRK 31
 
+#define SYS_FSTAT 32
+#define SYS_PIPE 33
+#define SYS_DUP 34
+#define SYS_CHOWN 35
+#define SYS_CHMOD 36
+
 #define DEF_ERR_CODE -1
 
 

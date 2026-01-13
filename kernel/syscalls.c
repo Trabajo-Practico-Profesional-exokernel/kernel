@@ -30,7 +30,7 @@ void syscall_uptime(FullTrapFrame *tf, uintptr_t pc){
     SET_SYSCALL_RET0(tf, ticks);
 }
 
-#define MAX_SYSCALLS 32
+#define MAX_SYSCALLS 50
 syscall_handler_t syscall_table[MAX_SYSCALLS] = {
     [SYS_PUTCHAR] = syscall_putchar,
     [SYS_GETCHAR] = syscall_getchar,
