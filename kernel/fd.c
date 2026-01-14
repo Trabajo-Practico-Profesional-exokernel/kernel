@@ -64,15 +64,12 @@ int membuffer_write(struct MemBuffer *mb, const uint8_t *src, uint8_t len) {
     int bytes_written = 0;
 
     while (bytes_written < len) {
-
         if (mb->len_buffer >= MAX_BUFFER_BYTES) {
             break; 
         }
-
-        mb->buffer[mb->write_idx] = src[bytes_written];
-
+        int write_index = mb->write_idx;
+        mb->buffer[write_index] = src[bytes_written];
         mb->write_idx = (mb->write_idx + 1) % MAX_BUFFER_BYTES;
-        
         mb->len_buffer++;
         bytes_written++;
     }
@@ -86,19 +83,17 @@ int membuffer_read(struct MemBuffer *mb, uint8_t *dst, uint8_t len) {
     }
 
     int bytes_read = 0;
-
     while (bytes_read < len) {
         if (mb->len_buffer == 0) {
             break; 
         }
-
+        
         dst[bytes_read] = mb->buffer[mb->read_idx];
-
         mb->read_idx = (mb->read_idx + 1) % MAX_BUFFER_BYTES;
         mb->len_buffer--;
         bytes_read++;
     }
-
+    
     return bytes_read;
 }
 
@@ -159,9 +154,7 @@ int fd_write(struct File *f, const uint8_t *src, uint8_t len) {
     if (f->state == OFF) return E_CLOSED;
     if (!(f->perms & PERM_WRITE)) return E_PERM;
     if (f->writeopen == OFF) return E_CLOSED;
-
     int bytes_written = membuffer_write(f->buffer, src, len);
-
     return bytes_written;
 }
 

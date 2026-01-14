@@ -269,7 +269,7 @@ int ls(char *path) {
     return -1;
 }
 
-int read(int fd, char *buf, int size) {
+int read_fs(int fd, char *buf, int size) {
     char msg_buffer[MSG_SIZE_MAX];
     char temp[16];
 
@@ -302,7 +302,7 @@ int read(int fd, char *buf, int size) {
     return bytes_read;
 }
 
-int write(int fd, char *content, int len) {
+int write_fs(int fd, char *content, int len) {
     char msg_buffer[MSG_SIZE_MAX];
     char temp[16];
     
@@ -337,6 +337,15 @@ int write(int fd, char *content, int len) {
     }
 
     return -1;
+}
+
+
+int read(int fd, char *buf, int size) {
+    return syscall(SYS_READ, fd, (int)buf, size);
+}
+
+int write(int fd, char *content, int len) {
+    return syscall(SYS_WRITE, fd, (int)content, len);
 }
 
 int lseek(int fd, int offset, int whence) {

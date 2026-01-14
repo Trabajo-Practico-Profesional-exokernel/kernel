@@ -33,6 +33,8 @@
 #define SYS_SEND_MSG 21
 #define SYS_RECV_MSG 22
 
+#define SYS_READ 23
+#define SYS_WRITE 24
 
 #define SYS_SBRK 31
 

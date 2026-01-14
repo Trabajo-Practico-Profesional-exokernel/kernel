@@ -84,6 +84,8 @@ void * sbrk(const int count_pages);
 int ls(char *path);
 
 
+int read_fs(int fd, char *buf, int size);
+int write_fs(int fd, char *content, int len);
 int read(int fd, char *buf, int size);
 int write(int fd, char *content, int len);
 int lseek(int fd, int offset, int whence);

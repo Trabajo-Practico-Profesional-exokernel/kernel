@@ -82,6 +82,56 @@ int handle_open(char* args) {
     return OK_CODE;
 }
 
+int handle_read_fs(char* args) {
+    char* size_str = strchr(args, ' ');
+    if (!size_str) {
+        printf("Usage: read <fd> <size>\n");
+        return ERR_CODE;
+    }
+    *size_str = 0;
+    size_str++;
+
+    int fd = atoi(args);
+    int size = atoi(size_str);
+    
+    if (size <= 0 || size > 1024) size = 1024; // Limit buffer
+
+    char buffer[1025];
+    int bytes = read_fs(fd, buffer, size);
+    
+    if (bytes < 0) {
+        printf("Read error\n");
+        return ERR_CODE;
+    }
+    
+    buffer[bytes] = 0;
+    printf("Read (%d bytes):\n%s\n", bytes, buffer);
+    return OK_CODE;
+}
+
+int handle_write_fs(char* args) {
+    char* content = strchr(args, ' ');
+    if (!content) {
+        printf("Usage: write <fd> <string>\n");
+        return ERR_CODE;
+    }
+    *content = 0;
+    content++;
+
+    int fd = atoi(args);
+    int len = strlen(content);
+    
+    int bytes = write_fs(fd, content, len);
+    
+    if (bytes < 0) {
+        printf("Write error\n");
+        return ERR_CODE;
+    }
+    
+    printf("Written %d bytes to FD %d\n", bytes, fd);
+    return OK_CODE;
+}
+
 int handle_read(char* args) {
     char* size_str = strchr(args, ' ');
     if (!size_str) {
@@ -311,6 +361,8 @@ struct CommandEntry commands[] = {
     { "clear",  handle_clear },
     { "mkfs",   handle_mkfs },
     { "open",   handle_open },
+    { "read_fs",   handle_read_fs },
+    { "write_fs",  handle_write_fs },
     { "read",   handle_read },
     { "write",  handle_write },
     { "lseek",  handle_lseek },

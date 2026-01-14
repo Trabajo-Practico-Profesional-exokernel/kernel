@@ -238,31 +238,67 @@ void syscall_recvmsg(FullTrapFrame *tf, uintptr_t pc) {
 }
 
 void syscall_pipe(FullTrapFrame *tf, uintptr_t pc) {
+    enable_debug_print();
     debug_printf("syscall pipe...\n");
     struct Proc * curr_proc = get_curr();
     uint32_t vaddr_pipe = SYSCALL_ARG0(tf);
     int *user_fds_ptr = (int *) get_paddr_for((paddr_t*)curr_proc->pde_paddr, vaddr_pipe);
-    
-    int fd_r = get_file_descriptor(curr_proc);
-    int fd_w = get_file_descriptor(curr_proc);
-    
     struct MemBuffer* buffer = membuffer_alloc();
+    membuffer_reset(buffer);
+    int fd_r = get_file_descriptor(curr_proc);
     curr_proc->files[fd_r] = alloc_file();
-    
+    fd_init(curr_proc->files[fd_r], FD_TYPE_PIPE, PERM_READ);
+
+    int fd_w = get_file_descriptor(curr_proc);
     curr_proc->files[fd_w] = alloc_file();
-    fd_init(curr_proc->files[fd_r], FD_TYPE_PIPE, PERM_READ | PERM_WRITE);
-    fd_init(curr_proc->files[fd_w], FD_TYPE_PIPE, PERM_READ | PERM_WRITE);
+    fd_init(curr_proc->files[fd_w], FD_TYPE_PIPE, PERM_WRITE);
     
     add_buffer_to_file(curr_proc->files[fd_r], buffer);
     add_buffer_to_file(curr_proc->files[fd_w], buffer);
     
-    curr_proc->files[fd_r]->writeopen = OFF;
-    curr_proc->files[fd_w]->readopen = OFF;
-    
     user_fds_ptr[0] = fd_r;
     user_fds_ptr[1] = fd_w;
-    
     int success = 1;
+    SET_SYSCALL_RET0(tf, success);
+    disable_debug_print();
+}
+
+void syscall_write(FullTrapFrame *tf, uintptr_t pc) {
+    debug_printf("syscall writing...\n");
+
+    struct Proc * curr_proc = get_curr();
+    uint32_t fd = SYSCALL_ARG0(tf);
+    uint32_t src_vaddr = SYSCALL_ARG1(tf);
+    uint32_t size = SYSCALL_ARG2(tf);
+
+    int *src = (int *) get_paddr_for((paddr_t*)curr_proc->pde_paddr, src_vaddr);
+    struct File *f = curr_proc->files[fd];
+
+    if (f == NULL){
+        SET_SYSCALL_RET0(tf, -1);
+        return;
+    }
+
+    int success = fd_write(f, src, size);
+    SET_SYSCALL_RET0(tf, success);
+}
+
+void syscall_read(FullTrapFrame *tf, uintptr_t pc) {
+    debug_printf("syscall reading...\n");
+    struct Proc * curr_proc = get_curr();
+    uint32_t fd = SYSCALL_ARG0(tf);
+    uint32_t dst_vaddr = SYSCALL_ARG1(tf);
+    uint32_t size = SYSCALL_ARG2(tf);
+
+    int *dst = (int *) get_paddr_for((paddr_t*)curr_proc->pde_paddr, dst_vaddr);
+    struct File *f = curr_proc->files[fd];
+
+    if (f == NULL){
+        SET_SYSCALL_RET0(tf, -1);
+        return;
+    }
+
+    int success = fd_read(f, dst, size);
     SET_SYSCALL_RET0(tf, success);
 }
 
@@ -282,4 +318,6 @@ void init_syscalls_proc(void) {
 }
 
 void init_syscalls_files(void) {
+    register_syscall(SYS_READ, syscall_read);
+    register_syscall(SYS_WRITE, syscall_write);
 }
