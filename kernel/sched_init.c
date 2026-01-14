@@ -24,11 +24,10 @@ void init_sched(void) {
     // load_create_process_user(proc_shell, &_binary_apps[APP_IND_PROC_A]);
 
     #ifdef IS_RISC
-    /*struct Proc * proc_fs = create_process(APP_IND_FILESYSTEM, DEF_ARGV);
+    struct Proc * proc_fs = create_process(APP_IND_FILESYSTEM, DEF_ARGV);
     filesystem_PID = proc_fs->pid;
 
-    struct Proc * proc_shell = create_process(APP_IND_SHELL, DEF_ARGV);*/
-    struct Proc * proc_a = create_process(APP_IND_PROC_A, DEF_ARGV);
+    struct Proc * proc_shell = create_process(APP_IND_SHELL, DEF_ARGV);
     #else
     // load_create_process_user(proc_shell, &_binary_apps[APP_IND_SHELL], DEF_ARGV);
     struct Proc * proc_shell = create_process(APP_IND_SHELL, DEF_ARGV);
@@ -52,7 +51,7 @@ void init_sched(void) {
     
     // Start proc_shell!
     #ifdef IS_RISC
-    switch_proc(proc_shell);
+    switch_proc(proc_fs);
     #else
     switch_proc(proc_shell);
     #endif
