@@ -35,8 +35,11 @@
 /*
 On the x86 architecture, the virtual address format actually uses three sections instead of two: The entry number in a page directory table,
 the page table index, and the offset into that page. 
-AAAAAAAAAA         BBBBBBBBBB        CCCCCCCCCCCC
-directory index    page table index  offset into page
+
+   +------ 10 ------+------ 10 ------+--------- 12 --------+
+   | Page Directory |   Page Table   |  Offset within Page |
+   |     Index      |     Index      |                     |
+   +----------------+----------------+---------------------+
 
 Page Table Entries (PTE) 
 
