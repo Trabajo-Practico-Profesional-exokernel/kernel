@@ -4,9 +4,9 @@
 #define MSG_SIZE_MAX 64
 
 void main() {
-    char * name = "some_file.txt";
+    //char * name = "some_file.txt";
 
-    int fd = sys_touch(name);
+    //int fd = sys_touch(name);
 
-    printf("TOUCH GOT RES %d", fd);
+    printf("touch\n");
 }

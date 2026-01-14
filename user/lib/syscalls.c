@@ -85,11 +85,6 @@ void sys_fs_ret(int ret_code){
 }
 
 
-
-int sys_touch(char* filepath){
-    return syscall(SYS_FS_TOUCH, (int) filepath, 0, 0);
-}
-
 int sys_rm(char* filepath){
     int res = sys_try_send_msg(99, filepath, FS_TYPE_UNLINK);
     if (res == 0) {
