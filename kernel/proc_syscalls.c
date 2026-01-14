@@ -1,6 +1,6 @@
 #include "arch/trap_handling.h"
 #include "inc/common.h"
-
+#include "fd.h"
 // Sched exec , wait and so on...
 #include "sched.h"
 #include "proc_syscalls.h"
@@ -238,9 +238,32 @@ void syscall_recvmsg(FullTrapFrame *tf, uintptr_t pc) {
 }
 
 void syscall_pipe(FullTrapFrame *tf, uintptr_t pc) {
-    printf("syscall pipe...\n");
+    debug_printf("syscall pipe...\n");
+    struct Proc * curr_proc = get_curr();
     uint32_t vaddr_pipe = SYSCALL_ARG0(tf);
-    SET_SYSCALL_RET0(tf, 1);
+    int *user_fds_ptr = (int *) get_paddr_for((paddr_t*)curr_proc->pde_paddr, vaddr_pipe);
+    
+    int fd_r = get_file_descriptor(curr_proc);
+    int fd_w = get_file_descriptor(curr_proc);
+    
+    struct MemBuffer* buffer = membuffer_alloc();
+    curr_proc->files[fd_r] = alloc_file();
+    
+    curr_proc->files[fd_w] = alloc_file();
+    fd_init(curr_proc->files[fd_r], FD_TYPE_PIPE, PERM_READ | PERM_WRITE);
+    fd_init(curr_proc->files[fd_w], FD_TYPE_PIPE, PERM_READ | PERM_WRITE);
+    
+    add_buffer_to_file(curr_proc->files[fd_r], buffer);
+    add_buffer_to_file(curr_proc->files[fd_w], buffer);
+    
+    curr_proc->files[fd_r]->writeopen = OFF;
+    curr_proc->files[fd_w]->readopen = OFF;
+    
+    user_fds_ptr[0] = fd_r;
+    user_fds_ptr[1] = fd_w;
+    
+    int success = 1;
+    SET_SYSCALL_RET0(tf, success);
 }
 
 void init_syscalls_ipc(void){

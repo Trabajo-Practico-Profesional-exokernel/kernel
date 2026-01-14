@@ -145,12 +145,11 @@ void fd_reset(struct File *f) {
 }
 
 void fd_init(struct File *f, fd_type_t type, uint8_t perms) {
+    
     f->state = ON;
     f->type = type;
     f->perms = perms;
-    
     f->buffer = NULL;
-
     f->readopen = (perms & PERM_READ) ? ON : OFF;
     f->writeopen = (perms & PERM_WRITE) ? ON : OFF;
 }
@@ -200,3 +199,24 @@ void fd_close_read(struct File *f) {
         fd_close(f);
     }
 }
+
+int add_buffer_to_file(struct File *file, struct MemBuffer *buffer){
+    if (file->buffer != NULL){
+        return -1;
+    }
+    file->buffer = buffer;
+    buffer->references++;
+    return 0;
+}
+
+int get_file_descriptor(struct Proc *proc){
+    for (int i = 0; i < MAX_FILES; i++)
+    {
+        if (proc->files[i] == NULL){
+            return i;
+        }
+    }
+    PANIC("No available file desciptor in proc");
+    return -1;
+}
+

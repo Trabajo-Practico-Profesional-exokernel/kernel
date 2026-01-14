@@ -12,7 +12,7 @@
 #define E_EMPTY   -2
 #define E_PERM    -3
 #define E_CLOSED  -4
-
+struct Proc;
 void init_files();
 
 void fd_reset(struct File *f);
@@ -49,4 +49,11 @@ int membuffer_is_full(struct MemBuffer *mb);
 
 int membuffer_is_empty(struct MemBuffer *mb);
 
+int add_buffer_to_file(struct File *file, struct MemBuffer *buffer);
+
+int add_buffer_to_file(struct File *file, struct MemBuffer *buffer);
+
+int get_file_descriptor(struct Proc *proc);
+
+struct File * alloc_file();
 #endif /* FS_SYSCALLS_H */
