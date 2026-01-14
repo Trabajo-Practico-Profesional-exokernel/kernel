@@ -145,16 +145,3 @@ void syscall_chdir(FullTrapFrame *tf, uintptr_t pc) {
     
     SET_SYSCALL_RET0(tf, -1);
 }
-
-
-void init_syscalls_filesystem(void) {
-    register_syscall(SYS_FS_STAT, syscall_fstat);
-    register_syscall(SYS_OPEN, syscall_open);
-    register_syscall(SYS_MKNOD, syscall_mknod);
-    register_syscall(SYS_UNLINK, syscall_unlink);
-    register_syscall(SYS_LINK, syscall_link);
-    register_syscall(SYS_MKDIR, syscall_mkdir);
-    register_syscall(SYS_CLOSE, syscall_close);
-    register_syscall(SYS_CHDIR, syscall_chdir);
-    register_syscall(SYS_FS_RM, syscall_rmdir);
-}

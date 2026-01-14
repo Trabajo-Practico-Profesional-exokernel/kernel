@@ -16,8 +16,7 @@ void register_syscall(size_t sysno, syscall_handler_t handler);
 
 // General default group of syscalls to be registered ... distributed in different files
 // To avoid having all syscall handler centralized in a file making it hard to understand
-void init_syscalls_fs(void);
 void init_syscalls_ipc(void);
 void init_syscalls_proc(void);
-
+void init_syscalls_files(void);
 #endif /* !*/

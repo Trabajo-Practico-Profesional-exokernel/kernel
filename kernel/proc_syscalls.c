@@ -280,3 +280,6 @@ void init_syscalls_proc(void) {
     register_syscall(SYS_YIELD, syscall_yield);
     register_syscall(SYS_GETPID, syscall_getpid);
 }
+
+void init_syscalls_files(void) {
+}

@@ -16,5 +16,5 @@ int set_init_parameters_for_proc(struct Proc * proc, char ** argv, paddr_t* sp_o
 
 int copy_argv_pointers_from_user(struct Proc * proc, paddr_t* argv_pointers, vaddr_t vaddr_argv);
 void init_syscalls_ipc(void);
-
+void init_syscalls_files(void);
 #endif /* !*/
