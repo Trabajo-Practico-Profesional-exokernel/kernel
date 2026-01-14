@@ -142,7 +142,8 @@ enum PAGE_PDE_FLAGS {
 
 // This is used for getting both, the page table offset in page directory and page physical offset in page table 
 // In an entry each entry manages 4KB or so of memory ... in case of page directories it would compound
-#define GET_ENTRY_OFFSET(vaddr) ((vaddr >> 10) * PAGE_SIZE)
+//#define GET_ENTRY_OFFSET(vaddr) ((vaddr >> 10) * PAGE_SIZE)
+#define GET_ENTRY_OFFSET(vaddr) ((uint32_t)(vaddr) & ~0xFFF)
 
 // This method gets the offset of an physical address, and puts it on the config. Also marks IS_PRESENT
 // This is used in both page table entries and page directory entries! 

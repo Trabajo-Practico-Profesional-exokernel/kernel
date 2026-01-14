@@ -31,7 +31,7 @@ void init_sched(void) {
     struct Proc * proc_a = create_process(APP_IND_PROC_A, DEF_ARGV);
     #else
     // load_create_process_user(proc_shell, &_binary_apps[APP_IND_SHELL], DEF_ARGV);
-    struct Proc * proc_shell = create_process(APP_IND_PROC_A, DEF_ARGV);
+    struct Proc * proc_shell = create_process(APP_IND_SHELL, DEF_ARGV);
 
     // create_process(APP_IND_PROC_A, DEF_ARGV);
     // create_process(APP_IND_PERIODIC_YIELD, DEF_ARGV);
@@ -52,7 +52,7 @@ void init_sched(void) {
     
     // Start proc_shell!
     #ifdef IS_RISC
-    switch_proc(proc_a);
+    switch_proc(proc_shell);
     #else
     switch_proc(proc_shell);
     #endif
