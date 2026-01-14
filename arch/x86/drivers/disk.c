@@ -37,10 +37,10 @@ int check_valid_size_write(size_t len){
         return -2;
     }
 
-    if (len < SECTOR_SIZE){
-        printf("Error content len was less than buffer size %u < %u, for now not allowed\n", len, SECTOR_SIZE);
-        return -3;
-    }
+    //if (len < SECTOR_SIZE){
+    //   printf("Error content len was less than buffer size %u < %u, for now not allowed\n", len, SECTOR_SIZE);
+    //  return -3;
+    //}
 
     return 0;
 }
@@ -57,8 +57,9 @@ void syscall_disk_read(FullTrapFrame *tf, uintptr_t pc) {
         return;
     }
 	//PANIC("DEBUG");
-    switch_to_kernel_tables();
     
+    switch_to_kernel_tables();
+
     struct Proc * caller = get_curr();
 
     // Map vaddr to paddr

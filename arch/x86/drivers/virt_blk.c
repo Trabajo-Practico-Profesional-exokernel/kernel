@@ -1,5 +1,6 @@
 #include "arch_inc/virtio.h"
 #include "arch_inc/virtio_blk.h"
+#include "arch_inc/x86.h"
 #include "arch/mem.h"
 
 #include "inc/common.h"
@@ -22,11 +23,11 @@ void virt_blk_queues_init(void){
 }
 
 // Get info about size and alloc data
-void virtio_blk_init(void){
+void virtio_blk_init() {
     // Get the disk capacity.
-    blk_capacity = virtio_reg_read64(VIRTIO_REG_DEVICE_CONFIG + 0) * SECTOR_SIZE;
+    blk_capacity = virtio_reg_read64(VIRTIO_PCI_QUEUE_NUM) * SECTOR_SIZE;
     
-    printf("virtio-blk: capacity is %d bytes\n", (int)blk_capacity);
+    printf("+ virtio-blk: capacity is %d bytes\n", (int)blk_capacity);
 
     // Allocate a region to store requests to the device... round up size of blk
     blk_req_paddr = alloc_pages(align_up(sizeof(*blk_req), PAGE_SIZE) / PAGE_SIZE);

@@ -13,21 +13,26 @@
 #define PCI_COMMAND_MEM    (1 << 1)
 #define PCI_COMMAND_MASTER (1 << 2)
 
+uint32_t phys_base;
+uint32_t bar0_size;
 
 uint32_t virtio_reg_read32(unsigned offset) {
-    return *((volatile uint32_t *) (VIRTIO_BLK_PADDR + offset));
+	return inl(VIRTIO_BLK_PADDR + offset);
+    //return *((volatile uint32_t *) (VIRTIO_BLK_PADDR + offset));
 }
 
 uint64_t virtio_reg_read64(unsigned offset) {
-    return *((volatile uint64_t *) (VIRTIO_BLK_PADDR + offset));
+	return inl(VIRTIO_BLK_PADDR + offset);
+    //return *((volatile uint64_t *) (VIRTIO_BLK_PADDR + offset));
 }
 
 void virtio_reg_write32(unsigned offset, uint32_t value) {
-    *((volatile uint32_t *) (VIRTIO_BLK_PADDR + offset)) = value;
+	outl(VIRTIO_BLK_PADDR + offset, value);
+    //*((volatile uint32_t *) (VIRTIO_BLK_PADDR + offset)) = value;
 }
 
 void virtio_reg_fetch_and_or32(unsigned offset, uint32_t value) {
-    virtio_reg_write32(offset, virtio_reg_read32(offset) | value);
+    virtio_reg_write32(VIRTIO_BLK_PADDR + offset, virtio_reg_read32(VIRTIO_BLK_PADDR + offset) | value);
 }
 
 static inline uint32_t pci_config_read32(uint8_t bus, uint8_t dev, uint8_t fun, uint8_t off)
@@ -98,8 +103,6 @@ The driver MUST NOT send any buffer available notifications to the device before
  */
 #define VIRTIO_MAGIC_NUMBER 0x74726976 // Number used for checking all ok/no corruption
 
-uint32_t phys_base;
-uint32_t bar0_size;
 
 
 void virtio_init(void) {
@@ -122,7 +125,7 @@ void virtio_init(void) {
 
 				if (vendor == 0x1AF4 && device == 0x1001 && !found) {
 						found = 1;
-						printf("CANDIDATO LEGACY\n");
+						printf("+ virtio legacy device found\n");
 						virtio_blk_bus = bus;
 						virtio_blk_dev = dev;
 						virtio_blk_fun = fun;
@@ -134,16 +137,14 @@ void virtio_init(void) {
 
 	// STEP 2: enable PCI device 
 	if (!found) {
-		PANIC("No virtio device found");	
+		PANIC("- no virtio device found");	
 	}
-	printf("virtio device found");
+	//printf("+ virtio device found\n");
     pci_enable_device(virtio_blk_bus, virtio_blk_dev, virtio_blk_fun);		
 
 	// STEP 3: read and decode BAR0
 	uint32_t bar0;
 	uint32_t bar0_orig;
-	uint32_t bar0_size;
-	uint32_t phys_base;
 
 	/* 1. Leer BAR0 */
 	pci_set_addr(virtio_blk_bus, virtio_blk_dev, virtio_blk_fun, 0x10);
@@ -152,6 +153,7 @@ void virtio_init(void) {
 
 	/* 3. Extraer base física */
 	phys_base = bar0 & 0xFFFFFFF0;
+	printf("+ phys base: 0x%x\n", phys_base);
 
 	/* 4. Calcular tamaño del BAR */
 	bar0_orig = bar0;
@@ -168,41 +170,65 @@ void virtio_init(void) {
 	/* 5. Decodificar tamaño */
 	bar0_size = ~(bar0_size & 0xFFFFFFF0) + 1;
 
+	printf("+ device size: %d\n", bar0_size);
 	/* Resultado:
 	 * phys_base  → base física MMIO del virtio-pci
 	 * bar0_size  → tamaño del bloque de registros
 	 */
 	// STEP 5: 
 	void *virtio_mmio = phys_base;
-	MMIO8(virtio_mmio, VIRTIO_PCI_STATUS) = 0;
+	outb(virtio_mmio + VIRTIO_PCI_STATUS, 0);
 		
-	uint8_t st = MMIO8(virtio_mmio, VIRTIO_PCI_STATUS);
+	printf("+ device reset\n");
+	uint8_t st = inb(virtio_mmio + VIRTIO_PCI_STATUS);
+
 	if (st != 0)
 	    PANIC("virtio-blk: reset fallido");
 
-	printf("Paso 5 completo");
+	// STEP 6: ACK
+	outb(virtio_mmio + VIRTIO_PCI_STATUS, VIRTIO_STATUS_ACK);
+    
+	// STEP 7: DRIVER
+	outb(virtio_mmio + VIRTIO_PCI_STATUS,
+	     VIRTIO_STATUS_ACK | VIRTIO_STATUS_DRIVER);
 
-	// PASO 6
-    // 1. Reset the device.
-    virtio_reg_write32(VIRTIO_REG_DEVICE_STATUS, 0);
+    
+	// STEP 8: FEATURES
+    uint32_t devf = inl(virtio_mmio + VIRTIO_PCI_HOST_FEATURES);
+	uint32_t guestf = 0;
 
-    // 2. Set the ACKNOWLEDGE status bit: the guest OS has noticed the device.
-    virtio_reg_fetch_and_or32(VIRTIO_REG_DEVICE_STATUS, VIRTIO_STATUS_ACK);
-    
-    // 3. Set the DRIVER status bit.
-    virtio_reg_fetch_and_or32(VIRTIO_REG_DEVICE_STATUS, VIRTIO_STATUS_DRIVER);
-    
-    // 5. Set the FEATURES_OK status bit.
-    virtio_reg_fetch_and_or32(VIRTIO_REG_DEVICE_STATUS, VIRTIO_STATUS_FEAT_OK);
-    
-    // 7. Perform device-specific setup, including discovery of virtqueues for the device
+	outl(virtio_mmio + VIRTIO_PCI_GUEST_FEATURES, guestf);
+
+	outb(virtio_mmio + VIRTIO_PCI_STATUS,
+		 VIRTIO_STATUS_ACK |
+		 VIRTIO_STATUS_DRIVER |
+		 VIRTIO_STATUS_FEAT_OK);
+ 
+
+	st = inb(virtio_mmio + VIRTIO_PCI_STATUS);
+	if (!(st & VIRTIO_STATUS_FEAT_OK))
+		PANIC("virtio: FEATURES_OK rejected");
+	printf("+ features ok\n");
 
     // Init queues for blk, done in virt_blk.c
-    virt_blk_queues_init();
+	virt_blk_queues_init();
+/*
+	outw(virtio_mmio + VIRTIO_PCI_QUEUE_SEL, 0); // qid=0 means first queue
 
+	uint16_t qsz = inw(virtio_mmio + VIRTIO_PCI_QUEUE_NUM);
+	if (qsz == 0)
+		PANIC("virtio-blk: queue not available");
 
-    // 8. Set the DRIVER_OK status bit.
-    virtio_reg_write32(VIRTIO_REG_DEVICE_STATUS, VIRTIO_STATUS_DRIVER_OK);
+	virtio_blk_init(virtio_mmio);
+*/
+    // 9. Set the DRIVER_OK status bit.
+
+	outb(virtio_mmio + VIRTIO_PCI_STATUS,
+		 VIRTIO_STATUS_ACK |
+		 VIRTIO_STATUS_DRIVER |
+		 VIRTIO_STATUS_FEAT_OK |
+		 VIRTIO_STATUS_DRIVER_OK);
+
 }
 
 /*
@@ -222,19 +248,18 @@ struct virtio_virtq * virtio_queue_init(unsigned index) {
     virtq_obj->used_index = (volatile uint16_t *) &virtq_obj->used.index;
     
     // 1. Select the queue writing its index (first queue is 0) to QueueSel.
-    virtio_reg_write32(VIRTIO_REG_QUEUE_SEL, index);
+    virtio_reg_write32(VIRTIO_PCI_QUEUE_SEL, index);
     
     // 5. Notify the device about the queue size by writing the size to QueueNum.
-    virtio_reg_write32(VIRTIO_REG_QUEUE_NUM, VIRTQ_ENTRY_NUM);
-    
-    // 6. Notify the device about the used alignment by writing its value in bytes to QueueAlign.
-    virtio_reg_write32(VIRTIO_REG_QUEUE_ALIGN, 0);
+	/* 2. leer tamaño (NO se escribe) */
+	uint16_t qsz = virtio_reg_read32(VIRTIO_PCI_QUEUE_NUM);
+	if (qsz == 0)
+		PANIC("virtio: queue not present");
     
     // 7. Write the physical number of the first page of the queue to the QueuePFN register.
-    virtio_reg_write32(VIRTIO_REG_QUEUE_PFN, virtq_paddr);
+    virtio_reg_write32(VIRTIO_PCI_QUEUE_PFN, virtq_paddr >> 12);
     return virtq_obj;
 }
-
 
 
 // Finally some actions in a specified virtq
@@ -243,15 +268,18 @@ struct virtio_virtq * virtio_queue_init(unsigned index) {
 // of the head descriptor of the new request.
 void virtq_kick(struct virtio_virtq *vq, int desc_index) {
     vq->avail.ring[vq->avail.index % VIRTQ_ENTRY_NUM] = desc_index;
+    __sync_synchronize();
+
     vq->avail.index++;
 
     __sync_synchronize();
-    virtio_reg_write32(VIRTIO_REG_QUEUE_NOTIFY, vq->queue_index);
+
+    virtio_reg_write32(VIRTIO_PCI_QUEUE_NOTIFY, vq->queue_index);
     vq->last_used_index++;
 }
 
 // Returns whether there are requests being processed by the device.
 bool virtq_is_busy(struct virtio_virtq *vq) {
-    return vq->last_used_index != *vq->used_index;
+    return vq->last_used_index == *(vq->used_index);
 }
 
