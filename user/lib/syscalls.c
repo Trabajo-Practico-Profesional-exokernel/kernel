@@ -404,3 +404,7 @@ int getcwd(char *buf, int size) {
 int pipe(int fds[2]){
     return syscall(SYS_PIPE, (int)fds, 0, 0);
 }
+
+int dup(int prev_fd){
+    return syscall(SYS_DUP, prev_fd, 0, 0);
+}

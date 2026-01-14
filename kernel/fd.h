@@ -39,7 +39,7 @@ struct MemBuffer* membuffer_alloc(void);
 
 void membuffer_release(struct MemBuffer *mb);
 
-void membuffer_retain(struct MemBuffer *mb);
+void fd_retain(struct File *f);
 
 int membuffer_write(struct MemBuffer *mb, const uint8_t *src, uint8_t len);
 

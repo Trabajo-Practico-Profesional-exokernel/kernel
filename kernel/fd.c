@@ -47,12 +47,13 @@ void membuffer_release(struct MemBuffer *mb) {
     }
 }
 
-void membuffer_retain(struct MemBuffer *mb) {
-    if (mb == NULL) {
+
+void fd_retain(struct File*f){
+    if (f->buffer == NULL) {
         return;
     }
-    if (mb->references < 255) {
-        mb->references++;
+    if (f->buffer->references < 255) {
+        f->buffer->references++;
     }
 }
 
@@ -93,7 +94,7 @@ int membuffer_read(struct MemBuffer *mb, uint8_t *dst, uint8_t len) {
         mb->len_buffer--;
         bytes_read++;
     }
-    
+
     return bytes_read;
 }
 

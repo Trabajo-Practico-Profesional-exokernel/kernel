@@ -91,4 +91,6 @@ int write(int fd, char *content, int len);
 int lseek(int fd, int offset, int whence);
 int getcwd(char *path, int size);
 int pipe(int fds[2]);
+
+int dup(int prev_fd);
 #endif
