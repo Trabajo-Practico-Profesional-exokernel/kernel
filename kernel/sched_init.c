@@ -32,7 +32,7 @@ void init_sched2(void) {
     // load_create_process_user(proc_shell, &_binary_apps[APP_IND_SHELL], DEF_ARGV);
     struct Proc * proc_shell = create_process(APP_IND_SHELL, DEF_ARGV);
     struct Proc * fs_server = create_process(APP_IND_FILESYSTEM, DEF_ARGV);
-
+    filesystem_PID = fs_server->pid;
     // create_process(APP_IND_PROC_A, DEF_ARGV);
     // create_process(APP_IND_PERIODIC_YIELD, DEF_ARGV);
 

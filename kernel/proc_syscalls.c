@@ -303,11 +303,30 @@ void syscall_read(FullTrapFrame *tf, uintptr_t pc) {
     SET_SYSCALL_RET0(tf, success);
 }
 
+void syscall_dup(FullTrapFrame *tf, uintptr_t pc) {
+    debug_printf("syscall dup...\n");
+    int prev_fd = SYSCALL_ARG0(tf);
+    struct Proc *curr_proc = get_curr();
+
+    if (prev_fd < 0 || prev_fd >= MAX_FILES || curr_proc->files[prev_fd] == NULL) {
+        SET_SYSCALL_RET0(tf, -1);
+        return;
+    }
+
+    int dup_fd = get_file_descriptor(curr_proc);
+    curr_proc->files[dup_fd] = curr_proc->files[prev_fd];
+
+    fd_retain(curr_proc->files[dup_fd]);
+
+    SET_SYSCALL_RET0(tf, dup_fd);
+}
+
 void init_syscalls_ipc(void){
     register_syscall(SYS_TRY_SEND_MSG, syscall_trysendmsg);
     register_syscall(SYS_TRY_RECV_MSG, syscall_tryrecvmsg);
     register_syscall(SYS_RECV_MSG, syscall_recvmsg);
     register_syscall(SYS_PIPE, syscall_pipe);    
+    register_syscall(SYS_DUP, syscall_dup); 
 }
 
 void init_syscalls_proc(void) {
