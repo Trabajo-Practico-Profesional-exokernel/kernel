@@ -274,11 +274,12 @@ int handle_unlink(char* args) {
 }
 
 int handle_stat(char* args) {
-    if (sys_stat(args) == 0) {
+    int result = sys_stat(args);
+    if (result == 0) {
         printf("File '%s' exists and is accessible.\n", args);
         return OK_CODE;
     }
-    printf("Stat failed or file not found\n");
+    printf("Stat failed or file not found, result: [%d]\n", result);
     return ERR_CODE;
 }
 

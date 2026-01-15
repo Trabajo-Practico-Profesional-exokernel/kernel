@@ -149,13 +149,18 @@ void handle_rm(struct Message *msg) {
 void handle_fstat(struct Message *msg) {
     fileStat stat_buf;
     int res = fs_stat((char *)msg->content, &stat_buf, msg->sender_pid);
+
+    printf("Inode: %d | Type: %c | Links: %d | Size: %d | Blocks: %d\n", 
+        stat_buf.inodeNo, 
+        (stat_buf.type == DIRECTORY) ? 'D' : 'F', 
+        (int)stat_buf.links, 
+        stat_buf.size, 
+        stat_buf.numBlocks);
+        
     if (res == 0) {
-        send_data_response(msg->sender_pid, &stat_buf, sizeof(fileStat));
+        send_int_response(msg->sender_pid, 0);
     } else {
-        int error = -1;
-        char res_str[16];
-        int_to_string(error, res_str);
-        send_data_response(msg->sender_pid, res_str, strlen(res_str) + 1);
+        send_int_response(msg->sender_pid, -1);
     }
 }
 

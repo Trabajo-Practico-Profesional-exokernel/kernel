@@ -105,11 +105,9 @@ int sys_stat(char* filepath){
     }
     struct Message respuesta;
     res = sys_recv_msg(&respuesta);
-    
-    if (res >= 0 && respuesta.content_size > sizeof(int)) {
-        return 0;
+    if (res >= 0) {
+        return atoi(respuesta.content);
     }
-    
     return -1;
 }
 

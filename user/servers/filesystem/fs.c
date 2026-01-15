@@ -771,6 +771,8 @@ int fs_stat(char *fileName, fileStat *buf, int proc) {
         .links = file_inode.link_counter,
         .size = file_inode.size,
         .numBlocks = num_blocks};
+
+    
     return 0;
 }
 
