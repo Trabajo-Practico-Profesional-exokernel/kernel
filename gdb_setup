@@ -1,1 +1,2 @@
-b fs_rmdir
+add-symbol-file user/build/filesystem/app.elf
+

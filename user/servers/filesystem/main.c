@@ -241,6 +241,8 @@ void dispatch_request(struct Message *msg) {
 
 void server_listen() {
     struct Message msg;
+	debug_printf("filesystem server is running");
+
     while (1) {
         int res = sys_recv_msg(&msg);
         if (res == 0) {
@@ -251,7 +253,7 @@ void server_listen() {
 }
 
 void main() {
-    disable_debug_print();
+    //disable_debug_print();
     debug_printf("FILESYSTEM!");
     fs_init();
     server_listen();

@@ -18,7 +18,7 @@ struct Proc * create_process(size_t ind, char ** argv){
     return proc;
 }
 
-void init_sched(void) {
+void init_sched2(void) {
 
     // Main user process
     // load_create_process_user(proc_shell, &_binary_apps[APP_IND_PROC_A]);
@@ -32,6 +32,7 @@ void init_sched(void) {
     #else
     // load_create_process_user(proc_shell, &_binary_apps[APP_IND_SHELL], DEF_ARGV);
     struct Proc * proc_shell = create_process(APP_IND_SHELL, DEF_ARGV);
+    struct Proc * fs_server = create_process(APP_IND_FILESYSTEM, DEF_ARGV);
 
     // create_process(APP_IND_PROC_A, DEF_ARGV);
     // create_process(APP_IND_PERIODIC_YIELD, DEF_ARGV);
@@ -60,10 +61,12 @@ void init_sched(void) {
     PANIC("unreachable here!");
 }
 
-void init_sched2(void) {
-    struct Proc * proc_def = create_process(APP_IND_KALLOC_PROGRAM, DEF_ARGV);
-    debug_printf("AT CREATE PROCESS DEF expected pc= %x, ", (uint32_t)VADDR_USER_BASE);
-    printProc(proc_def);
+void init_sched(void) {
+//    struct Proc * proc_def = create_process(APP_IND_PROC_A, DEF_ARGV);
+//    debug_printf("AT CREATE PROCESS DEF expected pc= %x, ", (uint32_t)VADDR_USER_BASE);
+//    printProc(proc_def);
+	struct Proc * proc_def = create_process(APP_IND_FILESYSTEM, DEF_ARGV);
+	create_process(APP_IND_SHELL, DEF_ARGV);
     
     switch_proc(proc_def);
     

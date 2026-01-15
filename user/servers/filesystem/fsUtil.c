@@ -37,6 +37,7 @@ int get_indirect_iblock(uint32_t iblock, int height, int index){
 
 int get_iblock(inode_t file, int index){
     if(index >= max_blocks_of_file()) return -1;
+    if(index < 0) return -1;
 
     if(index < super.direct_pointers){
         return file.direct[index];

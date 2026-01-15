@@ -217,7 +217,8 @@ void syscall_trysendmsg(FullTrapFrame *tf, uintptr_t pc){
     int type_msg = SYSCALL_ARG2(tf);
 
     if (receiver_proc_pid == 99) {
-        receiver_proc_pid = filesystem_PID;
+        //receiver_proc_pid = filesystem_PID;
+        receiver_proc_pid = 2; // TODO: change this, for now fs server is the first proc.
     }
     int result = send_msg(sender_proc, receiver_proc_pid, msg_addr, type_msg);
     SET_SYSCALL_RET0(tf, result);
