@@ -18,13 +18,13 @@ mkdir -p $BUILD_FOLDER
 if [[ "$ARCH" == "x86" ]]; then
     ARCH_FOLDER=$ROOT/arch/x86
     CFLAGS="
-        -std=c11
         -O2 -g3
         -Wall -Wextra
         --target=i386-unknown-elf
         -m32
         -ffreestanding
         -nostdlib
+        -nostdinc
         -fno-stack-protector
         -fno-pic
         -fno-pie

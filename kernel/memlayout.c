@@ -150,11 +150,11 @@ void load_create_process_user(struct Proc * proc, const struct AppBinaryInfo * a
             KERNEL_PERMISSIONS_ALL
     );
 
-    direct_map_range(pde_table, 
-        (paddr_t)__free_ram,
-        (paddr_t)__free_ram_end,
-        KERNEL_PERMISSIONS_ALL
-    );
+//    direct_map_range(pde_table, 
+//        (paddr_t)__free_ram,
+//        (paddr_t)__free_ram_end,
+//        KERNEL_PERMISSIONS_ALL
+//    );
     
     // Mem layout is Direct mapping for users? For easier management for now.
 

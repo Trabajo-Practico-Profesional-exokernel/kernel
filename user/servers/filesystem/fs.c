@@ -111,7 +111,8 @@ int fs_mkfs(void) {
     bzero(null_block, BLOCK_SIZE);
 
     for (int i = 0; i < FS_SIZE; i++) {
-        block_write(i, null_block);
+        if (block_write(i, null_block) <= 0)
+			break;
     }
 
     // define superblock

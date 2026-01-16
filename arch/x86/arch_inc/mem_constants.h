@@ -34,8 +34,11 @@
 /*
 On the x86 architecture, the virtual address format actually uses three sections instead of two: The entry number in a page directory table,
 the page table index, and the offset into that page. 
-AAAAAAAAAA         BBBBBBBBBB        CCCCCCCCCCCC
-directory index    page table index  offset into page
+
+   +------ 10 ------+------ 10 ------+--------- 12 --------+
+   | Page Directory |   Page Table   |  Offset within Page |
+   |     Index      |     Index      |                     |
+   +----------------+----------------+---------------------+
 
 Page Table Entries (PTE) 
 
@@ -142,8 +145,7 @@ enum PAGE_PDE_FLAGS {
 
 // This is used for getting both, the page table offset in page directory and page physical offset in page table 
 // In an entry each entry manages 4KB or so of memory ... in case of page directories it would compound
-//#define GET_ENTRY_OFFSET(vaddr) ((vaddr >> 10) * PAGE_SIZE)
-#define GET_ENTRY_OFFSET(vaddr) ((uint32_t)(vaddr) & ~0xFFF)
+#define GET_ENTRY_OFFSET(pte) ((uint32_t)(pte) & ~0xFFF)
 
 // This method gets the offset of an physical address, and puts it on the config. Also marks IS_PRESENT
 // This is used in both page table entries and page directory entries! 
