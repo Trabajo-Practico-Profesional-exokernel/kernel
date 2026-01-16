@@ -238,6 +238,17 @@ void handle_chown(struct Message *msg) {
 }
 
 void handle_chmod(struct Message *msg) {
+    char *path;
+    int mode;
+    if (parse_str_int(msg->content, &path, &mode) == 0) {
+        
+        fs_chmod(msg->sender_pid, path, mode);
+        send_int_response(msg->sender_pid, 0);
+        return;
+    }
+
+    printf("Uso: chmod <path> <mode>\n");
+    send_int_response(msg->sender_pid, -1);
 }
 
 

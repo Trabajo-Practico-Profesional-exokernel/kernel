@@ -501,3 +501,21 @@ int parse_3_args(char *input, char *argv[3]) {
     
     return count;
 }
+
+//usado en chmod
+int parse_str_int(char *input, char **out_str, int *out_int) {
+    char *token = strtok(input, " ");
+    if (token == NULL) {
+        return -1; 
+    }
+    *out_str = token;
+
+    token = strtok(NULL, " ");
+    if (token == NULL) {
+        return -1; 
+    }
+    
+    *out_int = strtol(token, NULL, 8); 
+
+    return 0;
+}

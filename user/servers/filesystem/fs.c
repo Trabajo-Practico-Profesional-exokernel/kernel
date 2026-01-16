@@ -845,10 +845,41 @@ int fs_fsck(fsCheck *buf) {
 }
 
 
-int fs_chmod(int proc_pid, const char *path, int new_mode){
+int fs_chmod(int proc_pid, const char *filename, int new_mode){
 
+    if (new_mode < 0){
+        return -1;
+    }
 
+    inode_t inode_dir = get_inode_per_inum(current_dir[proc_pid].files_inum[0]);
+    int existFile = find_file_in_dir(inode_dir, filename, NULL);
+    if (existFile == -1) {
+        return -1;
+    }
 
+    inode_t current_inode = get_inode_per_inum(existFile);
+
+    if (current_inode.uid != proc_pid){
+        return -1;
+    }
+    
+    debug_printf("new_mode: [%x], [%d]", new_mode, new_mode);
+    //se podria mejorar implementacion
+    int owner_p = OWNER_PERMS(new_mode);
+    int group_p = GROUP_PERMS(new_mode);
+    int other_p = OTHERS_PERMS(new_mode);
+    int inode_type = MODE_MASK(current_inode.mode);
+    
+    debug_printf("Inode Type: %x, Mode: [%x%x%x]", 
+        inode_type, owner_p, group_p, other_p);
+
+    new_mode = BUILD_MODE(inode_type, owner_p, group_p, other_p);
+    debug_printf("old mode: [%x], new mode [%x]", current_inode.mode, new_mode);
+    current_inode.mode = new_mode;
+
+    save_inode(existFile, current_inode);
+    disable_debug_print();
+    return 0;
 }
 
 int fs_chown(int proc_pid, const char *filename, int new_uid, int new_gid){

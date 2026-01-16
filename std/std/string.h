@@ -34,4 +34,5 @@ void itohex(unsigned int n, char *s);
 void reverse(char *s);
 void int_to_string(int n, char s[]);
 int parse_3_args(char *input, char *argv[3]);
+int parse_str_int(char *input, char **out_str, int *out_int);
 #endif /* not STRING_H */
