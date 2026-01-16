@@ -438,3 +438,66 @@ void int_to_string(int n, char s[]) {
         s[k] = temp;
     }
 }
+
+static int is_delimiter(char c, const char *delim) {
+    while (*delim != '\0') {
+        if (c == *delim)
+            return 1;
+        delim++;
+    }
+    return 0;
+}
+
+char *strtok_r(char *str, const char *delim, char **saveptr) {
+    char *end;
+
+    if (str == NULL) {
+        str = *saveptr;
+    }
+
+    if (*str == '\0') {
+        *saveptr = str;
+        return NULL;
+    }
+
+    while (*str && is_delimiter(*str, delim)) {
+        str++;
+    }
+
+    if (*str == '\0') {
+        *saveptr = str;
+        return NULL;
+    }
+
+    end = str;
+
+    while (*end && !is_delimiter(*end, delim)) {
+        end++;
+    }
+
+    if (*end == '\0') {
+        *saveptr = end;
+        return str;
+    } else {
+        *end = '\0';
+        *saveptr = end + 1;
+        return str;
+    }
+}
+
+char *strtok(char *str, const char *delim) {
+    static char *last_token = NULL;
+    return strtok_r(str, delim, &last_token);
+}
+
+int parse_3_args(char *input, char *argv[3]) {
+    int count = 0;
+    char *token = strtok(input, " "); 
+
+    while (token != NULL && count < 3) {
+        argv[count++] = token;
+        token = strtok(NULL, " ");
+    }
+    
+    return count;
+}

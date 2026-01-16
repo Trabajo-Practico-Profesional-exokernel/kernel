@@ -93,4 +93,8 @@ int getcwd(char *path, int size);
 int pipe(int fds[2]);
 
 int dup(int prev_fd);
+int chown(char *args);
+int chmod(char *args);
+
+
 #endif

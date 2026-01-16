@@ -58,6 +58,6 @@ int blocks_used();
 int inodes_used();
 
 
-
+int check_file_permission(int uid, int gid, inode_t *file, int mode_requested);
 
 #endif

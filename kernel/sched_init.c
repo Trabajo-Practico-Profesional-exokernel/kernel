@@ -14,6 +14,7 @@ extern struct AppBinaryInfo _binary_apps[];
 
 struct Proc * create_process(size_t ind, char ** argv){
     struct Proc * proc = get_first_free_proc();
+    proc->gid = 0;
     load_create_process_user(proc, &_binary_apps[ind], argv);
     return proc;
 }

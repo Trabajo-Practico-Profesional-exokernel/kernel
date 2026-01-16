@@ -43,6 +43,9 @@ struct Proc {
     paddr_t user_sp_start; 
 
     procid_t pid;             // Process ID
+
+    int gid;                // Group ID
+
     int status;           // Process state: PROC_FREE or PROC_RUNNABLE,  PROC_DYING, PROC_RUNNABLE, PROC_RUNNING, PROC_NOT_RUNNABLE 
 
     int cpunum; // The CPU that the env is running on

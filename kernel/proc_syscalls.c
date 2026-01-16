@@ -239,7 +239,7 @@ void syscall_recvmsg(FullTrapFrame *tf, uintptr_t pc) {
 }
 
 void syscall_pipe(FullTrapFrame *tf, uintptr_t pc) {
-    enable_debug_print();
+    //enable_debug_print();
     debug_printf("syscall pipe...\n");
     struct Proc * curr_proc = get_curr();
     uint32_t vaddr_pipe = SYSCALL_ARG0(tf);

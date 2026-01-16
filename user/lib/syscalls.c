@@ -253,13 +253,11 @@ int chdir(const char *path) {
 }
 
 int ls(char *path) {
-    // Se envía el path aunque la implementación actual de shell_ls use el CWD del proceso
     int res = sys_try_send_msg(99, path, FS_TYPE_LS);
     if (res == 0) {
         return -1;
     }
     struct Message respuesta;
-    // Esperamos el ACK del filesystem tras imprimir en consola
     res = sys_recv_msg(&respuesta);
     if (res >= 0) {
         return atoi(respuesta.content);
@@ -405,4 +403,32 @@ int pipe(int fds[2]){
 
 int dup(int prev_fd){
     return syscall(SYS_DUP, prev_fd, 0, 0);
+}
+
+
+int chown(char *args) {
+    int res = sys_try_send_msg(99, args, FS_TYPE_CHOWN);
+    if (res == 0) {
+        return -1;
+    }
+    struct Message respuesta;
+    res = sys_recv_msg(&respuesta);
+    if (res >= 0) {
+        return atoi(respuesta.content);
+    }
+    return -1;
+}
+
+
+int chmod(char *args) {
+    int res = sys_try_send_msg(99, args, FS_TYPE_CHMOD);
+    if (res == 0) {
+        return -1;
+    }
+    struct Message respuesta;
+    res = sys_recv_msg(&respuesta);
+    if (res >= 0) {
+        return atoi(respuesta.content);
+    }
+    return -1;
 }

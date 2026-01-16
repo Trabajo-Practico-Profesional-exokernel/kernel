@@ -348,37 +348,53 @@ int handle_cat(char* args) {
     return OK_CODE;
 }
 
+int handle_chown(char* args) {
+    if (chown(args) == 0) {
+        printf("chown success\n");
+        return OK_CODE;
+    }
+    printf("Error with chown\n");
+    return ERR_CODE;
+}
+
+int handle_chmod(char* args) {
+    if (chmod(args) == 0) {
+        printf("chmod success\n");
+        return OK_CODE;
+    }
+    printf("Error with chmod\n");
+    return ERR_CODE;
+}
 
 struct CommandEntry commands[] = {
     // Existing
-    { "exec",   handle_exec },
-    { "start",  start_program },
-    //{ "msg",    send },
-    { "wait",   handle_wait },
-    
-    // Filesystem & Shell Utilities
-    { "exit",   handle_exit },
-    { "smile",  handle_smile },
-    { "clear",  handle_clear },
-    { "mkfs",   handle_mkfs },
-    { "open",   handle_open },
+    { "exec",      handle_exec },
+    { "start",     start_program },
+    { "wait",      handle_wait },
+    { "exit",      handle_exit },
+    { "smile",     handle_smile },
+    { "clear",     handle_clear },
+    { "mkfs",      handle_mkfs },
+    { "open",      handle_open },
     { "read_fs",   handle_read_fs },
     { "write_fs",  handle_write_fs },
-    { "read",   handle_read },
-    { "write",  handle_write },
-    { "lseek",  handle_lseek },
-    { "mkdir",  handle_mkdir },
-    { "rmdir",  handle_rmdir },
-    { "cd",     handle_cd },
-    { "close",  handle_close },
-    { "link",   handle_link },
-    { "unlink", handle_unlink },
-    { "stat",   handle_stat },
-    { "fsck",   handle_fsck },
-    { "ls",     handle_ls },
-    { "touch", handle_touch },
-    { "cat",    handle_cat },
-    { "pwd",    handle_pwd }
+    { "read",      handle_read },
+    { "write",     handle_write },
+    { "lseek",     handle_lseek },
+    { "mkdir",     handle_mkdir },
+    { "rmdir",     handle_rmdir },
+    { "cd",        handle_cd },
+    { "close",     handle_close },
+    { "link",      handle_link },
+    { "unlink",    handle_unlink },
+    { "stat",      handle_stat },
+    { "fsck",      handle_fsck },
+    { "ls",        handle_ls },
+    { "touch",     handle_touch },
+    { "cat",       handle_cat },
+    { "pwd",       handle_pwd },
+    { "chown",     handle_chown },
+    { "chmod",     handle_chmod },
 };
 
 // Auto-calculate command count
