@@ -53,40 +53,61 @@ int read_write_disk(void *buf, virt_blk_sector_t sector, int is_write){
         return -1;
     }
 
-    // Construct the request according to the virtio-blk specification.
-    blk_req->sector = sector;
-	blk_req->reserved = 0;
+    // Construct the virtqueue descriptors (using 3 descriptors).
+    struct virtio_virtq *vq = blk_request_vq;
+
+  /* Construir request */
     blk_req->type = is_write ? VIRTIO_BLK_T_OUT : VIRTIO_BLK_T_IN;
-    
+    blk_req->reserved = 0;
+    blk_req->sector = sector;
+//    blk_req->status = 0xFF;
+
     if (is_write)
         memcpy(blk_req->data, buf, SECTOR_SIZE);
 
-    // Construct the virtqueue descriptors (using 3 descriptors).
-    struct virtio_virtq *vq = blk_request_vq;
-    
-    vq->descs[0].addr = blk_req_paddr; // First queue descriptor
-    vq->descs[0].len = sizeof(uint32_t) * 2 + sizeof(uint64_t);
+    /* Descriptor 0: header */
+    vq->descs[0].addr  = blk_req_paddr;
+    vq->descs[0].len   = offsetof(struct virtio_blk_req, data);
     vq->descs[0].flags = VIRTQ_DESC_F_NEXT;
-    vq->descs[0].next = 1;
+    vq->descs[0].next  = 1;
 
-    vq->descs[1].addr = blk_req_paddr + offsetof(struct virtio_blk_req, data);
-    vq->descs[1].len = SECTOR_SIZE;
-    vq->descs[1].flags = VIRTQ_DESC_F_NEXT | (is_write ? 0 : VIRTQ_DESC_F_WRITE);
-    vq->descs[1].next = 2;
+    /* Descriptor 1: data */
+    vq->descs[1].addr  = blk_req_paddr + offsetof(struct virtio_blk_req, data);
+    vq->descs[1].len   = SECTOR_SIZE;
+    vq->descs[1].flags = VIRTQ_DESC_F_NEXT |
+                          (is_write ? 0 : VIRTQ_DESC_F_WRITE);
+    vq->descs[1].next  = 2;
 
-    vq->descs[2].addr = blk_req_paddr + offsetof(struct virtio_blk_req, status);
-    vq->descs[2].len = sizeof(uint8_t);
+    /* Descriptor 2: status */
+    vq->descs[2].addr  = blk_req_paddr + offsetof(struct virtio_blk_req, status);
+    vq->descs[2].len   = sizeof(uint8_t);
     vq->descs[2].flags = VIRTQ_DESC_F_WRITE;
+    vq->descs[2].next  = 0;
 
-    // Notify the device that there is a new request.
-    // index == 0, i.e first blkreq.. i.e at blk_request_vq, start. 
-    virtq_kick(vq, 0);
+    /* Publicar en avail */
+    uint16_t avail_idx = vq->avail.index % VIRTQ_ENTRY_NUM;
+    vq->avail.ring[avail_idx] = 0;
 
-    // Wait until the device finishes processing... for now block the kernel
-    // Otherwise we could block the proc and 
-    // at each clock interrupt we could check and unblock. 
-    while (virtq_is_busy(vq))
+    __sync_synchronize();   /* barrera obligatoria */
+
+    vq->avail.index++;
+
+    /* Notificar device */
+    virtio_reg_write32(VIRTIO_PCI_QUEUE_NOTIFY, vq->queue_index);
+
+    /* Esperar completado */
+    while (vq->last_used_index == vq->used.index)
         ;
+
+    /* Consumir used ring */
+    struct virtq_used_elem *e =
+        &vq->used.ring[vq->last_used_index % VIRTQ_ENTRY_NUM];
+
+    /* e->id == head descriptor (0) */
+    vq->last_used_index++;
+
+    __sync_synchronize();
+    
 
     // virtio-blk: If a non-zero value is returned, it's an error.
     if (blk_req->status != 0) {
