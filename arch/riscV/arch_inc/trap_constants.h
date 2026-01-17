@@ -5,6 +5,14 @@
 #define MIE_STIE (1L << 5)  // supervisor timer
 #define SIE_STIE (1L << 5)  // supervisor timer in S-Mode
 
+#define SSTATUS_SPP (1L << 8)  // Previous mode, 1=Supervisor, 0=User
+#define SSTATUS_SPIE (1L << 5) // Supervisor Previous Interrupt Enable
+#define SSTATUS_UPIE (1L << 4) // User Previous Interrupt Enable
+#define SSTATUS_SIE (1L << 1)  // Supervisor Interrupt Enable
+#define SSTATUS_UIE (1L << 0)  // User Interrupt Enable
+
+
+
 // riscv specific
 #define READ_CSR(reg)                                                          \
     ({                                                                         \
@@ -38,6 +46,63 @@ r_time()
   __asm__ __volatile__("csrr %0, time" : "=r" (x) );
   return x;
 }
+
+
+
+
+static inline uint32_t
+r_sstatus()
+{
+  uint32_t x;
+  __asm__ __volatile__("csrr %0, sstatus" : "=r" (x) );
+  return x;
+}
+
+static inline void 
+w_sstatus(uint32_t x)
+{
+  __asm__ __volatile__("csrw sstatus, %0" : : "r" (x));
+}
+
+
+// enable device interrupts
+static inline void
+enable_interrupts()
+{
+  w_sstatus(r_sstatus() | SSTATUS_SIE);
+}
+
+// disable device interrupts
+static inline void
+disable_interrupts()
+{
+  w_sstatus(r_sstatus() & ~SSTATUS_SIE);
+}
+
+// are device interrupts enabled?
+static inline int
+interrupts_enabled()
+{
+  uint32_t x = r_sstatus();
+  return (x & SSTATUS_SIE) != 0;
+}
+
+// read and write tp, the thread pointer... i.e
+// this core's hartid (core number), the index into cpus[] on procs and so ons.
+static inline uint32_t
+get_cpu_id()
+{
+  uint32_t x;
+  __asm__ __volatile__("mv %0, tp" : "=r" (x) );
+  return x;
+}
+
+
+#define sync_lock_test_and_set(lock, locked) __sync_lock_test_and_set(lock, locked)
+#define sync_lock_release(lock) __sync_lock_release(lock)
+
+#define sync_synchronize __sync_synchronize
+
 
 
 /*
@@ -86,9 +151,5 @@ r_stimecmp()
 }
 
 */
-
-// ** geppeto**
-//#define write_csr_val(reg, val) ({ \
-//    __asm__ __volatile__ ("csrw " #reg ", %0" :: "rK"(val)); })
 
 #endif /* !*/

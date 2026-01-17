@@ -61,12 +61,40 @@ void init_sched2(void) {
     PANIC("unreachable here!");
 }
 
-void init_sched(void) {
+void init_sched3(void) {
 //    struct Proc * proc_def = create_process(APP_IND_PROC_A, DEF_ARGV);
 //    debug_printf("AT CREATE PROCESS DEF expected pc= %x, ", (uint32_t)VADDR_USER_BASE);
 //    printProc(proc_def);
-	struct Proc * proc_def = create_process(APP_IND_FILESYSTEM, DEF_ARGV);
-	create_process(APP_IND_SHELL, DEF_ARGV);
+    struct Proc * proc_def = create_process(APP_IND_FILESYSTEM, DEF_ARGV);
+    create_process(APP_IND_SHELL, DEF_ARGV);
+    
+    switch_proc(proc_def);
+    
+}
+
+#include "arch/spin_locks.h"
+
+void init_sched(void) {
+    struct spinlock lock_test;
+    
+    initlock(&lock_test, "test lock");
+
+    acquire(&lock_test);
+
+    printf("ACQUIRED?! NOW RELEASE\n");
+
+    release(&lock_test);
+    printf("RELEASED?! AND RE ACQUIRE:\n");
+
+    acquire(&lock_test);
+
+
+    printf("NOW WOULD HAVE A DEADLOCK!?!\n");
+    acquire(&lock_test);
+
+
+    struct Proc * proc_def = create_process(APP_IND_KALLOC_PROGRAM, DEF_ARGV);
+    create_process(APP_IND_SHELL, DEF_ARGV);
     
     switch_proc(proc_def);
     
