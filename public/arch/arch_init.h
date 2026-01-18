@@ -4,6 +4,7 @@
 void init_arch(void);
 void init_disk(void);
 
+void notify_inited(void);
 
 void init_user_pages_alloc(void);
 

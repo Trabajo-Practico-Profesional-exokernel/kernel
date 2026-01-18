@@ -104,6 +104,35 @@ get_cpu_id()
 #define sync_synchronize __sync_synchronize
 
 
+static inline uint32_t
+r_mhartid()
+{
+  uint32_t x;
+  __asm__ __volatile__("csrr %0, mhartid" : "=r" (x) );
+  return x;
+}
+
+static inline uint32_t
+r_tp()
+{
+  uint32_t x;
+  __asm__ __volatile__("mv %0, tp" : "=r" (x) );
+  return x;
+}
+
+static inline void 
+w_tp(uint32_t x)
+{
+  __asm__ __volatile__("mv tp, %0" : : "r" (x));
+}
+
+static inline void 
+set_cpuid(uint32_t x)
+{
+  __asm__ __volatile__("mv tp, %0" : : "r" (x));
+}
+
+
 
 /*
 // xv6 riscv-5 magic

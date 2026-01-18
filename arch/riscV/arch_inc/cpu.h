@@ -4,7 +4,7 @@
 #include "inc/types.h"
 // #include "arch/proc.h"
 
-#define NCPU 4
+// #define NCPU 4
 
 // Saved registers for kernel context switches.
 struct cpu {

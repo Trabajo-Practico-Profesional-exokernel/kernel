@@ -7,6 +7,11 @@ BUILD_DIR   = build/$(ARCH)
 DEF_INCS     = -Ipublic -Istd
 
 KERNEL_DISK_PATH=.kernel_disk/disk.txt
+
+NCPU ?= 1
+CPU_STACK_PAGES = 32
+CPU_TRAP_STACK_PAGES = 32
+
 # ----------------------------
 # Compiladores por arquitectura
 # ----------------------------
@@ -25,13 +30,20 @@ else ifeq ($(ARCH),riscv)
 
 	## Notice we also add meta/gen as include folder ! to inclider meta/apps_info.h ! with the define of the struct and apps indexs
 	CFLAGS  = $(DEF_INCS) -Imeta/gen -Iarch/riscV -std=c11 -O2 -g3 -Wall -Wextra --target=riscv32-unknown-elf \
-                   -fno-stack-protector -ffreestanding -nostdlib -DIS_RISC -fno-pic -fno-pie -mcmodel=medany
-
+                   -fno-stack-protector -ffreestanding -nostdlib -DIS_RISC -fno-pic -fno-pie -mcmodel=medany\
+				   -DNCPU=$(NCPU) \
+				   -DCPU_STACK_PAGES=$(CPU_STACK_PAGES) \
+				   -DCPU_TRAP_STACK_PAGES=$(CPU_TRAP_STACK_PAGES) \
+	
 	# If riscv then add -DIS_RISC that deifines the constant IS_RISC for conditional compiling
 	
-	LDFLAGS = -T arch/riscV/linker/link.ld
+	LDFLAGS = -T arch/riscV/linker/link.ld \
+          -Wl,--defsym=NCPU=$(NCPU) \
+          -Wl,--defsym=CPU_STACK_PAGES=$(CPU_STACK_PAGES) \
+          -Wl,--defsym=CPU_TRAP_STACK_PAGES=$(CPU_TRAP_STACK_PAGES)
+
 	QEMU    = qemu-system-riscv32 -machine virt -bios default -nographic -serial mon:stdio --no-reboot -kernel $(BUILD_DIR)/kernel.elf \
-								-drive id=drive0,file=$(KERNEL_DISK_PATH),format=raw,if=none \
+								-smp $(NCPU) -drive id=drive0,file=$(KERNEL_DISK_PATH),format=raw,if=none \
 							    -device virtio-blk-device,drive=drive0,bus=virtio-mmio-bus.0	
 endif
 

@@ -28,6 +28,7 @@ acquire(struct spinlock *lk)
   //   amoswap.w.aq a5, a5, (s1)
   while(sync_lock_test_and_set(&lk->locked, 1) != 0)
     ;
+  printf("CPU UNLOCKED! cpuid %d locked? %d\n", cpuid(), lk->locked);
 
   // Tell the C compiler and the processor to not move loads or stores
   // past this point, to ensure that the critical section's memory
@@ -37,14 +38,19 @@ acquire(struct spinlock *lk)
 
   // Record info about lock acquisition for holding() and debugging.
   lk->cpuid = cpuid();
+  printf("NEW CPU ACQUIRED LOCK! %d\n", lk->cpuid);
 }
 
 // Release the lock.
 void
 release(struct spinlock *lk)
 {
-  if(!holding(lk))
+  if(!holding(lk)){
+    printf("Curr cpu %d !== lock cpu %d\n", cpuid(), lk->cpuid);
     PANIC("release did not hold?");
+    
+  }
+  printf("CPU RELEASE LOCK! %d\n", lk->cpuid);
 
   lk->cpuid = -1;
 
@@ -63,6 +69,7 @@ release(struct spinlock *lk)
   // On RISC-V, sync_lock_release turns into an atomic swap:
   //   s1 = &lk->locked
   //   amoswap.w zero, zero, (s1)
+
   sync_lock_release(&lk->locked);
 
   pop_off();
