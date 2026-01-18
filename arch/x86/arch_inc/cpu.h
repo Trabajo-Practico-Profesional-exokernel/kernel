@@ -12,7 +12,3 @@ struct cpu {
 };
 
 #endif /* !*/
-
-
-
-
