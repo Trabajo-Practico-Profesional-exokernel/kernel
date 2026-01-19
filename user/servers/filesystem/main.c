@@ -149,13 +149,21 @@ void handle_rm(struct Message *msg) {
 void handle_fstat(struct Message *msg) {
     fileStat stat_buf;
     int res = fs_stat((char *)msg->content, &stat_buf, msg->sender_pid);
+
+    printf("Inode: %d | Type: %c | Links: %d | Size: %d | Blocks: %d \nowner perms: %x | group perms: %x | other perms: %x\n", 
+        stat_buf.inodeNo, 
+        (stat_buf.type == DIRECTORY) ? 'D' : 'F', 
+        (int)stat_buf.links, 
+        stat_buf.size, 
+        stat_buf.numBlocks,
+        stat_buf.owner_perms,
+        stat_buf.group_perms,
+        stat_buf.other_perms);
+        
     if (res == 0) {
-        send_data_response(msg->sender_pid, &stat_buf, sizeof(fileStat));
+        send_int_response(msg->sender_pid, 0);
     } else {
-        int error = -1;
-        char res_str[16];
-        int_to_string(error, res_str);
-        send_data_response(msg->sender_pid, res_str, strlen(res_str) + 1);
+        send_int_response(msg->sender_pid, -1);
     }
 }
 
@@ -210,25 +218,62 @@ void handle_pwd(struct Message *msg) {
     send_data_response(msg->sender_pid, path, strlen(path) + 1);
 }
 
+void handle_chown(struct Message *msg) {
+    //cambiar este handleo luego con algun refactor
+    char *args[3] = {NULL, NULL, NULL};
+    int n = parse_3_args(msg->content, args);
+    debug_printf("n [%d]", n);
+    if (n<3){
+        send_int_response(msg->sender_pid, -1);
+        return;
+    }
+
+    int res = fs_chown(msg->sender_pid, args[0], atoi(args[1]), atoi(args[2]));
+        
+    if (res == 0) {
+        send_int_response(msg->sender_pid, 0);
+    } else {
+        send_int_response(msg->sender_pid, -1);
+    }
+}
+
+void handle_chmod(struct Message *msg) {
+    char *path;
+    int mode;
+    if (parse_str_int(msg->content, &path, &mode) == 0) {
+        
+        fs_chmod(msg->sender_pid, path, mode);
+        send_int_response(msg->sender_pid, 0);
+        return;
+    }
+
+    printf("Uso: chmod <path> <mode>\n");
+    send_int_response(msg->sender_pid, -1);
+}
+
+
 #define MAX_HANDLERS (sizeof(dispatch_table) / sizeof(dispatch_table[0]))
 
 typedef void (*fs_handler_t)(struct Message *);
 
 static const fs_handler_t dispatch_table[] = {
-    [FS_TYPE_OPEN] = handle_open,
-    [FS_TYPE_CLOSE] = handle_close,
-    [FS_TYPE_READ] = handle_read,
-    [FS_TYPE_WRITE] = handle_write,
-    [FS_TYPE_MKDIR] = handle_mkdir,
-    [FS_TYPE_RMDIR] = handle_rmdir,
-    [FS_TYPE_UNLINK] = handle_rm,
-    [FS_TYPE_FSTAT] = handle_fstat,
-    [FS_TYPE_LINK] = handle_link,
-    [FS_TYPE_CHDIR] = handle_chdir,
-    [FS_TYPE_LSEEK] = handle_lseek,
-    [FS_TYPE_MKNOD] = handle_mknod,
-    [FS_TYPE_LS] = handle_shell_ls,
-    [FS_TYPE_PWD]= handle_pwd};
+    [FS_TYPE_OPEN]   =   handle_open,
+    [FS_TYPE_CLOSE]  =   handle_close,
+    [FS_TYPE_READ]   =   handle_read,
+    [FS_TYPE_WRITE]  =   handle_write,
+    [FS_TYPE_MKDIR]  =   handle_mkdir,
+    [FS_TYPE_RMDIR]  =   handle_rmdir,
+    [FS_TYPE_UNLINK] =   handle_rm,
+    [FS_TYPE_FSTAT]  =   handle_fstat,
+    [FS_TYPE_LINK]   =   handle_link,
+    [FS_TYPE_CHDIR]  =   handle_chdir,
+    [FS_TYPE_LSEEK]  =   handle_lseek,
+    [FS_TYPE_MKNOD]  =   handle_mknod,
+    [FS_TYPE_LS]     =   handle_shell_ls,
+    [FS_TYPE_PWD]    =   handle_pwd,
+    [FS_TYPE_CHOWN]  =   handle_chown,
+    [FS_TYPE_CHMOD]  =   handle_chmod,
+};
 
 void dispatch_request(struct Message *msg) {
     if (msg->type >= 0 && msg->type < MAX_HANDLERS && dispatch_table[msg->type]) {
@@ -253,7 +298,7 @@ void server_listen() {
 }
 
 void main() {
-    //disable_debug_print();
+    disable_debug_print();
     debug_printf("FILESYSTEM!");
     fs_init();
 	shell_ls(2);

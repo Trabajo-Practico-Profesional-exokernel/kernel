@@ -11,6 +11,24 @@ extern bmap_t map;
 extern dir_t current_dir;
 extern FileDescriptor table[MAX_OPEN_FILES];
 
+int check_file_permission(int uid, int gid, inode_t *file, int mode_requested) {
+
+    if (uid == 0) return 1;
+
+    int mode_bits = file->mode;
+
+    if (uid == file->uid) {
+        return (OWNER_PERMS(mode_bits) & mode_requested) ? 1 : 0;
+    }
+
+    if (gid == file->gid) {
+        return (GROUP_PERMS(mode_bits) & mode_requested) ? 1 : 0;
+    }
+
+    return (OTHERS_PERMS(mode_bits) & mode_requested) ? 1 : 0;
+}
+
+
 /* Function to get and set block index number from inode. */
 int get_indirect_iblock(uint32_t iblock, int height, int index){
     DataBlock block;

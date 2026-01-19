@@ -50,7 +50,7 @@ struct Proc * get_first_free_proc(){
     for (i = 0; i < PROCS_MAX; i++) {
         if (procs[i].status == PROC_FREE) {
             procs[i].pid = i; // Set pid Now just in case.
-
+            
             // Set as not runnable so that next get first doesnt get this one
             procs[i].status = PROC_NOT_RUNNABLE; 
             return &procs[i];

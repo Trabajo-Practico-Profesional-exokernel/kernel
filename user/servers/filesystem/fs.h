@@ -10,11 +10,11 @@
 #define MAX_FILE_NAME 28
 #define MAX_PATH_NAME 256  
 #define MAX_OPEN_FILES 256
-#define MAGIC_NUMBER 0x45
+#define MAGIC_NUMBER 0x55
 
 #define INODES_BLOCKS 256
 #define INODES_PER_BLOCK 8 // Must be less than or equal to 8
-#define DIRECT_POINTERS 10 
+#define DIRECT_POINTERS 8 
 #define POINTERS_PER_DCB 12
 
 // Definiciones de cálculo de espacio y mapas
@@ -51,9 +51,11 @@ typedef struct{
 
 // Inode
 typedef struct{
-    int type;
+    int mode;
     int link_counter;
     int size;
+    int uid;
+    int gid;
     int direct[DIRECT_POINTERS];
     int indirect1;
     int indirect2;
@@ -136,4 +138,8 @@ void shell_ls(int proc);
 void fs_sync_current_dir(int proc);
 void fs_reload_current_dir(int proc);
 void fs_pwd(int proc);
+
+int fs_chmod(int proc_pid, const char *path, int new_mode);
+int fs_chown(int proc_pid, const char *path, int new_uid, int new_gid);
+
 #endif

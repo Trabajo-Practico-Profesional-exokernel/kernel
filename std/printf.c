@@ -16,7 +16,7 @@ void debug_printf(const char *fmt, ...){
   vsnprintf(buf, sizeof(buf), fmt, args);
   va_end(args);
   printPurple("[DEBUG] ");
-  printf("%s", buf); 
+  printf("%s\n", buf); 
 }
 
 static void

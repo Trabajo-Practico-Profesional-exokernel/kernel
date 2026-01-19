@@ -18,9 +18,11 @@
 #define FS_TYPE_READ    8
 #define FS_TYPE_WRITE   9
 #define FS_TYPE_LSEEK   10
-#define FS_TYPE_RMDIR 11
-#define FS_TYPE_LS 13
-#define FS_TYPE_PWD 14
+#define FS_TYPE_RMDIR   11
+#define FS_TYPE_LS      13
+#define FS_TYPE_PWD     14
+#define FS_TYPE_CHOWN   15
+#define FS_TYPE_CHMOD   16
 
 struct Proc;
 

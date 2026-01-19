@@ -57,15 +57,19 @@ void shell_ls(int proc) {
 
             inode_t file_inode = get_inode_per_inum(block.dir.files_inum[j]);
             int show_size = file_inode.size;
-            if (file_inode.type == DIRECTORY && show_size >= 2) {
+            if (MODE_MASK(file_inode.mode) == DIRECTORY && show_size >= 2) {
                 show_size -= 2;
             }
-
-            if (file_inode.type == DIRECTORY){
+            
+            if (MODE_MASK(file_inode.mode) == DIRECTORY){
                 printBlue((char *)block.dir.files_name[j]);
+                debug_printf("INODE MODE: [%x] MODE MASK [%x]", file_inode.mode, MODE_MASK(file_inode.mode));
             } else {
+                
                 printGreen((char *)block.dir.files_name[j]);
+                debug_printf("INODE MODE: [%x] MODE MASK [%x]", file_inode.mode, MODE_MASK(file_inode.mode));
             }
+            debug_printf("uid: [%d] - gid [%d]", file_inode.uid, file_inode.gid);
             printf("    ");
         }
     }
@@ -154,14 +158,18 @@ int fs_mkfs(void) {
         current_dir[j] = root_dir;
     }
 
+    int iroot_mode = BUILD_MODE(DIRECTORY, RWX_ALL, RWX_ALL, RWX_ALL);
+
     // create inode to root dir
     inode_t iroot = (inode_t){
-        .type = DIRECTORY,
+        .mode = iroot_mode,
         .link_counter = 1,
         .size = 2,
         .indirect1 = -1,
         .indirect2 = -1,
-        .indirect3 = -1};
+        .indirect3 = -1,
+        .gid = 0,
+        .uid = 0};
     for (int i = 0; i < super.direct_pointers; i++)
         iroot.direct[i] = -1;
     iroot.direct[0] = 0;
@@ -232,14 +240,18 @@ int fs_open(char *fileName, int flags, int proc) {
             return -1;
         }
 
+        int file_mode = BUILD_MODE(FILE, RWX_ALL, RWX_ALL, RWX_ALL);
+
         // set inode entries
         inode_t new_ifile = (inode_t){
-            .type = FILE_TYPE,
+            .mode = file_mode,
             .link_counter = 1,
             .size = 0,
             .indirect1 = -1,
             .indirect2 = -1,
-            .indirect3 = -1};
+            .indirect3 = -1,
+            .gid = 0,
+            .uid = proc};
         for (int i = 0; i < super.direct_pointers; i++)
             new_ifile.direct[i] = -1;
 
@@ -266,7 +278,7 @@ int fs_open(char *fileName, int flags, int proc) {
 
     inode_t current_inode = get_inode_per_inum(existFile);
 
-    if (current_inode.type == DIRECTORY && flags != FS_O_RDONLY) {
+    if (MODE_MASK(current_inode.mode) == DIRECTORY && flags != FS_O_RDONLY) {
         return -1;
     }
 
@@ -339,7 +351,7 @@ int fs_read(int fd, char *buf, int count, int proc) {
     current_inode = get_inode_per_inum(table[proc][fd].inode);
 
     // check if current inode is a file
-    if ((current_inode.type == DIRECTORY && table[proc][fd].flag != FS_O_RDONLY) || table[proc][fd].flag == FS_O_WRONLY) {
+    if ((MODE_MASK(current_inode.mode) == DIRECTORY && table[proc][fd].flag != FS_O_RDONLY) || table[proc][fd].flag == FS_O_WRONLY) {
         return -1;
     }
 
@@ -395,9 +407,9 @@ int fs_write(int fd, char *buf, int count, int proc) {
     }
 
     current_inode = get_inode_per_inum(table[proc][fd].inode);
-
+    
     // check if file is a directory and R/W pointer is valid
-    if (current_inode.type == DIRECTORY || table[proc][fd].flag == FS_O_RDONLY) {
+    if (MODE_MASK(current_inode.mode) == DIRECTORY || table[proc][fd].flag == FS_O_RDONLY) {
         return -1;
     }
 
@@ -507,6 +519,14 @@ int fs_lseek(int fd, int offset, int proc) {
 int fs_mkdir(char *fileName, int proc) {
     // check if dir with that name already exists
     inode_t parent_inode = get_inode_per_inum(current_dir[proc].files_inum[0]);
+
+    int uid = proc;
+    //lo dejo en 0 por el momento
+    int gid = 0;
+    if (!check_file_permission(uid, gid, &parent_inode, I_W_OP | I_X_OP)){
+        return -1;
+    }
+
     if (find_file_in_dir(parent_inode, fileName, NULL) >= 0) {
         return -1;
     }
@@ -526,14 +546,18 @@ int fs_mkdir(char *fileName, int proc) {
     // set dcb of the new directory
     dir_t new_dir = create_directory(inum);
 
+    int file_mode = BUILD_MODE(DIRECTORY, RWX_ALL, RWX_ALL, RWX_ALL);
+
     // set inode entries
     inode_t new_inode = (inode_t){
-        .type = DIRECTORY,
+        .mode = file_mode,
         .link_counter = 1,
         .size = 2,
         .indirect1 = -1,
         .indirect2 = -1,
-        .indirect3 = -1};
+        .indirect3 = -1,
+        .gid = 0,
+        .uid = proc};
     for (int i = 0; i < super.direct_pointers; i++)
         new_inode.direct[i] = -1;
     new_inode.direct[0] = iblock;
@@ -562,6 +586,14 @@ int fs_mkdir(char *fileName, int proc) {
 
 int fs_rmdir(char *fileName, int proc) {
     inode_t parent_inode = get_inode_per_inum(current_dir[proc].files_inum[0]);
+
+    int uid = proc;
+    //lo dejo en 0 por el momento
+    int gid = 0;
+    if (!check_file_permission(uid, gid, &parent_inode, I_W_OP | I_X_OP)){
+        return -1;
+    }
+
     // check if fileName exists
     int relIndex;
     int existFile = find_file_in_dir(parent_inode, fileName, &relIndex);
@@ -573,6 +605,7 @@ int fs_rmdir(char *fileName, int proc) {
     if (is_directory_empty(dir_inode) == FALSE) {
         return -1;
     }
+
     // remove subdirectory
     free_iblock(dir_inode.direct[0]); // free its only data block
     free_inode(existFile);            // free its inode number
@@ -631,6 +664,13 @@ int fs_cd(char *dirName, int proc) {
     DataBlock block;
     inode_t parent_inode = get_inode_per_inum(current_dir[proc].files_inum[0]);
 
+    int uid = proc;
+    //lo dejo en 0 por el momento
+    int gid = 0;
+    if (!check_file_permission(uid, gid, &parent_inode, I_X_OP)){
+        return -1;
+    }
+
     // check if fileName exists
     int existFile = find_file_in_dir(parent_inode, dirName, NULL);
     if (existFile < 0) {
@@ -639,7 +679,7 @@ int fs_cd(char *dirName, int proc) {
 
     // find fileName
     inode_t dir_inode = get_inode_per_inum(existFile);
-    if (dir_inode.type == FILE_TYPE) {
+    if (MODE_MASK(dir_inode.mode)== FILE) {
         return -1;
     }
 
@@ -653,10 +693,17 @@ int fs_cd(char *dirName, int proc) {
 }
 
 int fs_link(char *old_fileName, char *new_fileName, int proc) {
-    enable_debug_print();
-    debug_printf("path viejo: [%s] - path nuevo [%s]", old_fileName, new_fileName);
+
     // check if old_fileName and new_fileName exists
     inode_t parent_inode = get_inode_per_inum(current_dir[proc].files_inum[0]);
+
+    int uid = proc;
+    //lo dejo en 0 por el momento
+    int gid = 0;
+    if (!check_file_permission(uid, gid, &parent_inode, I_W_OP | I_X_OP)){
+        return -1;
+    }
+
     int old_inode = find_file_in_dir(parent_inode, old_fileName, NULL);
     if (old_inode < 0) {
         return -1;
@@ -670,7 +717,7 @@ int fs_link(char *old_fileName, char *new_fileName, int proc) {
 
     // check old fileName is a FILE
     inode_t current_inode = get_inode_per_inum(old_inode);
-    if (current_inode.type == DIRECTORY) {
+    if (MODE_MASK(current_inode.mode) == DIRECTORY) {
         return -1;
     }
 
@@ -698,6 +745,14 @@ int fs_link(char *old_fileName, char *new_fileName, int proc) {
 int fs_unlink(char *fileName, int proc) {
     // check if fileName exists
     inode_t parent_inode = get_inode_per_inum(current_dir[proc].files_inum[0]);
+
+    int uid = proc;
+    //lo dejo en 0 por el momento
+    int gid = 0;
+    if (!check_file_permission(uid, gid, &parent_inode, I_W_OP | I_X_OP)){
+        return -1;
+    }
+
     int relIndex, fd;
     int file_inum = find_file_in_dir(parent_inode, fileName, &relIndex);
     if (file_inum < 0) {
@@ -705,7 +760,7 @@ int fs_unlink(char *fileName, int proc) {
     }
     // check if it is a directory
     inode_t current_inode = get_inode_per_inum(file_inum);
-    if (current_inode.type == DIRECTORY) {
+    if (MODE_MASK(current_inode.mode) == DIRECTORY) {
         return -1;
     }
 
@@ -761,17 +816,23 @@ int fs_stat(char *fileName, fileStat *buf, int proc) {
 
     // set buf
     int num_blocks;
-    if (file_inode.type == DIRECTORY) {
+    if (MODE_MASK(file_inode.mode) == DIRECTORY) {
         num_blocks = (file_inode.size + super.pointers_per_dcb - 1) / super.pointers_per_dcb;
     } else {
         num_blocks = (file_inode.size + super.block_size - 1) / super.block_size;
     }
     *buf = (fileStat){
         .inodeNo = file_inum,
-        .type = file_inode.type,
+        .type = MODE_MASK(file_inode.mode),
         .links = file_inode.link_counter,
         .size = file_inode.size,
-        .numBlocks = num_blocks};
+        .numBlocks = num_blocks,
+        .owner_perms = OWNER_PERMS(file_inode.mode),
+        .group_perms = GROUP_PERMS(file_inode.mode),
+        .other_perms = OTHERS_PERMS(file_inode.mode)
+        };
+        
+    
     return 0;
 }
 
@@ -783,3 +844,70 @@ int fs_fsck(fsCheck *buf) {
         .map = map};
     return 0;
 }
+
+int fs_chmod(int proc_pid, const char *filename, int new_mode){
+
+    if (new_mode < 0){
+        return -1;
+    }
+
+    inode_t inode_dir = get_inode_per_inum(current_dir[proc_pid].files_inum[0]);
+    int existFile = find_file_in_dir(inode_dir, filename, NULL);
+    if (existFile == -1) {
+        return -1;
+    }
+
+    inode_t current_inode = get_inode_per_inum(existFile);
+
+    if (current_inode.uid != proc_pid){
+        return -1;
+    }
+    
+    debug_printf("new_mode: [%x], [%d]", new_mode, new_mode);
+    //se podria mejorar implementacion
+    int owner_p = OWNER_PERMS(new_mode);
+    int group_p = GROUP_PERMS(new_mode);
+    int other_p = OTHERS_PERMS(new_mode);
+    int inode_type = MODE_MASK(current_inode.mode);
+    
+    debug_printf("Inode Type: %x, Mode: [%x%x%x]", 
+        inode_type, owner_p, group_p, other_p);
+
+    new_mode = BUILD_MODE(inode_type, owner_p, group_p, other_p);
+    debug_printf("old mode: [%x], new mode [%x]", current_inode.mode, new_mode);
+    current_inode.mode = new_mode;
+
+    save_inode(existFile, current_inode);
+    disable_debug_print();
+    return 0;
+}
+
+int fs_chown(int proc_pid, const char *filename, int new_uid, int new_gid){
+    debug_printf("proc_pid [%d]", proc_pid);
+    debug_printf("filename [%s]", filename);
+    debug_printf("new_uid [%d]", new_uid);
+    debug_printf("new_gid [%d]", new_gid);
+
+    if (new_uid < 0 || new_gid < 0){
+        return -1;
+    }
+
+    inode_t inode_dir = get_inode_per_inum(current_dir[proc_pid].files_inum[0]);
+    int existFile = find_file_in_dir(inode_dir, filename, NULL);
+    if (existFile == -1) {
+        return -1;
+    }
+
+    inode_t current_inode = get_inode_per_inum(existFile);
+
+    if (current_inode.uid != proc_pid){
+        return -1;
+    }
+
+    current_inode.uid = new_uid;
+    current_inode.gid = new_gid;
+
+    save_inode(existFile, current_inode);
+    return 0;
+}
+

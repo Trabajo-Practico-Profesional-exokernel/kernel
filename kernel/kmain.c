@@ -6,7 +6,6 @@
 #include "arch/arch_init.h"
 #include "arch/mem.h"
 #include "arch/trap_handling.h"
-#include "fs_syscalls.h"
 #include "fd.h"
 
 // void *mboot, unsigned int magic_number
