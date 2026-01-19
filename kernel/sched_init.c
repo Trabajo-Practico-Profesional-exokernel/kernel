@@ -66,7 +66,7 @@ void init_sched(void) {
 //    debug_printf("AT CREATE PROCESS DEF expected pc= %x, ", (uint32_t)VADDR_USER_BASE);
 //    printProc(proc_def);
 	struct Proc * proc_def = create_process(APP_IND_FILESYSTEM, DEF_ARGV);
-//	create_process(APP_IND_SHELL, DEF_ARGV);
+	create_process(APP_IND_SHELL, DEF_ARGV);
     
     switch_proc(proc_def);
     
