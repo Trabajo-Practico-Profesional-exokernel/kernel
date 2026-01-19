@@ -301,6 +301,6 @@ void main() {
     disable_debug_print();
     debug_printf("FILESYSTEM!");
     fs_init();
-	shell_ls(2);
-    //server_listen();
+//	shell_ls(2);
+    server_listen();
 }
