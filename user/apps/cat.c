@@ -11,7 +11,7 @@ main()
 	int w = disk_write(wbuf, 0, 64);
 	printf("wstatus: %d\n", w);
 
-	int r = disk_read(1, rbuf, 64);
+	int r = disk_read(0, rbuf, 64);
 	printf("rstatus: %d\n", r);
 	printf("rbuf: %s\n", rbuf);
 
