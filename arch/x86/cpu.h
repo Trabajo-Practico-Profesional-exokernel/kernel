@@ -25,4 +25,11 @@ extern struct CpuInfo cpus[NCPU];
 
 #define cpu (&cpus[0]) // TODO: definir cpunum()
 
+void lapic_init(void);
+void lapic_eoi(void);
+void lapic_startap(uint8_t apicid, uint32_t addr);
+
+void ioapic_init(void);
+
+
 #endif

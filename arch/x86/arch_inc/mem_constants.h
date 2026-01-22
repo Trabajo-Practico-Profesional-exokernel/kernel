@@ -4,6 +4,9 @@
 #include "inc/types.h"
 
 #define VADDR_KERNEL_BASE 0xC0000000
+#define LAPIC_BASE		  0xFEE00000
+#define IOAPIC_BASE		  0xFEC00000
+
 /*
 * Constants for mapping pages/ virtual memory!
 */

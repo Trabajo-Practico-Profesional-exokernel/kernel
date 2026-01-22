@@ -99,6 +99,72 @@ static inline uint32_t inl(uint16_t port) {
     return ret;
 }
 
+static inline void
+insl(uint32_t port, void *addr, uint32_t cnt)
+{
+	asm volatile("cld\n\trepne\n\tinsl"
+		     : "=D" (addr), "=c" (cnt)
+		     : "d" (port), "0" (addr), "1" (cnt)
+		     : "memory", "cc");
+}
+
+static inline void
+outsl(uint16_t port, const void *addr, uint32_t cnt)
+{
+	asm volatile("cld\n\trepne\n\toutsl"
+		     : "=S" (addr), "=c" (cnt)
+		     : "d" (port), "0" (addr), "1" (cnt)
+		     : "cc");
+}
+
+static inline void 
+insw(uint16_t port, void *addr, uint32_t cnt)
+{
+    asm volatile (
+        "cld\n\t"
+        "rep insw"
+        :
+        : "d"(port), "D"(addr), "c"(cnt)
+        : "memory"
+    );
+}
+
+static inline void
+outsw(uint16_t port, const void *addr, uint32_t cnt)
+{
+    asm volatile (
+        "cld\n\t"
+        "rep outsw"
+        :
+        : "d"(port), "S"(addr), "c"(cnt)
+        : "memory"
+    );
+}
+
+static inline void 
+insb(uint16_t port, void *addr, uint32_t cnt)
+{
+    asm volatile (
+        "cld\n\t"
+        "rep insb"
+        :
+        : "d"(port), "D"(addr), "c"(cnt)
+        : "memory"
+    );
+}
+
+static inline void
+outsb(uint16_t port, const void *addr, uint32_t cnt)
+{
+    asm volatile (
+        "cld\n\t"
+        "rep outsb"
+        :
+        : "d"(port), "S"(addr), "c"(cnt)
+        : "memory"
+    );
+}
+
 // -------------------------------
 // IDT (Interrupt Descriptor Table)
 // -------------------------------
