@@ -15,9 +15,13 @@ void clock_yield(FullTrapFrame *tf, uintptr_t proc_pc);
 ==================================================
   PIC remap
 ==================================================
+	cmd master: 0x20
+	data master: 0x21
+	cmd slave : 0xA0
+	data slave: 0xA1
 */
 static void pic_remap(void) {
-    // ICW1
+    // ICW1: initialize command
     outb(0x20, 0x11);
     outb(0xA0, 0x11);
     // ICW2 - vector offsets
@@ -30,9 +34,11 @@ static void pic_remap(void) {
     outb(0x21, 0x01);
     outb(0xA1, 0x01);
 
-    // UNMASK (enables every hardware interrupt)
-    outb(0x21, 0xFF);
-    outb(0xA1, 0xFF);
+    // UNMASK (enables every picirq interrupt)
+	// TODO: config lapic
+    outb(0x21, 0x00);
+    outb(0xA1, 0x00);
+
 }
 
 void init_trap(void) {
