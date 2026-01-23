@@ -159,7 +159,9 @@ ide_read(void *buf, uint32_t sector, size_t sz)
 	return 0;
 }
 
-
+//  Write operation.
+//  Always writes sector aligned. The remaining bytes are filled with zeroes.
+//  e.g. sz = 600B  -> sector 1 = buf[0...512];  sector 2 = buf[512...599] + 424 zeroes
 int
 ide_write(void *buf, uint32_t sector, size_t sz)
 {
