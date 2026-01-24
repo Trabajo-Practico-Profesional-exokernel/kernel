@@ -17,7 +17,7 @@ extern struct Proc * get_curr(void);
 void 
 syscall_disk_read(FullTrapFrame *tf, uintptr_t pc)
 {
-    printf("Got read disk\n");
+    debug_printf("Got read disk\n");
 	uint32_t sector = SYSCALL_ARG0(tf);
 	vaddr_t buf_vaddr = SYSCALL_ARG1(tf);
 	size_t sz = SYSCALL_ARG2(tf);
@@ -34,7 +34,7 @@ syscall_disk_read(FullTrapFrame *tf, uintptr_t pc)
 		return;
 	}
 
-    printf("Got read disk sector: %u to buffer at %x len: %u from proc %u\n",
+    debug_printf("Got read disk sector: %u to buffer at %x len: %u from proc %u\n",
 			sector,
             buf_paddr, 
 			sz, 
@@ -48,11 +48,11 @@ syscall_disk_read(FullTrapFrame *tf, uintptr_t pc)
 	return;
 }
 
-
+// 104021
 void
 syscall_disk_write(FullTrapFrame *tf, uintptr_t pc)
 {
-    printf("Got write disk\n");
+    debug_printf("Got write disk\n");
 
 	vaddr_t buf_vaddr = SYSCALL_ARG0(tf);
 	uint32_t sector = SYSCALL_ARG1(tf);
@@ -69,7 +69,7 @@ syscall_disk_write(FullTrapFrame *tf, uintptr_t pc)
         sched_yield();
 		return;
 	}
-    printf("Got write buffer at %x to disk sector: %u len: %u \n", buf_paddr, sector, sz);
+    debug_printf("Got write buffer at %x to disk sector: %u len: %u \n", buf_paddr, sector, sz);
 
 	int w = ide_write((void *)buf_paddr, sector, sz);
 	SET_SYSCALL_RET0(tf, w);

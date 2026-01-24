@@ -82,27 +82,27 @@ int main_cpuid = -1;
 void init_sched(void) {
 
     acquire(&lock_test);
-    for (int i = 0; i < 2000000000; i++)
-        __asm__ __volatile__("nop"); // do nothing
+    printf("ACQUIRED ?!\n");
 
+    // for (int i = 0; i < 2000000000; i++){}
+
+    printf("AFTER SLEEP ?!\n");
+    
     if(main_cpuid < 0){
         main_cpuid = cpuid();
         printf("Main cpu acquired lock!?! %d\n",main_cpuid);        
         lock_test.name= "main lock";
 
-        for (int i = 0; i < 1000000000; i++)
-            __asm__ __volatile__("nop"); // do nothing
+        // for (int i = 0; i < 1000000000; i++){}
         printf("Main NOW RELEASE!\n");        
     } else {
         printf("Secondary acquired lock!?! %d.. not main == %d .. name '%s'\n", cpuid(), main_cpuid, lock_test.name);        
-        for (int i = 0; i < 1000000000; i++)
-            __asm__ __volatile__("nop"); // do nothing
+        // for (int i = 0; i < 1000000000; i++){}
         printf("Secondary NOW RELEASE!\n");        
     }
 
     release(&lock_test);
-    for (int i = 0; i < 800000000; i++)
-        __asm__ __volatile__("nop"); // do nothing
+    // for (int i = 0; i < 800000000; i++){}
     
     acquire(&lock_test);
 

@@ -99,20 +99,13 @@ int send_msg(struct Proc * sender_proc, int receiver_proc_pid, uint32_t msg_addr
     }
 }
 
-int recv_msg(FullTrapFrame *tf, uintptr_t pc, bool blocking, uint32_t msg_addr) {
-    struct Proc *receiver_proc = get_curr();
-
+int recv_msg(struct Proc* receiver_proc, uint32_t msg_vaddr) {
     struct Message msg = extract_msg(receiver_proc);
 
     if (msg.type == 0) {
-        if (blocking) {
-            receiver_proc->status = PROC_NOT_RUNNABLE;
-            save_curr_proc_state(tf, pc);
-            sched_yield();
-        }
         return -1;
     }
 
-    copyout_msg(receiver_proc, msg_addr, &msg, sizeof(struct Message));
+    copyout_msg(receiver_proc, msg_vaddr, &msg, sizeof(struct Message));
     return 0;
 }

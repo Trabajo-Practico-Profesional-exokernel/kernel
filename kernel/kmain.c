@@ -92,7 +92,7 @@ void kmain()
     // In riscv is needed, since we are using opensbi, opensbi halts the cpus until notified.
     // Like we would do with started == 0.
     notify_inited();
-
+    printf("---> x86 start scged \n");
     init_sched();
 
     for (;;)
