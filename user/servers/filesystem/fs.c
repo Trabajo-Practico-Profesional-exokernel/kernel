@@ -115,7 +115,8 @@ int fs_mkfs(void) {
     bzero(null_block, BLOCK_SIZE);
 
     for (int i = 0; i < FS_SIZE; i++) {
-        block_write(i, null_block);
+        if (block_write(i, null_block) <= 0)
+			break;
     }
 
     // define superblock
@@ -844,7 +845,6 @@ int fs_fsck(fsCheck *buf) {
     return 0;
 }
 
-
 int fs_chmod(int proc_pid, const char *filename, int new_mode){
 
     if (new_mode < 0){
@@ -910,3 +910,4 @@ int fs_chown(int proc_pid, const char *filename, int new_uid, int new_gid){
     save_inode(existFile, current_inode);
     return 0;
 }
+

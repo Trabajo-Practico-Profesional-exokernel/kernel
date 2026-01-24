@@ -2,6 +2,7 @@ char * _app_names[] = {
 "touch",
 "rm",
 "stat",
+"cat",
 "filesystem",
 "hello_world",
 "kalloc_program",
@@ -20,5 +21,6 @@ char * __def_executables[] = {
 "touch",
 "rm",
 "stat",
+"cat",
 
 };

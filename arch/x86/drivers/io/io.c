@@ -40,7 +40,7 @@ void init_arch(void){
     serial_init();
     gdt_init();
     
-    mem_init();
+    //mem_init();
     //pde_init();
     // vmmngr_initialize();
     idt_init();
