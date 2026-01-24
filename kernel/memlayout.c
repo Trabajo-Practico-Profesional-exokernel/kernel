@@ -172,14 +172,14 @@ void load_create_process_user(struct Proc * proc, const struct AppBinaryInfo * a
     // Map the code of the user program/binary... loading it from memory
     vaddr_t curr_vaddr = VADDR_USER_BASE;
     for (uint32_t off = 0; off < app_info->size; off += PAGE_SIZE) {
-        // paddr_t page = alloc_pages(1); // Alloc pages throws PANIC ALREADY!
+        paddr_t curr_page_paddr = alloc_pages(1); // Alloc pages throws PANIC ALREADY!
 
-        paddr_t curr_page_paddr;
-        if(try_alloc_user_page(&curr_page_paddr) < 0){
-            PANIC("Failed alloc user page in load code for process!\n");
-            // debug_printf("Failed alloc user page in load code for process!\n");
-            return;
-        }
+        // paddr_t curr_page_paddr;
+        // if(try_alloc_user_page(&curr_page_paddr) < 0){
+        //     PANIC("Failed alloc user page in load code for process!\n");
+        //     // debug_printf("Failed alloc user page in load code for process!\n");
+        //     return;
+        // }
         
         if(off == 0){
             debug_printf("PADDR START OF PROCESS 0x%x\n",curr_page_paddr);
