@@ -87,6 +87,8 @@ void mem_init(void){
             KERNEL_PERMISSIONS_ALL
     );
 
+
+
     switch_page_table(kernel_pde);
 
     enable_paging();

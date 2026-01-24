@@ -29,8 +29,7 @@ ifeq ($(ARCH),x86)
 	ASFLAGS = -f elf
 	LDFLAGS = -T arch/x86/drivers/linker/link.ld -melf_i386
 	QEMU    = qemu-system-i386 -cdrom os.iso  -m 64 -no-reboot -no-shutdown -nographic -serial mon:stdio \
-								-drive id=drive0,file=$(KERNEL_DISK_PATH),format=raw,if=none \
-								-device virtio-blk-pci,drive=drive0
+								-drive file=$(KERNEL_DISK_PATH),index=1,media=disk,format=raw
 else ifeq ($(ARCH),riscv)
 	CC      = clang
 

@@ -5,6 +5,8 @@
 #include "inc/common.h"
 #include "arch/logging.h"
 
+#include "trap.h"
+
 extern void isr32(void);
 void clock_yield(FullTrapFrame *tf, uintptr_t proc_pc);
 #include "arch/trap_handling.h"
@@ -13,9 +15,13 @@ void clock_yield(FullTrapFrame *tf, uintptr_t proc_pc);
 ==================================================
   PIC remap
 ==================================================
+	cmd master: 0x20
+	data master: 0x21
+	cmd slave : 0xA0
+	data slave: 0xA1
 */
 static void pic_remap(void) {
-    // ICW1
+    // ICW1: initialize command
     outb(0x20, 0x11);
     outb(0xA0, 0x11);
     // ICW2 - vector offsets
@@ -27,13 +33,12 @@ static void pic_remap(void) {
     // ICW4
     outb(0x21, 0x01);
     outb(0xA1, 0x01);
-    // Unmask (unables every hardware interrupt)
-    outb(0x21, 0x0);
-    outb(0xA1, 0x0);
 
-    // ADDED INSTEAD :Enable only timer (IRQ0) and keyboard (IRQ1)
-    // outb(0x21, 0xFC); // 11111100
-    // outb(0xA1, 0xFF);
+    // UNMASK (enables every picirq interrupt)
+	// TODO: config lapic
+    outb(0x21, 0x00);
+    outb(0xA1, 0x00);
+
 }
 
 void init_trap(void) {
@@ -60,38 +65,42 @@ unsigned long get_cr2_value(void) {
   HANDLER GENERAL
 ==================================================
 */
-#define SYSCALL_NUMBER 80
-#define PAGE_FAULT_NUM 14
-#define TIMER_NUM 32
-#define KEYBOARD_PRESS 33
-#define SERIAL1_INT 36
+
 //No toca sti (eso se hace en el stub después del iret)
 void handle_trap(FullTrapFrame *tf) {
     switch (tf->int_no) {
-        case TIMER_NUM: // Timer IRQ
+        case (T_IRQ0 + IRQ_TIMER): // Timer IRQ
             // End of interrupt (solo master, IRQ0)
             outb(0x20, 0x20);
             clock_yield(tf, tf->eip);
             break;
-        case SYSCALL_NUMBER:
-            uintptr_t user_pc = handle_syscall(tf, tf->eip);
-            // PANIC("\n[TRAP] Dont know how to go back wiuth new pc %x\n", user_pc);
-            break;
-        case KEYBOARD_PRESS:
+        case (T_IRQ0 + IRQ_KBD):
             printf("KA");
             keyboard_handle_interrupt();
             break;
-        case SERIAL1_INT:
+
+        case (T_IRQ0 + IRQ_COM1):
             keyboard_handle_interrupt();
             pic_acknowledge(4); // Notificar al PIC (IRQ 4)
             break;
-        case PAGE_FAULT_NUM: 
+
+        case (T_IRQ0 + IRQ_IDE):
+            pic_acknowledge(4); // Notificar al PIC (IRQ 4)
+            break;
+
+        case T_PGFLT: 
             unsigned long addr_fault = get_cr2_value();
             printTrapFull(tf);
             
             // EIP is not actually where it happened! Allegedly its on the stack?
             PANIC("\n[TRAP] Pagefault at %x fault address: 0x%x \n", tf->eip, addr_fault);
             break;
+
+        case T_SYSCALL:
+            uintptr_t user_pc = handle_syscall(tf, tf->eip);
+            // PANIC("\n[TRAP] Dont know how to go back wiuth new pc %x\n", user_pc);
+            break;
+
         default:
             printTrapFull(tf);
             PANIC("\n[TRAP] Unhandled trap %u \n", tf->int_no);

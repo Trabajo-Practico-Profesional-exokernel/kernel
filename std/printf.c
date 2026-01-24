@@ -7,7 +7,7 @@ void putchar(char ch);
 enum DebugPrintMode actual_debug_print_mode = ENABLE;
 
 void debug_printf(const char *fmt, ...){
-  if (actual_debug_print_mode != ENABLE) return;
+//  if (actual_debug_print_mode != ENABLE) return;
 
   char buf[256]; 
   va_list args;
