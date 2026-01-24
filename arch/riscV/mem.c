@@ -124,6 +124,34 @@ void map_page(uint32_t *pd_table, vaddr_t vaddr, paddr_t paddr, uint32_t permiss
 
 }
 
+
+
+paddr_t get_paddr_page(uint32_t *page_table, size_t ind_pte){
+
+    uint32_t pte_config = page_table[ind_pte];
+    if (IS_NOT_PRESENT(pte_config)) { // Not mapped! second level page
+        return 0; // page fault
+    }
+    return (paddr_t) GET_ENTRY_OFFSET(pte_config);
+}
+
+paddr_t get_paddr_page_table(uint32_t *page_directory, size_t ind_pde){
+    uint32_t page_table_config = page_directory[ind_pde];
+    
+    // Directory page not mapped
+    if (IS_NOT_PRESENT(page_table_config)) { 
+        return 0; // or PANIC / page fault
+    }
+    
+    return (paddr_t) GET_ENTRY_OFFSET(page_table_config); 
+}
+
+void get_vaddr_indexs(vaddr_t vaddr, size_t* ind_pde, size_t* ind_pte){
+    *ind_pde = GET_INDEX_IN_PAGE_DIRECTORY(vaddr); // bits 0 to 9
+    *ind_pte = GET_INDEX_IN_PAGE_TABLE(vaddr); // bits 10 to 19
+}
+
+
 paddr_t get_paddr_for(uint32_t *pd_table, vaddr_t vaddr) {
     uint32_t pd_index = GET_INDEX_IN_PAGE_DIRECTORY(vaddr); // bits 0 to 9
     uint32_t pt_index = GET_INDEX_IN_PAGE_TABLE(vaddr); // bits 10 to 19

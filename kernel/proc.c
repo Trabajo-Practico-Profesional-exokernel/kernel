@@ -12,15 +12,16 @@
 // #include "ipc.h"
 
 void free_process(struct Proc * proc){
-    // TODO !!!!
-    // SHOULD FREE PAGES ALLOCATED! BUT IT DOES NOT DO IT YET SINCE ALLOC PAGES IS NOT A LINKED LIST EITHER!
-    // proc->kernel_sp = 0;
+    
+    free_proc_pages(proc);
+    
     proc->user_sp_start = 0;
     proc->pde_paddr = 0;
 
     proc->pc = 0; // Or some default one If so you want!
 
     proc->status = PROC_FREE; 
+
     
     // Trapframe reset? maybe for security reasons.. but create_process would reset it anyway!    
 }
