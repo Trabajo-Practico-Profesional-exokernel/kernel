@@ -272,6 +272,9 @@ void syscall_pipe(FullTrapFrame *tf, uintptr_t pc) {
     debug_printf("syscall pipe...\n");
     struct Proc * curr_proc = get_curr();
     uint32_t vaddr_pipe = SYSCALL_ARG0(tf);
+
+    switch_to_kernel_tables();
+
     int *user_fds_ptr = (int *) get_paddr_for((paddr_t*)curr_proc->pde_paddr, vaddr_pipe);
     struct MemBuffer* buffer = membuffer_alloc();
     membuffer_reset(buffer);
@@ -291,6 +294,9 @@ void syscall_pipe(FullTrapFrame *tf, uintptr_t pc) {
     int success = 1;
     SET_SYSCALL_RET0(tf, success);
     disable_debug_print();
+    
+    switch_page_table((uint32_t *) curr_proc->pde_paddr);
+
 }
 
 void syscall_write(FullTrapFrame *tf, uintptr_t pc) {
@@ -301,35 +307,41 @@ void syscall_write(FullTrapFrame *tf, uintptr_t pc) {
     uint32_t src_vaddr = SYSCALL_ARG1(tf);
     uint32_t size = SYSCALL_ARG2(tf);
 
+    switch_to_kernel_tables();
     int *src = (int *) get_paddr_for((paddr_t*)curr_proc->pde_paddr, src_vaddr);
     struct File *f = curr_proc->files[fd];
 
     if (f == NULL){
         SET_SYSCALL_RET0(tf, -1);
+        switch_page_table((uint32_t *) curr_proc->pde_paddr);
         return;
     }
 
     int success = fd_write(f, src, size);
     SET_SYSCALL_RET0(tf, success);
+    switch_page_table((uint32_t *) curr_proc->pde_paddr);
 }
 
 void syscall_read(FullTrapFrame *tf, uintptr_t pc) {
-    debug_printf("syscall reading...\n");
+    debug_printf("syscall FD read...\n");
     struct Proc * curr_proc = get_curr();
     uint32_t fd = SYSCALL_ARG0(tf);
     uint32_t dst_vaddr = SYSCALL_ARG1(tf);
     uint32_t size = SYSCALL_ARG2(tf);
+    switch_to_kernel_tables();
 
     int *dst = (int *) get_paddr_for((paddr_t*)curr_proc->pde_paddr, dst_vaddr);
     struct File *f = curr_proc->files[fd];
 
     if (f == NULL){
         SET_SYSCALL_RET0(tf, -1);
+        switch_page_table((uint32_t *) curr_proc->pde_paddr);
         return;
     }
 
     int success = fd_read(f, dst, size);
     SET_SYSCALL_RET0(tf, success);
+    switch_page_table((uint32_t *) curr_proc->pde_paddr);
 }
 
 void syscall_dup(FullTrapFrame *tf, uintptr_t pc) {
