@@ -7,12 +7,8 @@
 #include "arch_inc/mem_constants.h" //defines perms like PAGE_R and so on.
 #include "meta/apps_info.h" // Include auto generated app_info and indexs for apps  
 
-<<<<<<< HEAD
 #include "arch/cpus.h"
 
-=======
-// #include "user_pages_alloc.h" 
->>>>>>> clear_mem_manage
 
 char *DEF_ARGV[] = { "sh_prog","parameter1", 0 };
 

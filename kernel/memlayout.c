@@ -239,34 +239,3 @@ void load_create_process_user(struct Proc * proc, const struct AppBinaryInfo * a
 void load_create_process_kernel(struct Proc * proc, uint32_t proc_entry){
     PANIC("Not implemented kernel process yet");
 } 
-<<<<<<< HEAD
-
-
-// void create_process_user(struct Proc * proc, uint32_t proc_entry,
-//     paddr_t user_space_start, paddr_t user_space_end) {
-
-//     create_process(proc, proc_entry);//((uint32_t) user_entry);
-
-//     // TODO: una vez que globalicemos lo de memoria virtual, refactorear esto
-//     #ifdef IS_RISC
-//     uint32_t *page_table = (uint32_t *) proc->pde_paddr;
-//     direct_map_range(page_table,
-//         (paddr_t)user_space_start,
-//         (paddr_t)user_space_end,
-//         USER_PERMISSIONS_ALL
-//         );
-//     #else
-//     struct pdirectory *new_dir = (struct pdirectory*) proc->pde_paddr;
-//     vaddr_t v_user = (vaddr_t)user_space_start;
-//     paddr_t p_user = (paddr_t)user_space_start;
-
-//     while (p_user < user_space_end) {
-//         // Mapeo 1:1 (p_user -> v_user, que son iguales)
-//         map_page(new_dir, p_user, v_user, USER_PERMISSIONS_ALL);
-//         v_user += PAGE_SIZE;
-//         p_user += PAGE_SIZE;
-//     }
-//     #endif
-// }
-=======
->>>>>>> clear_mem_manage
