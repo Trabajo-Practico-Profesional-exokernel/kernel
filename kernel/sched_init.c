@@ -7,6 +7,8 @@
 #include "arch_inc/mem_constants.h" //defines perms like PAGE_R and so on.
 #include "meta/apps_info.h" // Include auto generated app_info and indexs for apps  
 
+#include "arch/cpus.h"
+
 
 char *DEF_ARGV[] = { "sh_prog","parameter1", 0 };
 
@@ -61,13 +63,49 @@ void init_sched2(void) {
     PANIC("unreachable here!");
 }
 
-void init_sched(void) {
+void init_sched_main(void) {
 //    struct Proc * proc_def = create_process(APP_IND_PROC_A, DEF_ARGV);
 //    debug_printf("AT CREATE PROCESS DEF expected pc= %x, ", (uint32_t)VADDR_USER_BASE);
 //    printProc(proc_def);
-	struct Proc * proc_def = create_process(APP_IND_FILESYSTEM, DEF_ARGV);
-	create_process(APP_IND_SHELL, DEF_ARGV);
+    struct Proc * proc_def = create_process(APP_IND_FILESYSTEM, DEF_ARGV);
+    create_process(APP_IND_SHELL, DEF_ARGV);
     
     switch_proc(proc_def);
     
+}
+
+#include "arch/spin_locks.h"
+
+struct spinlock lock_test;
+int main_cpuid = -1;
+
+void init_sched(void) {
+
+    acquire(&lock_test);
+    for (int i = 0; i < 2000000000; i++)
+        __asm__ __volatile__("nop"); // do nothing
+
+    if(main_cpuid < 0){
+        main_cpuid = cpuid();
+        printf("Main cpu acquired lock!?! %d\n",main_cpuid);        
+        lock_test.name= "main lock";
+
+        for (int i = 0; i < 1000000000; i++)
+            __asm__ __volatile__("nop"); // do nothing
+        printf("Main NOW RELEASE!\n");        
+    } else {
+        printf("Secondary acquired lock!?! %d.. not main == %d .. name '%s'\n", cpuid(), main_cpuid, lock_test.name);        
+        for (int i = 0; i < 1000000000; i++)
+            __asm__ __volatile__("nop"); // do nothing
+        printf("Secondary NOW RELEASE!\n");        
+    }
+
+    release(&lock_test);
+    for (int i = 0; i < 800000000; i++)
+        __asm__ __volatile__("nop"); // do nothing
+    
+    acquire(&lock_test);
+
+    printf("Just one cpu should init sched %d == main == %d?!\n", cpuid(), main_cpuid);
+    init_sched_main();
 }

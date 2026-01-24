@@ -1,0 +1,56 @@
+// Sleeping locks
+
+#include "arch/sleep_locks.h"
+#include "arch_inc/trap_constants.h"
+#include "inc/common.h"
+#include "arch/cpus.h"
+#include "sched.h"
+
+void
+initsleeplock(struct sleeplock *lk, char *name)
+{
+  initlock(&lk->lk, "sleep lock");
+  lk->name = name;
+  lk->locked = 0;
+  lk->pid = 0;
+}
+
+void
+acquiresleep(struct sleeplock *lk)
+{
+  acquire(&lk->lk);
+  
+  // while (lk->locked) {
+  //   sleep(lk, &lk->lk);
+  // }
+  lk->locked = 1;
+  lk->pid = get_curr()->pid;
+
+  release(&lk->lk);
+}
+
+void
+releasesleep(struct sleeplock *lk)
+{
+  acquire(&lk->lk);
+  lk->locked = 0;
+  lk->pid = 0;
+  // wakeup(lk);
+  release(&lk->lk);
+}
+
+int
+holdingsleep(struct sleeplock *lk)
+{
+  int r;
+  
+  acquire(&lk->lk);
+  
+  r = lk->locked && (lk->pid == get_curr()->pid);
+  
+  release(&lk->lk);
+  return r;
+}
+
+
+

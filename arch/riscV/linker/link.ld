@@ -24,12 +24,14 @@ SECTIONS {
     }
 
     . = ALIGN(4); /* Align */
-    . += 128 * 1024; /* add stack, 128KB */
+    __stack_base = .; /* where the cpu stack starts */
+    . += 128 * 1024 * NCPU; /* add stack, 128KB for each cpu */
     __stack_top = .; /* where the stack ends */
 
 
     . = ALIGN(4); /* Align */
-    . += 128 * 1024; /* add stack, 128KB */
+    __trap_stack_base = .; /* where trap entry stack starts */
+    . += 128 * 1024 * NCPU; /* add stack, 128KB for each cpu*/
     __trap_stack_top = .; /* where trap entry stack ends */
 
 

@@ -1,6 +1,7 @@
 #include "arch/stdio.h"
 #include "arch/arch_init.h"
 #include "arch/mem.h"
+#include "arch/cpus.h"
 #include "inc/types.h"
 #include "inc/common.h"
 #include "../../cpu.h"
@@ -30,6 +31,9 @@ static void cpu_init(void){
     cpu->cpu_ts = ts;
 }
 
+void notify_inited(void){
+
+}
 
 void init_arch(void){
     disable_interrupts();

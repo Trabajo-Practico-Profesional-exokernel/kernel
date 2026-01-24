@@ -17,6 +17,25 @@ while [[ $# -gt 0 ]]; do
 	*) trg=$1 ; shift ;;
 	esac
 done
+
+if [[ "$trg" == "riscv" || "$trg" == "x86" ]]; then
+	NCPU=$1 # Next arg after arch is ncpus!
+	if [ -z "$NCPU" ];then
+		NCPU=1
+	fi
+
+else
+	NCPU=$trg # first arg is ncpus!
+
+	trg=$1
+	if [ -z "$trg" ];then
+		trg=riscv
+	fi
+
+
+
+fi
+
 cd src
 
 if [[ $clean_user_apps -eq 1 ]]; then
@@ -66,12 +85,12 @@ if [[ $verbose -eq 0 ]]; then
 	clear
 fi
 
-echo "trg: $trg"
+echo "trg: $trg with '$NCPU' cpus"
 
 if [[ $debug -eq 1 ]]; then
 	echo "-->Running make ARCH=$trg debug"
-	make ARCH=$trg debug
+	make ARCH=$trg NCPU=$NCPU debug
 else
 	echo "-->Running make ARCH=$trg run"
-	make ARCH=$trg run	
+	make ARCH=$trg NCPU=$NCPU run	
 fi
