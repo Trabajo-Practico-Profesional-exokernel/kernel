@@ -149,8 +149,11 @@ endif
 # ============================
 # Ejecución
 # ============================
+.kernel_disk/disk.txt:
+	@mkdir -p .kernel_disk
+	@dd if=/dev/zero of=.kernel_disk/disk.txt count=2048 bs=512
 
-run: all
+run: .kernel_disk/disk.txt all
 	$(QEMU)
 debug: all
 	$(QEMU) -boot d -gdb tcp::26000 -S
