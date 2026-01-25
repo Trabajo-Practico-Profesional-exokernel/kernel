@@ -44,65 +44,12 @@ typedef uintptr_t vaddr_t;
 // Page numbers are 32 bits long.? maybe depends on 32 bits vs 64 bits too.
 typedef uint32_t ppn_t;
 
-
-
 // ssize_t is a signed version of ssize_t, used in case there might be an
 // error return.
 typedef intptr_t ssize_t;
 
 // off_t is used for file offsets and lengths.
 typedef intptr_t off_t;
-
-// Efficient min and max operations
-#define MIN(_a, _b)                                                            \
-	({                                                                     \
-		typeof(_a) __a = (_a);                                         \
-		typeof(_b) __b = (_b);                                         \
-		__a <= __b ? __a : __b;                                        \
-	})
-#define MAX(_a, _b)                                                            \
-	({                                                                     \
-		typeof(_a) __a = (_a);                                         \
-		typeof(_b) __b = (_b);                                         \
-		__a >= __b ? __a : __b;                                        \
-	})
-/*
-// Rounding operations (efficient when n is a power of 2)
-// Round down to the nearest multiple of n
-#define ROUNDDOWN(a, n)                                                        \
-	({                                                                     \
-		uint32_t __a = (uint32_t) (a);                                 \
-		(typeof(a)) (__a - __a % (n));                                 \
-	})
-// Round up to the nearest multiple of n
-#define ROUNDUP(a, n)                                                          \
-	({                                                                     \
-		uint32_t __n = (uint32_t) (n);                                 \
-		(typeof(a)) (ROUNDDOWN((uint32_t) (a) + __n - 1, __n));        \
-	})
-*/
-#define ROUNDDOWN(a, n) ((a) & ~((n) - 1))
-#define ROUNDUP(a, n)   (((a) + (n) - 1) & ~((n) - 1))
-
-#define ARRAY_SIZE(a) (sizeof(a) / sizeof(a[0]))
-
-
-
-// Which should be? xv6 vs 1000 os one
-// Return the offset of 'member' relative to the beginning of a struct type
-//#define offsetof(type, member) ((size_t) (&((type *) 0)->member))
-
-#define offsetof(type, member)   __builtin_offsetof(type, member)
-
-#define align_up(value, align)   ROUNDUP(value, align)
-#define is_aligned(value, align) (((value) & ((align) - 1)) == 0)
-
-#define va_list  __builtin_va_list
-#define va_start __builtin_va_start
-#define va_end   __builtin_va_end
-#define va_arg   __builtin_va_arg
-
-
 
 
 

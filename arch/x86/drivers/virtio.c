@@ -2,7 +2,7 @@
 #include "arch_inc/virtio_blk.h"
 #include "arch_inc/x86.h"
 #include "constants.h"
-
+#include "defs.h"
 #include "arch/mem.h"
 #include "std/string.h"
 

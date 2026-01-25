@@ -2,6 +2,7 @@
 #define PRINTING_H
 
 #include "inc/types.h"
+#include "defs.h"
 
 enum DebugPrintMode {
     ENABLE,

@@ -44,7 +44,7 @@ else
 
 fi
 
-INC_DIR="-I$USER_FOLDER/lib -I$ROOT/public -I$ROOT/std"  # Include .h from user lib, common public defs and general std
+INC_DIR="-I$USER_FOLDER/lib -I$ROOT/public -I$ROOT/std -I$ROOT/sys"  # Include .h from user lib, common public defs and general std
 INC_DIR+=" -I$ARCH_FOLDER" # Also arch folder just in case?
 
 ## Add base src files
