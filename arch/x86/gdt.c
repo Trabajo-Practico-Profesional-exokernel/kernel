@@ -1,4 +1,4 @@
-#include "inc/types.h"
+#include "types.h"
 #include "arch_inc/x86.h"
 #include "arch_inc/mem_constants.h"
 #include "gdt.h"

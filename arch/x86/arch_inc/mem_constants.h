@@ -1,7 +1,7 @@
 #ifndef INC_MEM_CONSTANTS
 #define INC_MEM_CONSTANTS
 
-#include "inc/types.h"
+#include "types.h"
 
 #define VADDR_KERNEL_BASE 0xC0000000
 #define LAPIC_BASE		  0xFEE00000

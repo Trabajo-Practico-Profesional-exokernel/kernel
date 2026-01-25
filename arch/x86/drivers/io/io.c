@@ -2,7 +2,7 @@
 #include "arch/arch_init.h"
 #include "arch/mem.h"
 #include "arch/cpus.h"
-#include "inc/types.h"
+#include "types.h"
  
 #include "../../cpu.h"
 #include "../../idt.h"

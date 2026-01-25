@@ -1,7 +1,7 @@
 #ifndef INC_TRAP_FRAME
 #define INC_TRAP_FRAME
 
-#include "inc/types.h"
+#include "types.h"
 
 // riscv5 specific full registers the ones for trap handling?
 struct FullTrap {

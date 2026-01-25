@@ -1,6 +1,6 @@
 #ifndef PROC_SYSCALLS_H
 #define PROC_SYSCALLS_H
-#include "inc/types.h"
+#include "types.h"
 #include "arch/proc.h"
 
 struct ProcExitStatus {

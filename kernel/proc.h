@@ -1,7 +1,7 @@
 #ifndef KERNEL_PROC_H
 #define KERNEL_PROC_H
 
-#include "inc/types.h"
+#include "types.h"
 #include "arch/proc.h"
 
 

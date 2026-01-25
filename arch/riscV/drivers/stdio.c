@@ -1,7 +1,7 @@
 
 #include "arch/stdio.h"
 #include "arch/arch_init.h"
-#include "inc/types.h"
+#include "types.h"
  
 #include "std/string.h"
 #include "std/printf.h"

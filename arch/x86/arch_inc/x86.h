@@ -1,7 +1,7 @@
 #ifndef X86_H
 #define X86_H
 
-#include "inc/types.h"
+#include "types.h"
 #include "../gdt.h"
 
 // -------------------------------

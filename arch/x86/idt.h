@@ -1,7 +1,7 @@
 #ifndef IDT_H
 #define IDT_H
 
-#include "inc/types.h"
+#include "types.h"
 
 #define IDT_NUM_ENTRIES 256
 #define SEGSEL_KERNEL_CS 0x08

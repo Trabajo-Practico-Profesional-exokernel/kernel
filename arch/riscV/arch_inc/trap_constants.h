@@ -1,6 +1,6 @@
 #ifndef INC_TRAP_CONSTANTS
 #define INC_TRAP_CONSTANTS
-#include "inc/types.h"
+#include "types.h"
 
 #define MIE_STIE (1L << 5)  // supervisor timer
 #define SIE_STIE (1L << 5)  // supervisor timer in S-Mode

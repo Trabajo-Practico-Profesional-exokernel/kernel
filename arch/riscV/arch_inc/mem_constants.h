@@ -1,7 +1,7 @@
 #ifndef INC_MEM_CONSTANTS
 #define INC_MEM_CONSTANTS
 
-#include "inc/types.h"
+#include "types.h"
 #define PAGE_SIZE 4096
 /*
 * Constants for mapping pages/ virtual memory!

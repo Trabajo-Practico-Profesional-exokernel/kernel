@@ -1,6 +1,6 @@
 #ifndef INC_PROC
 #define INC_PROC
-#include "inc/types.h"
+#include "types.h"
 #include "arch_inc/trapframe.h"
 #include "arch_inc/mem_constants.h"
 #include "communication.h"

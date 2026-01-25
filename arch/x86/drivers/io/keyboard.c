@@ -1,4 +1,4 @@
-#include "inc/types.h"
+#include "types.h"
 #include "../../idt.h"
 #include "vnode.h"
 #include "constants.h"

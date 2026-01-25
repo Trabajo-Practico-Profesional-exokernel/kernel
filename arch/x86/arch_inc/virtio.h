@@ -1,7 +1,7 @@
 #ifndef INC_VIRTIO
 #define INC_VIRTIO
 
-#include "inc/types.h"
+#include "types.h"
 #include "arch_inc/mem_constants.h"
 
 

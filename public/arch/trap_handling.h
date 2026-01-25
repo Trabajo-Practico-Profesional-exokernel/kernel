@@ -1,7 +1,7 @@
 #ifndef INC_TRAP_HANDLING
 #define INC_TRAP_HANDLING
 
-#include "inc/types.h"
+#include "types.h"
 #include "inc/syscalls.h" // Why not... usually you want it too.
 #include "arch_inc/trapframe.h"
 

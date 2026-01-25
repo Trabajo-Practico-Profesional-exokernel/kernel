@@ -1,7 +1,7 @@
 #ifndef COMMAND_HANDLER
 #define COMMAND_HANDLER
 
-// #include "inc/types.h"
+// #include "types.h"
 
 typedef int (*command_handler_t)(char *args);
 

@@ -1,5 +1,5 @@
 #include "arch/communication.h"
-#include "inc/types.h"
+#include "types.h"
 #include "arch/mem.h"
 #include "std/printf.h"
 #include "arch/proc.h"

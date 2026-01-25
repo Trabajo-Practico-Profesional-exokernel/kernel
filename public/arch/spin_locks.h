@@ -1,7 +1,7 @@
 #ifndef INC_SPIN_LOCKS
 #define INC_SPIN_LOCKS
 
-#include "inc/types.h"
+#include "types.h"
 
 // Mutual exclusion lock.
 struct spinlock {

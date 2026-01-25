@@ -2,7 +2,7 @@
 #define META_APPS_INFO
 
 
-#include "inc/types.h"
+#include "types.h"
 
 struct AppBinaryInfo {
     void *start;

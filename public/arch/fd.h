@@ -1,7 +1,7 @@
 #ifndef FD
 #define FD
 
-#include "inc/types.h"
+#include "types.h"
 
 #define MAX_SIZE_PATH 255
 #define FD_PERM_READ  0x1

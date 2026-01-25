@@ -1,6 +1,6 @@
 #ifndef INC_TRAP_CONSTANTS
 #define INC_TRAP_CONSTANTS
-#include "inc/types.h"
+#include "types.h"
 
 // enable device interrupts
 static inline void

@@ -1,7 +1,7 @@
 #ifndef VNODE_H
 #define VNODE_H
 
-#include "inc/types.h"
+#include "types.h"
 
 struct vnodeops;
 

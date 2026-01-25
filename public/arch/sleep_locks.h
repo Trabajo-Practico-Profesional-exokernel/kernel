@@ -1,7 +1,7 @@
 #ifndef INC_SLEEP_LOCKS
 #define INC_SLEEP_LOCKS
 
-#include "inc/types.h"
+#include "types.h"
 #include "arch/spin_locks.h"
 
 // Long-term locks for processes

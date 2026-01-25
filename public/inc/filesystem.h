@@ -1,7 +1,7 @@
 #ifndef PUBLIC_ARCH_FILESYSTEM_H
 #define PUBLIC_ARCH_FILESYSTEM_H
 
-#include "inc/types.h"
+#include "types.h"
 
 typedef void (*fs_event_handler)(int msg_count);
 

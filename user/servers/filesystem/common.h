@@ -4,7 +4,7 @@
 #define COMMON_H
 
 // Integración: Incluir definiciones de tipos y E/S del kernel
-#include "inc/types.h"
+#include "types.h"
 #include "std/printf.h"
 
 #ifndef NULL

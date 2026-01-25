@@ -1,7 +1,7 @@
 #ifndef PUBLIC_ARCH_COMMUNICATION_H
 #define PUBLIC_ARCH_COMMUNICATION_H
 
-#include "inc/types.h"
+#include "types.h"
 #include "mem.h"
 #include "arch_inc/trapframe.h"
 #define MSG_SIZE_MAX 64 

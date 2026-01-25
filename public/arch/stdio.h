@@ -1,7 +1,7 @@
 #ifndef INC_STDIO
 #define INC_STDIO
 
-#include "inc/types.h"
+#include "types.h"
 
 void putchar(char ch);
 long getchar(void);

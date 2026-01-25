@@ -1,7 +1,7 @@
 
 #ifndef SIMPLE_LOGGINGS
 #define SIMPLE_LOGGINGS
-#include "inc/types.h"
+#include "types.h"
 #include "arch_inc/trapframe.h"
 #include "arch/proc.h"
 

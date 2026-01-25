@@ -1,6 +1,6 @@
 #include "lib.h"
 #include "std/string.h"
-#include "inc/types.h"
+#include "types.h"
 #include "std/printf.h"
 #include "default_executables.h"
 #include "command_handler.h"

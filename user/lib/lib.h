@@ -4,7 +4,7 @@
 #include "std/printf.h"
 
 // Include these to save time on user programs
-#include "inc/types.h"
+#include "types.h"
 #include "syscalls.h"
 
 

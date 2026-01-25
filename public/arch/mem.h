@@ -3,7 +3,7 @@
 
 
 //#include "arch_inc/mem.h"
-#include "inc/types.h"
+#include "types.h"
 
 void pde_init();
 void mem_init(void);

@@ -1,7 +1,7 @@
 #ifndef KERNEL_USER_PAGES_H
 #define KERNEL_USER_PAGES_H
 
-#include "inc/types.h"
+#include "types.h"
 #include "arch/proc.h"
 
 bool has_no_user_free_pages(void);

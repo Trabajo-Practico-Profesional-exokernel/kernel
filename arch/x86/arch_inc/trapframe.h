@@ -31,7 +31,7 @@ Pero también existe el stack pointer real que se usará al volver:
 #ifndef TRAPFRAME_H
 #define TRAPFRAME_H
 
-#include "inc/types.h"
+#include "types.h"
 
 // For context switch between processes  
 typedef struct PushTrapFrame {

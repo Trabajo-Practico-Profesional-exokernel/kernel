@@ -1,7 +1,7 @@
 #ifndef TSS_INC
 #define TSS_INC
 
-#include "inc/types.h"
+#include "types.h"
 
 /*
    See: Intel® 64 and IA-32 Architectures Software Developer’s Manual;
