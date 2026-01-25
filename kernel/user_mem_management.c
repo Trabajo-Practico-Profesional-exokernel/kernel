@@ -2,8 +2,9 @@
 #include "arch_inc/mem_constants.h"
 #include "arch/mem.h"
 #include "arch/mem_layout.h"
-#include "std/string.h"
-#include "std/printf.h"
+#include "string.h"
+#include "stdlib.h"
+#include "stdio.h"
 
 #include "user_pages_alloc.h"
 #include "proc.h"

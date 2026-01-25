@@ -3,8 +3,9 @@
 #include "arch/arch_init.h"
 #include "types.h"
  
-#include "std/string.h"
-#include "std/printf.h"
+#include "string.h"
+#include "stdlib.h"
+#include "stdio.h"
 #include "drivers/opensbi.h"
 #include "arch/mem.h"
 

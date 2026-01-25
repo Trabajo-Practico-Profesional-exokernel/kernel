@@ -7,7 +7,7 @@
 #include "meta/apps_info.h" // Include auto generated app_info and indexs for apps  
 #include "constants.h"
 #include "arch/cpus.h"
-#include "std/printf.h"
+#include "stdio.h"
 #include "console/debug.h"
 
 

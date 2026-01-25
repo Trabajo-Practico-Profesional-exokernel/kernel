@@ -3,11 +3,12 @@
 #include "arch_inc/mem_constants.h"
 #include "arch/mem.h"
 #include "arch/mem_layout.h"
-#include "std/string.h"
+#include "string.h"
+#include "stdlib.h"
 #include "constants.h"
 #include "arch/trap_handling.h"
 #include "sched.h"
-#include "std/printf.h"
+#include "stdio.h"
 #include "console/debug.h"
 
 

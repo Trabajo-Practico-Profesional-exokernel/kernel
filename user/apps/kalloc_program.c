@@ -1,5 +1,6 @@
 #include "lib.h"
-#include "std/string.h"
+#include "string.h"
+#include "stdlib.h"
 
 void main() {
     printf("KALLOC PROGRAM START\n");

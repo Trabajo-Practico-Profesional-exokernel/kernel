@@ -214,7 +214,7 @@ void save_map(){
 }
 
 /* Operations over Directory Control Block (DCB) */
-bool_t is_dir_block_empty(int iblock){
+bool is_dir_block_empty(int iblock){
     DataBlock block;
     bzero((char*)&block, sizeof(DataBlock));
     block_read(super.beg_data + iblock, (char *) &block);
@@ -346,7 +346,7 @@ dir_t create_directory(int inum){
     return new_dir;
 }
 
-bool_t is_directory_empty(inode_t dir){
+bool is_directory_empty(inode_t dir){
     if(dir.size > 2) return FALSE;
     DataBlock block;
     bzero((char*)&block, sizeof(DataBlock));
@@ -414,7 +414,7 @@ void free_all_data_blocks(inode_t inode){
     }
 }
 
-bool_t is_pointers_block_empty(int iblock){
+bool is_pointers_block_empty(int iblock){
     DataBlock block;
     bzero((char*)&block, sizeof(DataBlock));
     block_read(super.beg_data+iblock, (char*) &block);

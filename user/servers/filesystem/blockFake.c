@@ -3,8 +3,8 @@
 #include "common.h"
 #include "block.h"
 #include "util.h" 
-#include "std/printf.h"
-#include "std/printf.h"
+#include "stdio.h"
+#include "stdio.h"
 #include "console/debug.h"
 
 // Prototipos de las syscalls

@@ -1,8 +1,9 @@
 #include "tests_hardware.h"
 #include "../test_common.h"
-#include "std/printf.h"
+#include "stdio.h"
 #include "arch/mem.h"
-#include "std/string.h"
+#include "string.h"
+#include "stdlib.h"
 #include "../utils.h"
 
 #include "arch_inc/virtio.h"

@@ -8,7 +8,7 @@
 #include "arch/cpus.h"
 #include "arch/trap_handling.h"
 #include "fd.h"
-#include "std/printf.h"
+#include "stdio.h"
 #include "console/debug.h"
 
 // void *mboot, unsigned int magic_number

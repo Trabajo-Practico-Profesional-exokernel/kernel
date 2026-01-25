@@ -1,11 +1,12 @@
 #include "arch/communication.h"
 #include "types.h"
 #include "arch/mem.h"
-#include "std/printf.h"
+#include "stdio.h"
 #include "arch/proc.h"
 #include "sched.h"
-#include "std/string.h"
-#include "std/printf.h"
+#include "string.h"
+#include "stdlib.h"
+#include "stdio.h"
 #include "console/debug.h"
 
 int copyin_msg(struct Proc *p, char *dst, vaddr_t src_va, int max_len) {

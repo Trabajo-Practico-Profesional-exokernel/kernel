@@ -1,5 +1,5 @@
 #include "testing.h"
-#include "std/printf.h"
+#include "stdio.h"
 #include "utils.h"
 #include "test_common.h"
 #include "tests_kernel.h"

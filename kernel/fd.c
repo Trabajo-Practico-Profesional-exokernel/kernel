@@ -1,6 +1,7 @@
 #include "arch/fd.h"
 #include "fd.h"
-#include "std/string.h"
+#include "string.h"
+#include "stdlib.h"
 #include "arch/proc.h"
 #include "constants.h"
 

@@ -2,7 +2,8 @@
 #include "arch_inc/x86.h"
 #include "constants.h"
 
-#include "std/string.h"
+#include "string.h"
+#include "stdlib.h"
 
 
 #define SECTOR_SIZE   512

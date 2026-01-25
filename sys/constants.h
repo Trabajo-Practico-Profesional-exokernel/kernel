@@ -2,7 +2,7 @@
 #define CONSTANTS_H
 
 //#include "stdio.h"
-#include "std/printf.h"
+#include "stdio.h"
 
 #define NULL    ((void *) 0)
 #define TRUE    1

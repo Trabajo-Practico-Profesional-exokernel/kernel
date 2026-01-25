@@ -1,7 +1,8 @@
 #include "tests_kernel.h"
 #include "test_common.h"
-#include "std/string.h"
-#include "std/printf.h"
+#include "string.h"
+#include "stdlib.h"
+#include "stdio.h"
 #include "utils.h"
 // Includes internos del kernel necesarios
 #include "arch/mem.h"           // alloc_pages, map_page, get_paddr_for

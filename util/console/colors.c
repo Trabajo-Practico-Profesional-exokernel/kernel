@@ -2,7 +2,7 @@
 #include "colors.h"
 #include "types.h"
 //#include "stdio.h"
-#include "std/printf.h"
+#include "stdio.h"
 
 
 void printGreen(const uint8_t* text) {

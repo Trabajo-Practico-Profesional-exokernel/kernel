@@ -1,7 +1,7 @@
 #pragma once
 #ifndef BASIC_LIB_FUNCTIONS
 #define BASIC_LIB_FUNCTIONS
-#include "std/printf.h"
+#include "stdio.h"
 
 // Include these to save time on user programs
 #include "types.h"

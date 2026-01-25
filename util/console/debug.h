@@ -2,7 +2,7 @@
 #define _CONSOLE_DEBUG_H
 
 #include "types.h"
-#include "std/printf.h"
+#include "stdio.h"
 
 enum DebugPrintMode {
     ENABLE,

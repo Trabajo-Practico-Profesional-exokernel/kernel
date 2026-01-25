@@ -4,7 +4,7 @@
 #include "types.h"
 #include "defs.h"
 #include "constants.h"
-#include "std/printf.h"
+#include "stdio.h"
 
 enum DebugPrintMode actual_debug_print_mode = ENABLE;
 

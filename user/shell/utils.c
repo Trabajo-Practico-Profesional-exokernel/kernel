@@ -1,5 +1,6 @@
  #include "utils.h"
- #include "std/string.h"
+ #include "string.h"
+#include "stdlib.h"
  #include "lib.h"
 
  #define KEY_ENTER 10

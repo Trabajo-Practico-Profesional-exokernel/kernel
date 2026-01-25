@@ -1,11 +1,12 @@
  
 #include "arch/trap_handling.h"
 #include "arch/logging.h"
-#include "std/string.h"
+#include "string.h"
+#include "stdlib.h"
 #include "arch/stdio.h"
 #include "arch/trap.h"
 #include "sched.h"
-#include "std/printf.h"
+#include "stdio.h"
 #include "console/debug.h"
 
 void syscall_putchar(FullTrapFrame *tf, uintptr_t pc) {

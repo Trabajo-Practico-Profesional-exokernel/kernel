@@ -25,12 +25,12 @@ void save_map();
 /*
     Operations over directories
 */
-bool_t is_dir_block_empty(int iblock);
+bool is_dir_block_empty(int iblock);
 void remove_file_from_dir(inode_t *, int);
 int find_file_in_dir(inode_t, char*, int*);
 int insert_file_in_dir(inode_t*, char*, int);
 dir_t create_directory(int);
-bool_t is_directory_empty(inode_t);
+bool is_directory_empty(inode_t);
 
 /*
     Operations over inodes
@@ -48,7 +48,7 @@ int get_single_available_fd();
 */
 void free_all_data_blocks_indirect(int, int);
 void free_all_data_blocks(inode_t);
-bool_t is_pointers_block_empty(int);
+bool is_pointers_block_empty(int);
 
 /*
     General Purpose

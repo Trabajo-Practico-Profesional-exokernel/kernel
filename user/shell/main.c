@@ -1,5 +1,6 @@
 #include "lib.h"
-#include "std/string.h"
+#include "string.h"
+#include "stdlib.h"
 #include "utils.h"
 #include "app_names.h"
 #include "console/debug.h"

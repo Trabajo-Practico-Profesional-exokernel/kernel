@@ -2,8 +2,9 @@
 #include "arch/trap_handling.h"
 #include "arch/mem.h"
 #include "arch/proc.h"
-#include "std/printf.h"
-#include "std/string.h"
+#include "stdio.h"
+#include "string.h"
+#include "stdlib.h"
 #include "console/debug.h"
 #include "ide.h"
 

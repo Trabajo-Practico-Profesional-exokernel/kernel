@@ -4,7 +4,8 @@
 #include "constants.h"
 #include "defs.h"
 #include "arch/mem.h"
-#include "std/string.h"
+#include "string.h"
+#include "stdlib.h"
 
 #define CONFIG_ADDRESS 	0xCF8
 #define CONFIG_DATA 	0xCFC

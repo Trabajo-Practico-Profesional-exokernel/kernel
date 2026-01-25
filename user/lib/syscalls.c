@@ -3,8 +3,9 @@
 #include "lib.h" // For printf and syscall func
 #include "arch/communication.h"
 #include "inc/filesystem.h"
-#include "std/string.h"
-#include "std/printf.h"
+#include "string.h"
+#include "stdlib.h"
+#include "stdio.h"
 #include "console/debug.h"
 
 int exec(int prog_ind, char ** args){

@@ -4,9 +4,10 @@
 #define UTIL_INCLUDED
 
 #include "common.h"
-#include "std/string.h"
-#include "std/printf.h"
-#include "std/printf.h"
+#include "string.h"
+#include "stdlib.h"
+#include "stdio.h"
+#include "stdio.h"
 #include "console/debug.h"
 
 // Funciones de conversión

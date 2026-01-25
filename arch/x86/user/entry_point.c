@@ -1,7 +1,7 @@
 
 
 #include "lib.h"
-#include "std/printf.h"
+#include "stdio.h"
 #include "console/debug.h"
 
 extern void main(void);

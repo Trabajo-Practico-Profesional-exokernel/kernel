@@ -3,8 +3,9 @@
 //#include "stdlib.h"
 #include "types.h"
 #include "constants.h"
-#include "std/printf.h"
-#include "std/string.h"
+#include "stdio.h"
+#include "string.h"
+#include "stdlib.h"
 
 uint8_t *strfind(const uint8_t *s, int32_t c) {
     for (; *s; s++)

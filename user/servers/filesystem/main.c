@@ -3,7 +3,8 @@
 #include "inc/filesystem.h"
 #include "inc/syscalls.h"
 #include "arch/communication.h"
-#include "std/string.h"
+#include "string.h"
+#include "stdlib.h"
 #include "disk_syscalls.h"
 #include "fs.h"
 #include "util.h"
@@ -11,7 +12,7 @@
 #include "block.h"
 #include "common.h"
 #include "inc/filesystem.h"
-#include "std/printf.h"
+#include "stdio.h"
 #include "console/debug.h"
 #include "parsers/strutil.h"
 

@@ -1,5 +1,6 @@
 #include "default_executables.h"
-#include "std/string.h"
+#include "string.h"
+#include "stdlib.h"
 #include "lib.h"
 #include "app_names.h"
 #include "console/debug.h"

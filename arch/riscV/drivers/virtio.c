@@ -6,7 +6,8 @@
 #include "constants.h"
  
 #include "arch/mem.h"
-#include "std/string.h"
+#include "string.h"
+#include "stdlib.h"
 
 uint32_t virtio_reg_read32(unsigned offset) {
     return *((volatile uint32_t *) (VIRTIO_BLK_PADDR + offset));

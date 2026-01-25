@@ -1,6 +1,6 @@
  
 #include "arch/logging.h"
-#include "std/printf.h"
+#include "stdio.h"
 #include "console/debug.h"
 
 void printTrap(const struct TrapFrame *tf) {

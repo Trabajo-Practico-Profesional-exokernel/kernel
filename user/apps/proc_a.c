@@ -1,6 +1,7 @@
 #include "lib.h"
 #include "syscalls.h"
-#include "std/string.h"
+#include "string.h"
+#include "stdlib.h"
 
 #define SLEEP_TIME 300000000
 

@@ -9,9 +9,10 @@
 #include "arch/mem.h" // needed for switch to kernel page tables
 #include "arch_inc/trap_constants.h"
 #include "arch/logging.h"
-#include "std/string.h"
+#include "string.h"
+#include "stdlib.h"
 #include "arch/communication.h"
-#include "std/printf.h"
+#include "stdio.h"
 #include "meta/apps_info.h" // Include auto generated app_info and indexs for apps  
 #include "console/debug.h"
 
