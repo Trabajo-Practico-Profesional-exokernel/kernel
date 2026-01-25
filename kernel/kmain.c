@@ -1,4 +1,4 @@
-#include "inc/common.h"
+#include "constants.h"
 #include "sched.h"
 #include "../test/testing.h"
 #include "arch/trap.h"

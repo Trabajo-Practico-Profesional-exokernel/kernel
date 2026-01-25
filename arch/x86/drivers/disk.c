@@ -3,7 +3,7 @@
 #include "arch/mem.h"
 #include "arch/proc.h"
 
-#include "inc/common.h"
+ 
 #include "std/string.h"
 
 #include "ide.h"

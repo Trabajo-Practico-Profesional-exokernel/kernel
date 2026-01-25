@@ -1,12 +1,11 @@
 
 #include "proc.h"
-#include "inc/common.h"
 #include "arch/mem.h" // Declares the methods switch page and so on.
 #include "arch_inc/mem_constants.h" //defines perms like PAGE_R and so on.
 #include "arch/mem_layout.h"
 #include "std/string.h"
 #include "arch/switch.h"// Declares the swtich context to new Proc and sleep method.
-
+#include "constants.h"
 #include "proc_syscalls.h"
 #include "user_pages_alloc.h" 
 

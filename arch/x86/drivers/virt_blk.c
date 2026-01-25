@@ -3,7 +3,7 @@
 #include "arch_inc/x86.h"
 #include "arch/mem.h"
 
-#include "inc/common.h"
+ 
 #include "std/string.h"
 
 struct virtio_virtq *blk_request_vq;

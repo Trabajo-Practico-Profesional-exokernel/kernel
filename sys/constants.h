@@ -1,10 +1,15 @@
+#ifndef CONSTANTS_H
+#define CONSTANTS_H
 
-#ifndef COMMON_FUNCS
-#define COMMON_FUNCS
-
-#include "inc/types.h"
+//#include "stdio.h"
 #include "std/printf.h"
-// #include "std/string.h"
+
+#define NULL    ((void *) 0)
+#define TRUE    1
+#define FALSE   0
+
+#define SUCCESS      0
+#define ERROR       -1
 
 #define PANIC(fmt, ...)                                                        \
     do {                                                                       \
@@ -14,4 +19,4 @@
 
 #define UNUSED_ARGUMENT(x) (void) x;
 
-#endif /* !SIMPLE UTIL FUNCTIONS*/
+#endif /* CONSTANTS_H */

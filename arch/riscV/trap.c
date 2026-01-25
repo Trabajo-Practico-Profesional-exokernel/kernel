@@ -1,11 +1,10 @@
 
 #include "arch_inc/trap_constants.h"
 #include "arch_inc/riscv5_trap.h"
-
+#include "constants.h"
 #include "arch/trap.h"
 #include "arch/proc.h"
 
-#include "inc/common.h"
 
 #include "arch/trap_handling.h"
 

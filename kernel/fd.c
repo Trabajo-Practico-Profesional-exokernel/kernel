@@ -2,7 +2,7 @@
 #include "fd.h"
 #include "std/string.h"
 #include "arch/proc.h"
-#include "inc/common.h"
+#include "constants.h"
 
 #define TOTAL_FILES PROCS_MAX*MAX_FILES
 

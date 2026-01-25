@@ -1,9 +1,7 @@
 #include "sched.h"
 #include "proc.h"
-
-#include "inc/common.h"
 #include "arch/logging.h"
-
+#include "constants.h"
 //#include "arch_inc/mem_constants.h" //defines perms like PAGE_R and so on.
 #include "arch/mem.h" // Declares the methods switch page and so on.
 #include "arch/switch.h"// Declares the swtich context to new Proc and sleep method.

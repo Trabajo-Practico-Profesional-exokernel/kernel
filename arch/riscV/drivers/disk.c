@@ -5,7 +5,7 @@
 #include "arch/mem.h"
 #include "arch/proc.h"
 
-#include "inc/common.h"
+ 
 #include "std/string.h"
 
 #include "arch_inc/virtio_blk.h"

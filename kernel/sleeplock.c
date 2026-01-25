@@ -2,7 +2,7 @@
 
 #include "arch/sleep_locks.h"
 #include "arch_inc/trap_constants.h"
-#include "inc/common.h"
+ 
 #include "arch/cpus.h"
 #include "sched.h"
 

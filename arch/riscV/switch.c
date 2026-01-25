@@ -1,6 +1,6 @@
 #include "arch/switch.h"
 #include "arch/mem_layout.h"
-#include "inc/common.h"
+ 
 
 /*
 sret inspects two bits in sstatus:

@@ -6,7 +6,7 @@
 
 #include "arch/mem_layout.h"
 #include "arch/mem.h"
-#include "inc/common.h"
+ 
 #include "std/string.h"
 
 // #include "ipc.h"

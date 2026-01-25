@@ -2,7 +2,7 @@
 #include "arch_inc/trapframe.h"
 #include "arch/proc.h"
 #include "io.h"
-#include "inc/common.h"
+#include "constants.h"
 #include "arch/logging.h"
 
 #include "trap.h"

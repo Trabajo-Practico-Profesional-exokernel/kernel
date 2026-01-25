@@ -1,6 +1,6 @@
 #include "arch_inc/trap_constants.h"
 #include "arch/cpus.h"
-#include "inc/common.h"
+ 
 
 
 struct cpu cpus[NCPU];

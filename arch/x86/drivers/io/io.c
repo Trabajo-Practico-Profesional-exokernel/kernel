@@ -3,7 +3,7 @@
 #include "arch/mem.h"
 #include "arch/cpus.h"
 #include "inc/types.h"
-#include "inc/common.h"
+ 
 #include "../../cpu.h"
 #include "../../idt.h"
 #include "../../gdt.h"

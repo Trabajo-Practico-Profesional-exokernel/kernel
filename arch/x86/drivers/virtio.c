@@ -1,8 +1,8 @@
 #include "arch_inc/virtio.h"
 #include "arch_inc/virtio_blk.h"
 #include "arch_inc/x86.h"
+#include "constants.h"
 
-#include "inc/common.h"
 #include "arch/mem.h"
 #include "std/string.h"
 

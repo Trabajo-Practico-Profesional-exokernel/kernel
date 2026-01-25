@@ -1,7 +1,7 @@
 #include "ide.h"
 #include "arch_inc/x86.h"
+#include "constants.h"
 
-#include "inc/common.h"
 #include "std/string.h"
 
 

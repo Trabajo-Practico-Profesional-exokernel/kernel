@@ -1,7 +1,7 @@
 #include "inc/types.h"
 #include "../../idt.h"
 #include "vnode.h"
-#include "inc/common.h"
+#include "constants.h"
 #include "../../interrupt.h"
 
 /*

@@ -1,4 +1,4 @@
-#include "inc/common.h"
+ 
 #include "arch/trap_handling.h"
 #include "arch/logging.h"
 #include "std/string.h"
