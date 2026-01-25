@@ -8,6 +8,7 @@
 #include "arch/cpus.h"
 #include "arch/trap_handling.h"
 #include "fd.h"
+#include "std/printf.h"
 
 // void *mboot, unsigned int magic_number
 // UNUSED_ARGUMENT(mboot);

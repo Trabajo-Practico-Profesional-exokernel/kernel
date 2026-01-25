@@ -4,6 +4,8 @@
 #include "arch/communication.h"
 #include "inc/filesystem.h"
 #include "std/string.h"
+#include "std/printf.h"
+
 int exec(int prog_ind, char ** args){
     // convert args pointer to int
     return syscall(SYS_EXEC, prog_ind, (int)(args), 0);

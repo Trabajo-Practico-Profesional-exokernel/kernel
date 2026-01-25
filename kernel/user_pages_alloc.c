@@ -7,6 +7,7 @@
 #include "constants.h"
 #include "arch/trap_handling.h"
 #include "sched.h"
+#include "std/printf.h"
 
 
 #include "user_pages_alloc.h"

@@ -4,6 +4,7 @@
 #include "constants.h"
 #include "arch/trap.h"
 #include "arch/proc.h"
+#include "std/printf.h"
 
 
 #include "arch/trap_handling.h"

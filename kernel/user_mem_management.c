@@ -3,6 +3,7 @@
 #include "arch/mem.h"
 #include "arch/mem_layout.h"
 #include "std/string.h"
+#include "std/printf.h"
 
 #include "user_pages_alloc.h"
 #include "proc.h"

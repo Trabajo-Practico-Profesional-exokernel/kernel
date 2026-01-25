@@ -5,6 +5,7 @@
 #include "fs.h"
 #include "fsUtil.h"
 #include "inc/filesystem.h"
+#include "std/printf.h"
 
 
 // Variables Globales del Filesystem

@@ -7,6 +7,7 @@
 #include "meta/apps_info.h" // Include auto generated app_info and indexs for apps  
 #include "constants.h"
 #include "arch/cpus.h"
+#include "std/printf.h"
 
 
 char *DEF_ARGV[] = { "sh_prog","parameter1", 0 };

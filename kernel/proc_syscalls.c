@@ -11,6 +11,7 @@
 #include "arch/logging.h"
 #include "std/string.h"
 #include "arch/communication.h"
+#include "std/printf.h"
 
 #include "meta/apps_info.h" // Include auto generated app_info and indexs for apps  
 extern struct AppBinaryInfo _binary_apps[];

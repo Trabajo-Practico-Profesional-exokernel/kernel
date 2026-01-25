@@ -1,8 +1,7 @@
 #include "arch_inc/virtio.h"
 #include "arch_inc/virtio_blk.h"
 #include "arch/mem.h"
-
- 
+#include "std/printf.h" 
 #include "std/string.h"
 
 struct virtio_virtq *blk_request_vq;

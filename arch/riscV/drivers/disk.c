@@ -4,8 +4,7 @@
 #include "arch/trap_handling.h"
 #include "arch/mem.h"
 #include "arch/proc.h"
-
- 
+#include "std/printf.h"
 #include "std/string.h"
 
 #include "arch_inc/virtio_blk.h"

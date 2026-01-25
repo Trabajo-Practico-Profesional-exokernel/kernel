@@ -1,6 +1,7 @@
 
 
 #include "lib.h"
+#include "std/printf.h"
 
 extern void main(void);
 

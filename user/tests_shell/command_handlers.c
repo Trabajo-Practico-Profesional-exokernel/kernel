@@ -1,5 +1,6 @@
 #include "lib.h"
 #include "std/string.h"
+#include "std/printf.h"
 
 
 #include "app_names.h"

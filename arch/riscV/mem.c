@@ -4,6 +4,7 @@
 #include "std/string.h"
 #include "arch_inc/virtio.h"
 #include "constants.h"
+#include "std/printf.h"
 
 extern char __free_ram[], __free_ram_end[], __kernel_base[], __kernel_base_end[], __trampoline_end[];
 

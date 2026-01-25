@@ -5,13 +5,13 @@
 #include "arch/communication.h"
 #include "std/string.h"
 #include "disk_syscalls.h"
-
 #include "fs.h"
 #include "util.h"
 #include "fsUtil.h"
 #include "block.h"
 #include "common.h"
 #include "inc/filesystem.h"
+#include "std/printf.h"
 
 extern char current_path[PROCS_MAX][MAX_PATH_NAME];
 

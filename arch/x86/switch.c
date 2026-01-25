@@ -1,7 +1,8 @@
 #include "arch/switch.h"
 #include "arch_inc/trapframe.h"
 #include "arch/proc.h"
- 
+#include "std/printf.h"
+
 
 #define GD_KT  0x08 // kernel code/text 
 #define GD_KD  0x10 // kernel data 

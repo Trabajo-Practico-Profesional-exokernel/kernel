@@ -5,6 +5,7 @@
 #include "arch/proc.h"
 #include "sched.h"
 #include "std/string.h"
+#include "std/printf.h"
 
 int copyin_msg(struct Proc *p, char *dst, vaddr_t src_va, int max_len) {
     int i;

@@ -4,6 +4,8 @@
 #include "block.h"
 #include "util.h" 
 #include "std/printf.h"
+#include "std/printf.h"
+
 // Prototipos de las syscalls
 extern int disk_read(unsigned int disk_sector, char* buffer, unsigned int read_len);
 extern int disk_write(char* buffer, unsigned int disk_sector, unsigned int write_len);
