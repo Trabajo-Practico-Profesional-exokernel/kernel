@@ -1,7 +1,7 @@
  
 #include "arch/logging.h"
 #include "std/printf.h"
-
+#include "console/debug.h"
 
 void printTrap(const struct TrapFrame * tf){
 	debug_printf("ra: %x s0: %x s1: %x \n",tf->ra,tf->s0,tf->s1);

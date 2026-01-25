@@ -1,5 +1,6 @@
 #include "lib.h"
 #include "std/printf.h"
+#include "console/debug.h"
 
 // extern char __stack_top[];
 

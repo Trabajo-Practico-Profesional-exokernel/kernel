@@ -2,6 +2,9 @@
 #include "std/string.h"
 #include "utils.h"
 #include "app_names.h"
+#include "console/debug.h"
+#include "parsers/strutil.h"
+
 extern char* _app_names[];
 
 // Own includes

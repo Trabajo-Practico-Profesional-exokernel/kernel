@@ -2,6 +2,7 @@
 #include "arch_inc/trapframe.h"
 #include "arch/proc.h"
 #include "std/printf.h"
+#include "console/debug.h"
 
 
 #define GD_KT  0x08 // kernel code/text 

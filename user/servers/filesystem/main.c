@@ -12,6 +12,8 @@
 #include "common.h"
 #include "inc/filesystem.h"
 #include "std/printf.h"
+#include "console/debug.h"
+#include "parsers/strutil.h"
 
 extern char current_path[PROCS_MAX][MAX_PATH_NAME];
 

@@ -7,6 +7,7 @@
 #include "arch/switch.h"// Declares the swtich context to new Proc and sleep method.
 #include "std/printf.h"
 #include "std/printf.h"
+#include "console/debug.h"
 
 #include "arch/mem_layout.h"
 

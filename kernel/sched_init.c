@@ -8,6 +8,7 @@
 #include "constants.h"
 #include "arch/cpus.h"
 #include "std/printf.h"
+#include "console/debug.h"
 
 
 char *DEF_ARGV[] = { "sh_prog","parameter1", 0 };

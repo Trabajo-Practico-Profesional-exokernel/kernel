@@ -6,6 +6,7 @@
 #include "sched.h"
 #include "std/string.h"
 #include "std/printf.h"
+#include "console/debug.h"
 
 int copyin_msg(struct Proc *p, char *dst, vaddr_t src_va, int max_len) {
     int i;

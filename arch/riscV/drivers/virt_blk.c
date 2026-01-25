@@ -3,6 +3,7 @@
 #include "arch/mem.h"
 #include "std/printf.h" 
 #include "std/string.h"
+#include "console/debug.h"
 
 struct virtio_virtq *blk_request_vq;
 struct virtio_blk_req *blk_req;

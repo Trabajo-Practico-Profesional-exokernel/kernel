@@ -8,6 +8,7 @@
 #include "arch/trap_handling.h"
 #include "sched.h"
 #include "std/printf.h"
+#include "console/debug.h"
 
 
 #include "user_pages_alloc.h"

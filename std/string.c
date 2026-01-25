@@ -105,57 +105,8 @@ strchr(const char *s, char c)
 	return 0;
 }
 
-// Return a pointer to the first occurrence of 'c' in 's',
-// or a pointer to the string-ending null character if the string has no 'c'.
-char *
-strfind(const char *s, char c)
-{
-	for (; *s; s++)
-		if (*s == c)
-			break;
-	return (char *) s;
-}
-
-void split_by_once(char* src, char** after_delim, char delimeter){
-    char* space_char = strchr(src, delimeter);
-    if (space_char == 0){
-        *after_delim = NULL; //Replace args to an empty string
-    } else {
-        // Next char is start of args...
-        *after_delim = space_char+1;
-        *space_char =0; //Replace value by 0 so that input_buf ends here for strncmp!
-    }
-}
-
-char* extract_once(char* src, char** extracted_arg, char delimeter){
-    char* space_char = strchr(src, delimeter);
-	*extracted_arg = src;
-    if (space_char == 0){
-		return NULL;
-	}
-	*space_char =0; //Replace value by 0 so that input_buf ends here for strncmp!
-	return space_char+1;
-}
-
-
 #define ERR_PARSE_CODE -1
 
-int parse_num_and_msg(char* input_buffer, char** msg_out) {
-    char* endptr;
-    long number = strtol(input_buffer, &endptr, 10);
-
-    if (endptr == input_buffer) {
-        return ERR_PARSE_CODE; 
-    }
-
-    while (*endptr == ' ') {
-        endptr++;
-    }
-
-    *msg_out = endptr;
-    
-    return (int)number;
-}
 
 #if ASM
 void *
@@ -329,42 +280,6 @@ strtol(const char *s, char **endptr, int base)
 	return (neg ? -val : val);
 }
 
-
-// int atoi(const char *str) {
-//     int sign = 1;
-//     long long result = 0; // Use long long to handle intermediate sums and check for overflow
-//     int i = 0;
-
-//     // 1. Ignore leading whitespace
-//     while (str[i] == ' ' || str[i] == '\t' || str[i] == '\n') {
-//         i++;
-//     }
-
-//     // 2. Check for an optional sign character
-//     if (str[i] == '-' || str[i] == '+') {
-//         if (str[i] == '-') {
-//             sign = -1;
-//         }
-//         i++;
-//     }
-
-//     // 3. Convert the digits
-//     while (str[i] >= '0' && str[i] <= '9') {
-//         int digit = str[i] - '0';
-        
-//         // 4. Handle potential overflow/underflow
-//         if (result > INT_MAX / 10 || (result == INT_MAX / 10 && digit > INT_MAX % 10)) {
-//             return (sign == 1) ? INT_MAX : INT_MIN;
-//         }
-
-//         result = result * 10 + digit;
-//         i++;
-//     }
-
-//     // 5. Apply the sign and return the final result
-//     return (int)(result * sign);
-// }
-
 void reverse(char *s)
 {
     int c, i, j;
@@ -488,34 +403,4 @@ char *strtok_r(char *str, const char *delim, char **saveptr) {
 char *strtok(char *str, const char *delim) {
     static char *last_token = NULL;
     return strtok_r(str, delim, &last_token);
-}
-
-int parse_3_args(char *input, char *argv[3]) {
-    int count = 0;
-    char *token = strtok(input, " "); 
-
-    while (token != NULL && count < 3) {
-        argv[count++] = token;
-        token = strtok(NULL, " ");
-    }
-    
-    return count;
-}
-
-//usado en chmod
-int parse_str_int(char *input, char **out_str, int *out_int) {
-    char *token = strtok(input, " ");
-    if (token == NULL) {
-        return -1; 
-    }
-    *out_str = token;
-
-    token = strtok(NULL, " ");
-    if (token == NULL) {
-        return -1; 
-    }
-    
-    *out_int = strtol(token, NULL, 8); 
-
-    return 0;
 }

@@ -3,6 +3,8 @@
 #include "utils.h"
 #include "test_common.h"
 #include "tests_kernel.h"
+#include "console/debug.h"
+#include "console/colors.h"
 
 #ifdef IS_RISC
 #include "test_riscv/tests_hardware.h"

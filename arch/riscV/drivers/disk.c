@@ -6,9 +6,9 @@
 #include "arch/proc.h"
 #include "std/printf.h"
 #include "std/string.h"
-
 #include "arch_inc/virtio_blk.h"
 #include "arch_inc/virtio.h"
+#include "console/debug.h"
 
 extern void sched_yield(void);
 extern void save_curr_proc_state(FullTrapFrame *tf, uintptr_t pc);

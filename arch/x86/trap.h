@@ -1,4 +1,5 @@
 #include "types.h"
+#include "console/debug.h"
 
 // void init_trap(void);
 // void handle_trap(struct TrapFrame *tf);

@@ -5,6 +5,7 @@
 #include "util.h" 
 #include "std/printf.h"
 #include "std/printf.h"
+#include "console/debug.h"
 
 // Prototipos de las syscalls
 extern int disk_read(unsigned int disk_sector, char* buffer, unsigned int read_len);

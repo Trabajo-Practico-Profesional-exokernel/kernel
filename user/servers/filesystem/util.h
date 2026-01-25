@@ -7,6 +7,7 @@
 #include "std/string.h"
 #include "std/printf.h"
 #include "std/printf.h"
+#include "console/debug.h"
 
 // Funciones de conversión
 

@@ -6,6 +6,7 @@
 #include "arch/logging.h"
 #include "trap.h"
 #include "std/printf.h"
+#include "console/debug.h"
 
 extern void isr32(void);
 void clock_yield(FullTrapFrame *tf, uintptr_t proc_pc);

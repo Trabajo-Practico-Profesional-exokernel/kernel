@@ -5,6 +5,7 @@
 #include "inc/filesystem.h"
 #include "std/string.h"
 #include "std/printf.h"
+#include "console/debug.h"
 
 int exec(int prog_ind, char ** args){
     // convert args pointer to int

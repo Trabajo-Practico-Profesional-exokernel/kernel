@@ -2,6 +2,9 @@
 #include "std/string.h"
 #include "lib.h"
 #include "app_names.h"
+#include "console/debug.h"
+#include "parsers/strutil.h"
+
 extern char* _app_names[];
 extern char* __def_executables[];
 char *DEF_ARGV[] = { "param1","name2", 0 };

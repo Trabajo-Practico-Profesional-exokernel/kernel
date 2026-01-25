@@ -2,6 +2,8 @@
 #include "std/printf.h"
 #include "arch/mem.h"
 #include "std/string.h"
+#include "console/debug.h"
+#include "console/colors.h"
 
 int record_result(CTest* ctx, int condition, const char* desc, 
                           const char* file, int line, const char* error_msg, int val1, int val2) {

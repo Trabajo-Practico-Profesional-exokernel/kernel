@@ -4,6 +4,8 @@
 #include "std/printf.h"
 #include "default_executables.h"
 #include "command_handler.h"
+#include "console/colors.h"
+#include "parsers/strutil.h"
 
 
 // Just one arg? the progam to exec.. maybe also the args for it .. not for now? 

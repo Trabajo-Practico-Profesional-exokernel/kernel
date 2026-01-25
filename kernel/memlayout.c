@@ -9,6 +9,7 @@
 #include "proc_syscalls.h"
 #include "user_pages_alloc.h" 
 #include "std/printf.h"
+#include "console/debug.h"
 
 extern char __trampoline_start[], __trampoline_end[];
 

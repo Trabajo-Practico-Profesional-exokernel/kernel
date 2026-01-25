@@ -6,7 +6,8 @@
 #include "fsUtil.h"
 #include "inc/filesystem.h"
 #include "std/printf.h"
-
+#include "console/debug.h"
+#include "console/colors.h"
 
 // Variables Globales del Filesystem
 superblock_t super;

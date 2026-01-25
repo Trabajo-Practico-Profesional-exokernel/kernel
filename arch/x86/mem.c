@@ -3,6 +3,7 @@
 #include "arch/mem.h"
 #include "std/string.h"
 #include "std/printf.h"
+#include "console/debug.h"
 
 extern char __free_ram[], __free_ram_end[], __kernel_base[], __kernel_base_end[], __trampoline_end[];
 

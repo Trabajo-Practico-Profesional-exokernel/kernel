@@ -12,8 +12,9 @@
 #include "std/string.h"
 #include "arch/communication.h"
 #include "std/printf.h"
-
 #include "meta/apps_info.h" // Include auto generated app_info and indexs for apps  
+#include "console/debug.h"
+
 extern struct AppBinaryInfo _binary_apps[];
 
 

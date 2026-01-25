@@ -4,21 +4,6 @@ static char digits[] = "0123456789ABCDEF";
 
 void putchar(char ch);
 
-enum DebugPrintMode actual_debug_print_mode = ENABLE;
-
-void debug_printf(const char *fmt, ...){
- if (actual_debug_print_mode != ENABLE) return;
- 
-  char buf[256]; 
-  va_list args;
-  va_start(args, fmt);
-  
-  vsnprintf(buf, sizeof(buf), fmt, args);
-  va_end(args);
-  printPurple("[DEBUG] ");
-  printf("%s\n", buf); 
-}
-
 static void
 printint(int32_t xx, int base, int sgn)
 {
@@ -124,34 +109,6 @@ void printf(const char *fmt, ...) {
     va_start(vargs, fmt);
     vprintf(fmt, vargs);
     va_end(vargs);
-}
-
-void printGreen(const char* text) {
-  printf("\033[0;32m%s\033[0m", text);
-}
-
-void printRed(const char* text) {
-  printf("\033[0;31m%s\033[0m", text);
-}
-
-void printYellow(const char* text) {
-  printf("\033[0;33m%s\033[0m", text);
-}
-
-void printPurple(const char* text) {
-  printf("\033[0;35m%s\033[0m", text);
-}
-
-void printBlue(const char* text) {
-  printf("\033[0;34m%s\033[0m", text);
-}
-
-void disable_debug_print(void){
-  actual_debug_print_mode = DISABLE;
-}
-
-void enable_debug_print(void){
-  actual_debug_print_mode = ENABLE;
 }
 
 static int string_print_num(char *buf, size_t size, size_t *pos, long value, int base, bool sign) {

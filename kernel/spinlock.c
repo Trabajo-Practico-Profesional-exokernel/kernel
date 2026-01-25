@@ -4,6 +4,7 @@
 #include "arch_inc/trap_constants.h"
 #include "arch/cpus.h"
 #include "constants.h"
+#include "console/debug.h"
 
 void
 initlock(struct spinlock *lk, char *name)
