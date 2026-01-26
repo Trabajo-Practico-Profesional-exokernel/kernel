@@ -10,11 +10,11 @@
 #include "console/debug.h"
 
 int copyin_msg(struct Proc *p, char *dst, vaddr_t src_va, int max_len) {
+
+    paddr_t src_pa = get_paddr_for((uint32_t*)p->pde_paddr, src_va);
     int i;
     for(i = 0; i < max_len; i++){
-        vaddr_t va_byte = src_va + i;
-        paddr_t pa_byte = get_paddr_for((paddr_t*)p->pde_paddr, va_byte);
-        if(pa_byte == 0) return -1;
+        paddr_t pa_byte = src_pa + i;
 
         char c = *(char*)pa_byte;
         dst[i] = c;
@@ -24,16 +24,15 @@ int copyin_msg(struct Proc *p, char *dst, vaddr_t src_va, int max_len) {
 }
 
 int copyout_msg(struct Proc *p, vaddr_t dst_va, void *src, int len) {
+
+    paddr_t dst_pa = get_paddr_for((uint32_t*)p->pde_paddr, dst_va);
+    
     char *k_src = (char *)src;
     int i;
 
     for(i = 0; i < len; i++){
-        vaddr_t va_byte = dst_va + i;
-
-        paddr_t pa_byte = get_paddr_for((uint32_t*)p->pde_paddr, va_byte);
+        paddr_t pa_byte = dst_pa + i;
         
-        if(pa_byte == 0) return -1; 
-
         *(char*)pa_byte = k_src[i];
     }
 
@@ -72,7 +71,6 @@ struct Message extract_msg(struct Proc *receiver_proc){
 }
 
 int send_msg(struct Proc * sender_proc, int receiver_proc_pid, uint32_t msg_addr, int type_msg){
-    //disable_debug_print();
     struct Message msg;
     int content_size = copyin_msg(sender_proc, msg.content, msg_addr, MSG_SIZE_MAX);
 
@@ -87,12 +85,6 @@ int send_msg(struct Proc * sender_proc, int receiver_proc_pid, uint32_t msg_addr
     struct Proc* receiver_proc = get_proc(receiver_proc_pid);
     
     int success = insert_msg(receiver_proc, msg);
-    debug_printf("[MSG-SEND] Src:%d -> Dst:%d | Type:%d | Size:%d | Content: '%s'\n", 
-        msg.sender_pid, 
-        receiver_proc_pid, 
-        msg.type, 
-        msg.content_size, 
-        msg.content);
     
     if (success) {
         receiver_proc->status = PROC_RUNNABLE;
