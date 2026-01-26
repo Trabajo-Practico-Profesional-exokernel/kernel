@@ -42,7 +42,7 @@ syscall_disk_read(FullTrapFrame *tf, uintptr_t pc)
 	);
 
 	int r = ide_read((void *)buf_paddr, sector, sz);
-	SET_SYSCALL_RET0(tf, sz);
+	SET_SYSCALL_RET0(tf, !r ? sz : -1);
 	save_curr_proc_state(tf, pc + 4);
 	sched_yield();
 	return;
@@ -72,7 +72,7 @@ syscall_disk_write(FullTrapFrame *tf, uintptr_t pc)
     debug_printf("Got write buffer at %x to disk sector: %u len: %u \n", buf_paddr, sector, sz);
 
 	int w = ide_write((void *)buf_paddr, sector, sz);
-	SET_SYSCALL_RET0(tf, w);
+	SET_SYSCALL_RET0(tf, !w ? sz : -1);
 	save_curr_proc_state(tf, pc + 4);
 	sched_yield();
 	return;
