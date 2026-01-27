@@ -13,6 +13,18 @@ int exec(int prog_ind, char ** args){
     return syscall(SYS_EXEC, prog_ind, (int)(args), 0);
 }
 
+int sys_try_send_content(int proc_pid, char *content, int len_content){
+    return syscall(SYS_TRY_SEND_CONTENT, proc_pid, (int)content, len_content);
+}
+
+int sys_try_recv_content(char *content, int len_content){
+    return syscall(SYS_TRY_RECV_CONTENT, (int)content, len_content, 0);
+}
+
+int sys_recv_content(char *content, int len_content){
+    return syscall(SYS_RECV_CONTENT, (int)content, len_content, 0);
+}
+
 
 int sys_try_send_msg(int proc_pid, char *msg, int type_msg) {
     return syscall(SYS_TRY_SEND_MSG, proc_pid, (int)(msg), type_msg);
@@ -117,6 +129,14 @@ int sys_stat(char* filepath){
 
 int getpid(void) {
     return syscall(SYS_GETPID, 0, 0, 0);
+}
+
+int get_coord_pid(){
+    return syscall(SYS_COORDPID, 0, 0, 0);
+}
+
+int alive(int pid){
+    return syscall(SYS_ALIVE, pid, 0, 0);
 }
 
 int uptime(void) {

@@ -17,6 +17,7 @@ volatile uint64_t ticks = 0;
 
 uint32_t curr_slices = 0;
 int filesystem_PID = -1;
+int coordinator_PID = -1;
 
 struct Proc *curr;
 

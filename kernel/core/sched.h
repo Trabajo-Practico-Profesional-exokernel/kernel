@@ -3,7 +3,9 @@
 
 #include "arch_inc/trapframe.h"
 #include "arch/proc.h"
+
 extern int filesystem_PID;
+extern int coordinator_PID;
 extern volatile uint64_t ticks;
 
 

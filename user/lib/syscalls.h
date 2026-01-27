@@ -96,5 +96,10 @@ int dup(int prev_fd);
 int chown(char *args);
 int chmod(char *args);
 
+int sys_try_send_content(int proc_pid, char *content, int len_content);
 
+int sys_try_recv_content(char *content, int len_content);
+int sys_recv_content(char *content, int len_content);
+int get_coord_pid();
+int alive(int pid);
 #endif

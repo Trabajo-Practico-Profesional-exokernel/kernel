@@ -15,6 +15,7 @@
 #include "stdio.h"
 #include "meta/apps_info.h" // Include auto generated app_info and indexs for apps  
 #include "console/debug.h"
+#include "arch/ipc.h"
 
 extern struct AppBinaryInfo _binary_apps[];
 
@@ -212,6 +213,9 @@ void syscall_getpid(FullTrapFrame *tf, uintptr_t pc){
     SET_SYSCALL_RET0(tf, pid);
 }
 
+void syscall_get_coord_pid(FullTrapFrame *tf, uintptr_t pc){
+    SET_SYSCALL_RET0(tf, coordinator_PID);
+}
 
 void syscall_trysendmsg(FullTrapFrame *tf, uintptr_t pc){
     debug_printf("syscall send_msg...\n");
@@ -366,12 +370,74 @@ void syscall_dup(FullTrapFrame *tf, uintptr_t pc) {
     SET_SYSCALL_RET0(tf, dup_fd);
 }
 
+void syscall_try_send_content(FullTrapFrame *tf, uintptr_t pc){
+    struct Proc * sender_proc = get_curr();
+    int receiver_proc_pid = SYSCALL_ARG0(tf);
+    uint32_t content_addr = SYSCALL_ARG1(tf);
+    int len_content = SYSCALL_ARG2(tf);
+
+    switch_to_kernel_tables();
+    
+    int result = send_content(sender_proc->pid, receiver_proc_pid, content_addr, len_content);
+
+    SET_SYSCALL_RET0(tf, result);
+    switch_page_table((uint32_t *) sender_proc->pde_paddr);
+}
+
+void syscall_try_recv_content(FullTrapFrame *tf, uintptr_t pc) {
+    uint32_t content_addr = SYSCALL_ARG0(tf);
+    uint32_t len_content = SYSCALL_ARG1(tf);
+    uint32_t receiver_proc_pid = get_curr()->pid;
+    
+    switch_to_kernel_tables();
+
+    int result = recv_content(receiver_proc_pid, content_addr, len_content);
+
+    SET_SYSCALL_RET0(tf, result);
+
+    switch_page_table((uint32_t *) get_curr()->pde_paddr);
+}
+
+void syscall_recv_content(FullTrapFrame *tf, uintptr_t pc) {
+
+    uint32_t content_addr = SYSCALL_ARG0(tf);
+    uint32_t len_content = SYSCALL_ARG1(tf);
+    struct Proc *receiver_proc = get_curr();
+    uint32_t receiver_proc_pid = receiver_proc->pid;
+    
+    switch_to_kernel_tables();
+
+    int result = recv_content(receiver_proc_pid, content_addr, len_content);
+
+    if (result == ERROR) { // Means no message available, so block
+        receiver_proc->status = PROC_NOT_RUNNABLE;
+        save_curr_proc_state(tf, pc);
+        sched_yield();
+    }
+
+    SET_SYSCALL_RET0(tf, result);
+
+    switch_page_table((uint32_t *) get_curr()->pde_paddr);
+
+}
+
+
+void syscall_alive(FullTrapFrame *tf, uintptr_t pc){
+    uint32_t pid = SYSCALL_ARG0(tf);
+    struct Proc *proc = get_proc(pid);
+    uint32_t is_alive = proc->status == PROC_RUNNABLE || proc->status == PROC_RUNNING; 
+    SET_SYSCALL_RET0(tf, is_alive);
+}
+
 void init_syscalls_ipc(void){
     register_syscall(SYS_TRY_SEND_MSG, syscall_trysendmsg);
     register_syscall(SYS_TRY_RECV_MSG, syscall_tryrecvmsg);
     register_syscall(SYS_RECV_MSG, syscall_recvmsg);
     register_syscall(SYS_PIPE, syscall_pipe);    
-    register_syscall(SYS_DUP, syscall_dup); 
+    register_syscall(SYS_DUP, syscall_dup);
+    register_syscall(SYS_TRY_SEND_CONTENT, syscall_try_send_content);
+    register_syscall(SYS_TRY_RECV_CONTENT, syscall_try_recv_content);
+    register_syscall(SYS_RECV_CONTENT, syscall_recv_content);
 }
 
 void init_syscalls_proc(void) {
@@ -380,6 +446,8 @@ void init_syscalls_proc(void) {
     register_syscall(SYS_WAIT, syscall_wait);
     register_syscall(SYS_YIELD, syscall_yield);
     register_syscall(SYS_GETPID, syscall_getpid);
+    register_syscall(SYS_COORDPID, syscall_get_coord_pid);
+    register_syscall(SYS_ALIVE, syscall_alive);
 }
 
 void init_syscalls_files(void) {

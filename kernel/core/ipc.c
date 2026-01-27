@@ -1,4 +1,4 @@
-#include "ipc.h"
+#include "arch/ipc.h"
 #include "string.h"
 #include "constants.h"
 #include "types.h"

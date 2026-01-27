@@ -23,7 +23,6 @@
 #define SYS_FS_REG_HANDLER 15
 #define SYS_FS_RET 16
 
-
 #define SYS_DISK_READ 17
 #define SYS_DISK_WRITE 18
 
@@ -44,6 +43,12 @@
 #define SYS_CHOWN 35
 #define SYS_CHMOD 36
 
+#define SYS_TRY_SEND_CONTENT 37
+#define SYS_TRY_RECV_CONTENT 38
+#define SYS_RECV_CONTENT 39
+
+#define SYS_COORDPID 40
+#define SYS_ALIVE 41
 #define DEF_ERR_CODE -1
 
 
