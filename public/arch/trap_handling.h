@@ -18,5 +18,4 @@ void register_syscall(size_t sysno, syscall_handler_t handler);
 // To avoid having all syscall handler centralized in a file making it hard to understand
 void init_syscalls_ipc(void);
 void init_syscalls_proc(void);
-void init_syscalls_files(void);
 #endif /* !*/

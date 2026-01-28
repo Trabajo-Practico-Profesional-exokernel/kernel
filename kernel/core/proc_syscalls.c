@@ -429,12 +429,27 @@ void syscall_alive(FullTrapFrame *tf, uintptr_t pc){
     SET_SYSCALL_RET0(tf, is_alive);
 }
 
+
+void syscall_virtual_copy(FullTrapFrame *tf, uintptr_t pc){
+
+    //HAY QUE AGREGAR UN PARAMETRO MAS EN LA LLAMADA A SYSCALL
+
+    /*uint32_t src_vaddr = SYSCALL_ARG0(tf);
+    uint32_t dst_vaddr = SYSCALL_ARG1(tf);
+    uint32_t len = SYSCALL_ARG2(tf);
+    int32_t result;
+
+    switch_to_kernel_tables();
+
+    uint32_t src_paddr =
+    uint32_t src_paddr =
+
+    switch_page_table((uint32_t *) get_curr()->pde_paddr);*/
+
+    SET_SYSCALL_RET0(tf, 0);
+}
+
 void init_syscalls_ipc(void){
-    register_syscall(SYS_TRY_SEND_MSG, syscall_trysendmsg);
-    register_syscall(SYS_TRY_RECV_MSG, syscall_tryrecvmsg);
-    register_syscall(SYS_RECV_MSG, syscall_recvmsg);
-    register_syscall(SYS_PIPE, syscall_pipe);    
-    register_syscall(SYS_DUP, syscall_dup);
     register_syscall(SYS_TRY_SEND_CONTENT, syscall_try_send_content);
     register_syscall(SYS_TRY_RECV_CONTENT, syscall_try_recv_content);
     register_syscall(SYS_RECV_CONTENT, syscall_recv_content);
@@ -448,9 +463,6 @@ void init_syscalls_proc(void) {
     register_syscall(SYS_GETPID, syscall_getpid);
     register_syscall(SYS_COORDPID, syscall_get_coord_pid);
     register_syscall(SYS_ALIVE, syscall_alive);
+    register_syscall(SYS_VIRTUAL_COPY, syscall_virtual_copy);
 }
 
-void init_syscalls_files(void) {
-    register_syscall(SYS_READ, syscall_read);
-    register_syscall(SYS_WRITE, syscall_write);
-}

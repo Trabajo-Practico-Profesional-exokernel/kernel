@@ -3,14 +3,15 @@
 
 #include "types.h"
 #include "ipc_msgs.h"
-#include "inc/operations.h" // Aquí está definido el enum Server
+#include "inc/operations.h"
 
 int32_t send_msg_to_service(int32_t type_msg, 
     int32_t arg_1, int32_t arg_2, int32_t arg_3, 
     void* content, int32_t len_content);
 
-int32_t send_msg_to_app(int32_t app_id, int32_t type_msg, int32_t arg_1, int32_t arg_2);
-
+int32_t send_msg_to_app(int32_t server_id, int32_t app_id, int32_t type_msg, int32_t arg_1, int32_t arg_2);
 int32_t receive_msg(ServiceMsgUnion *buffer);
+int32_t app_receive_ok_msg(uint32_t operation);
+int32_t app_receive_content(uint32_t operation, char *buffer, int size);
 
 #endif

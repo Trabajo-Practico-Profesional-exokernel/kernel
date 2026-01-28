@@ -40,11 +40,11 @@ int32_t start_server(Server type) {
 
             int proc_pid = exec(ind_program, argv);
             if (proc_pid < 0) {
-                printf((const uint8_t*)"[Coordinator] Failed to start %s. Error: %d\n", program_name, proc_pid);
+                printf("[Coordinator] Failed to start %s. Error: %d\n", program_name, proc_pid);
                 return ERROR;
             }
 
-            printf((const uint8_t*)"[Coordinator] %s started with PID: %d.\n", program_name, proc_pid);
+            printf("[Coordinator] %s started with PID: %d.\n", program_name, proc_pid);
             server_map_set(&coordinator.server_map, type, proc_pid);
 
             return SUCCESS;
@@ -55,8 +55,6 @@ int32_t start_server(Server type) {
 
 
 #define UNUSED(x) (void)(x)
-
-// NOTA: 'CoordinatorMsg' es un typedef, no usar 'struct CoordinatorMsg'
 
 void handler_noop(CoordinatorMsg *op){
     UNUSED(op);
@@ -84,9 +82,9 @@ void handler_fs_op(CoordinatorMsg *op){
     }
 
     if (result == SUCCESS) {
-        send_msg_to_app(op->app_id, SUCCESS, fs_pid, FILESYSTEM);
+        send_msg_to_app(COORD, op->app_id, SUCCESS, fs_pid, FILESYSTEM);
     } else {
-        send_msg_to_app(op->app_id, ERROR, 0, 0);
+        send_msg_to_app(COORD, op->app_id, ERROR, 0, 0);
     }
 }
 
@@ -118,13 +116,12 @@ static const op_handler_t dispatch_table[] = {
     [OP_READ]           = handler_fs_op,
     [OP_WRITE]          = handler_fs_op,
     [OP_LSEEK]          = handler_fs_op,
-    [OP_FSTAT]          = handler_fs_op,
     [OP_DUP]            = handler_noop,
     [OP_PIPE]           = handler_noop,
     [OP_MKDIR]          = handler_fs_op,
     [OP_RMDIR]          = handler_fs_op,
     [OP_CHDIR]          = handler_fs_op,
-    [OP_PWD]            = handler_fs_op,
+    [OP_CWD]            = handler_fs_op,
     [OP_LS]             = handler_fs_op,
     [OP_MKNOD]          = handler_fs_op,
     [OP_LINK]           = handler_fs_op,
@@ -143,28 +140,27 @@ void init_coordinator(){
 }
 
 void init_servers(){
+    start_server(FILESYSTEM);
     start_server(SHELL);
 }
 
 void send_int_response(int pid_target, int value) {
-    sys_try_send_msg(pid_target, (char *)&value, 1);
+    try_send_content(pid_target, (char *)&value, 1);
 }
 
 void send_response_to_app(int32_t app_id, int32_t arg_1){
     AppMsg msg;
-    // Mapeo: arg_1 (resultado) -> arg_1, server_type (COORD) -> type_msg
     msg.arg_1 = arg_1;
     msg.type_msg = COORD; 
     msg.arg_2 = 0;
-
-    sys_try_send_content(app_id, (char*)&msg, sizeof(AppMsg));
+    try_send_content(app_id, (char*)&msg, sizeof(AppMsg));
 }
 
 void dispatch_request(CoordinatorMsg *msg) {
-    if (msg->type_msg >= 0 && msg->type_msg < MAX_HANDLERS && dispatch_table[msg->type_msg]) {
+    if (msg->type_msg >= 0 && (unsigned int)msg->type_msg < MAX_HANDLERS && dispatch_table[msg->type_msg]) {
         dispatch_table[msg->type_msg](msg);
     } else {
-        send_msg_to_app(msg->app_id, ERROR, 0, 0);
+        send_msg_to_app(COORD, msg->app_id, ERROR, 0, 0);
     }
 }
 
@@ -172,7 +168,7 @@ void dispatch_request(CoordinatorMsg *msg) {
 void server_listen() {
     CoordinatorMsg msg;
     while (1) {
-        int res = sys_recv_content((char*)&msg, sizeof(CoordinatorMsg));
+        int res = recv_content((char*)&msg, sizeof(CoordinatorMsg));
         if (res == SUCCESS) {
             dispatch_request(&msg);
         }

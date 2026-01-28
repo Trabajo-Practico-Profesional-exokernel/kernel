@@ -19,11 +19,11 @@
 extern char current_path[PROCS_MAX][MAX_PATH_NAME];
 
 void send_int_response(int pid_target, int value) {
-    sys_try_send_msg(pid_target, (char *)&value, 1);
+    //sys_try_send_msg(pid_target, (char *)&value, 1);
 }
 
 void send_data_response(int pid_target, void *data, int size) {
-    sys_try_send_msg(pid_target, (char *)data, 1);
+    //sys_try_send_msg(pid_target, (char *)data, 1);
 }
 
 void handle_open(struct Message *msg) {
@@ -291,13 +291,13 @@ void server_listen() {
     struct Message msg;
 	debug_printf("filesystem server is running");
 
-    while (1) {
-        int res = sys_recv_msg(&msg);
+    /*while (1) {
+        int res = recv_msg(&msg);
         if (res == 0) {
             debug_printf("mensaje recibido con contenido: [%d], [%s]", msg.type, msg.content);
             dispatch_request(&msg);
         }
-    }
+    }*/
 }
 
 void main() {

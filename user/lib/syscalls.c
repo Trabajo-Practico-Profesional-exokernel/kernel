@@ -1,69 +1,21 @@
 #include "inc/syscalls.h"
-#include "syscalls.h" // Def of syscalls implemented here.
-#include "lib.h" // For printf and syscall func
+#include "syscalls.h"
+#include "lib.h"
 #include "arch/communication.h"
 #include "inc/filesystem.h"
 #include "string.h"
 #include "stdlib.h"
 #include "stdio.h"
 #include "console/debug.h"
+#include "ipc.h"
+#include "ipc_msgs.h"
+#include "inc/operations.h"
+#include "constants.h"
+#include "parsers/strutil.h"
 
 int exec(int prog_ind, char ** args){
-    // convert args pointer to int
     return syscall(SYS_EXEC, prog_ind, (int)(args), 0);
 }
-
-int sys_try_send_content(int proc_pid, char *content, int len_content){
-    return syscall(SYS_TRY_SEND_CONTENT, proc_pid, (int)content, len_content);
-}
-
-int sys_try_recv_content(char *content, int len_content){
-    return syscall(SYS_TRY_RECV_CONTENT, (int)content, len_content, 0);
-}
-
-int sys_recv_content(char *content, int len_content){
-    return syscall(SYS_RECV_CONTENT, (int)content, len_content, 0);
-}
-
-
-int sys_try_send_msg(int proc_pid, char *msg, int type_msg) {
-    return syscall(SYS_TRY_SEND_MSG, proc_pid, (int)(msg), type_msg);
-}
-
-int sys_try_recv_msg(char *msg) {
-    return syscall(SYS_TRY_RECV_MSG, (int)(msg), 0, 0);
-}
-
-void sendchar(int proc_pid, char ch) {
-    debug_printf("sending char\n");
-    syscall(SYS_SENDCHAR, proc_pid, ch, 0);
-}
-
-void sendbyte(int proc_pid, char ch) {
-    syscall(SYS_SEND_BYTE, proc_pid, ch, 0);
-}
-
-char recvbyte() {
-    return syscall(SYS_RECV_BYTE, 0, 0, 0);
-}
-
-int sys_recv_msg(struct Message *msg) {
-    return syscall(SYS_RECV_MSG, (int)msg, sizeof(struct Message), 0);
-}
-
-void recvchar(int proc_pid, char ch) {
-    debug_printf("receiving char\n");
-    syscall(SYS_RECVCHAR, proc_pid, ch, 0);
-}
-
-void putchar(char ch) {
-    syscall(SYS_PUTCHAR, ch, 0, 0);
-}
-
-int getchar(void) {
-    return syscall(SYS_GETCHAR, 0, 0, 0);
-}
-
 
 int wait(int pid){
     return syscall(SYS_WAIT, pid, 0, 0);
@@ -75,384 +27,163 @@ void sys_yield(){
 
 __attribute__((noreturn)) void exit(int ret_code) {
     syscall(SYS_EXIT, ret_code, 0, 0);
-    // SHOULD NEVER HAPPEN... just to make compiler shutup
     printf("SHOULD NOT REACH HERE! AFTER EXIT\n");
-    for(;;){
-
-    }
-}
-
-void * sbrk(const int count_pages){
-    return (void *) syscall(SYS_SBRK, count_pages, 0, 0);
-}
-
-
-
-///
-/// FILESYSTEM
-///
-
-int register_fs_handler(struct FilesystemEventsHandler* handler){
-    return syscall(SYS_FS_REG_HANDLER, (int) handler, 0 , 0);
-}
-
-void sys_fs_ret(int ret_code){
-    syscall(SYS_FS_RET, ret_code, 0 , 0);
-}
-
-
-int sys_rm(char* filepath){
-    int res = sys_try_send_msg(99, filepath, FS_TYPE_UNLINK);
-    if (res == 0) {
-        return -1;
-    }
-    struct Message respuesta;
-    res = sys_recv_msg(&respuesta);
-    if (res >= 0) {
-        return atoi(respuesta.content);
-    }
-    return -1;
-}
-
-int sys_stat(char* filepath){
-    int res = sys_try_send_msg(99, filepath, FS_TYPE_FSTAT);
-    if (res == 0) {
-        return -1;
-    }
-    struct Message respuesta;
-    res = sys_recv_msg(&respuesta);
-    if (res >= 0) {
-        return atoi(respuesta.content);
-    }
-    return -1;
+    for(;;){}
 }
 
 int getpid(void) {
     return syscall(SYS_GETPID, 0, 0, 0);
 }
 
-int get_coord_pid(){
-    return syscall(SYS_COORDPID, 0, 0, 0);
-}
-
-int alive(int pid){
-    return syscall(SYS_ALIVE, pid, 0, 0);
+void * sbrk(const int count_pages){
+    return (void *) syscall(SYS_SBRK, count_pages, 0, 0);
 }
 
 int uptime(void) {
     return syscall(SYS_UPTIME, 0, 0, 0);
 }
 
+int alive(int pid){
+    return syscall(SYS_ALIVE, pid, 0, 0);
+}
+
+int get_coord_pid(){
+    return syscall(SYS_COORDPID, 0, 0, 0);
+}
+
+void putchar(char ch) {
+    syscall(SYS_PUTCHAR, ch, 0, 0);
+}
+
+int getchar(void) {
+    return syscall(SYS_GETCHAR, 0, 0, 0);
+}
+
+int try_send_content(int proc_pid, char *content, int len_content){
+    return syscall(SYS_TRY_SEND_CONTENT, proc_pid, (int)content, len_content);
+}
+
+int try_recv_content(char *content, int len_content){
+    return syscall(SYS_TRY_RECV_CONTENT, (int)content, len_content, 0);
+}
+
+int recv_content(char *content, int len_content){
+    return syscall(SYS_RECV_CONTENT, (int)content, len_content, 0);
+}
+
+int virtual_copy(uint32_t src_addr, uint32_t dst_addr, int len){
+    return syscall(SYS_VIRTUAL_COPY, src_addr, dst_addr, len);
+}
+
 int open(const char *path, int mode) {
-    disable_debug_print();
-    int res = sys_try_send_msg(99, (void*)path, FS_TYPE_OPEN);
-    if (res == 0) {
-        return -1;
-    }
-    struct Message respuesta;
-    res = sys_recv_msg(&respuesta);
-    debug_printf("resultado receive: %d", res);
-    if (res >= 0) {
-        debug_printf("fd obtenido de lado de proceso: %s\n", respuesta.content);
-        debug_printf("fd obtenido de lado de proceso en decimal: %d\n", atoi(respuesta.content));
-        // El FS devuelve el FD como un int
-        return atoi(respuesta.content);
-    }
-    return -1;
+    (void)mode;
+    int res = send_msg_to_service(OP_OPEN, 0, 0, 0, (void*)path, strlen((const uint8_t*)path));
+    if (res == ERROR) return ERROR;
+    return app_receive_ok_msg(OP_OPEN);
 }
 
 int close(int fd) {
-    char fd_str[16]; 
-    int_to_string(fd, fd_str);
-    int res = sys_try_send_msg(99, fd_str, FS_TYPE_CLOSE);
-    if (res == 0) {
-        return -1;
-    }
-    struct Message respuesta;
-    res = sys_recv_msg(&respuesta);
-    if (res >= 0) {
-        return atoi(respuesta.content);
-    }
-    return -1;
+    int res = send_msg_to_service(OP_CLOSE, fd, 0, 0, NULL, 0);
+    if (res == ERROR) return ERROR;
+    return app_receive_ok_msg(OP_CLOSE);
 }
-
-int fstat(int fd, struct stat *st) {
-    return syscall(SYS_FSTAT, fd, (int)st, 0);
-}
-
-int mknod(const char *path, short major, short minor) {
-    // El FS ignora major/minor en esta implementación
-    int res = sys_try_send_msg(99, (void*)path, FS_TYPE_MKNOD);
-    if (res == 0) {
-        return -1;
-    }
-    struct Message respuesta;
-    res = sys_recv_msg(&respuesta);
-    if (res >= 0) {
-        return atoi(respuesta.content);
-    }
-    return -1;
-}
-
-int unlink(const char *path) {
-    int res = sys_try_send_msg(99, (void*)path, FS_TYPE_UNLINK);
-    if (res == 0) {
-        return -1;
-    }
-    struct Message respuesta;
-    res = sys_recv_msg(&respuesta);
-    if (res >= 0) {
-        return atoi(respuesta.content);
-    }
-    return -1;
-}
-
-int link(const char *old_path, const char *new_path) {
-    char buf[256]; // Buffer para concatenar paths
-    int len_old = 0;
-    while(old_path[len_old] != '\0') len_old++;
-    
-    int i = 0;
-    // Copiar old_path
-    for(i=0; i < len_old; i++) buf[i] = old_path[i];
-    buf[i++] = ' ';
-    
-    // Copiar new_path justo después del terminador nulo de old_path
-    int j = 0;
-    while(new_path[j] != '\0') {
-        buf[i++] = new_path[j++];
-    }
-    buf[i] = '\0';
-
-    int res = sys_try_send_msg(99, buf, FS_TYPE_LINK);
-    if (res == 0) {
-        return -1;
-    }
-    struct Message respuesta;
-    res = sys_recv_msg(&respuesta);
-    if (res >= 0) {
-        return atoi(respuesta.content);
-    }
-    return -1;
-}
-
-
-int mkdir(const char *path) {
-    int res = sys_try_send_msg(99, (void*)path, FS_TYPE_MKDIR);
-    if (res == 0) {
-        return -1;
-    }
-    struct Message respuesta;
-    res = sys_recv_msg(&respuesta);
-    if (res >= 0) {
-        return atoi(respuesta.content);
-    }
-    return -1;
-}
-
-int rmdir(const char *path) {
-    int res = sys_try_send_msg(99, (void*)path, FS_TYPE_RMDIR);
-    if (res == 0) {
-        return -1;
-    }
-    struct Message respuesta;
-    res = sys_recv_msg(&respuesta);
-    if (res >= 0) {
-        return atoi(respuesta.content);
-    }
-    return -1;
-}
-
-int chdir(const char *path) {
-    int res = sys_try_send_msg(99, (void*)path, FS_TYPE_CHDIR);
-    if (res == 0) {
-        return -1;
-    }
-    struct Message respuesta;
-    res = sys_recv_msg(&respuesta);
-    if (res >= 0) {
-        return atoi(respuesta.content);
-    }
-    return -1;
-}
-
-int ls(char *path) {
-    int res = sys_try_send_msg(99, path, FS_TYPE_LS);
-    if (res == 0) {
-        return -1;
-    }
-    struct Message respuesta;
-    res = sys_recv_msg(&respuesta);
-    if (res >= 0) {
-        return atoi(respuesta.content);
-    }
-    return -1;
-}
-
-int read_fs(int fd, char *buf, int size) {
-    char msg_buffer[MSG_SIZE_MAX];
-    char temp[16];
-
-    // Construir string "fd size"
-    int_to_string(fd, temp);
-    strcpy(msg_buffer, temp);
-    strcat(msg_buffer, " ");
-    
-    int_to_string(size, temp);
-    strcat(msg_buffer, temp);
-
-    int res = sys_try_send_msg(99, msg_buffer, FS_TYPE_READ);
-    if (res == 0) {
-        return -1;
-    }
-
-    struct Message respuesta;
-    res = sys_recv_msg(&respuesta);
-    
-    if (res < 0) {
-        return -1;
-    }
-
-    int bytes_read = respuesta.content_size;
-    
-    for (int i = 0; i < bytes_read && i < size; i++) {
-        buf[i] = respuesta.content[i];
-    }
-
-    return bytes_read;
-}
-
-int write_fs(int fd, char *content, int len) {
-    char msg_buffer[MSG_SIZE_MAX];
-    char temp[16];
-    
-    // Construir header "fd len "
-    int_to_string(fd, temp);
-    strcpy(msg_buffer, temp);
-    strcat(msg_buffer, " ");
-    
-    int_to_string(len, temp);
-    strcat(msg_buffer, temp);
-    strcat(msg_buffer, " ");
-
-    // Copiar contenido a continuación del header
-    int header_len = strlen(msg_buffer);
-    int max_data = MSG_SIZE_MAX - header_len;
-    int to_write = (len > max_data) ? max_data : len;
-
-    for (int i = 0; i < to_write; i++) {
-        msg_buffer[header_len + i] = content[i];
-    }
-
-    int res = sys_try_send_msg(99, msg_buffer, FS_TYPE_WRITE);
-    if (res == 0) {
-        return -1;
-    }
-
-    struct Message respuesta;
-    res = sys_recv_msg(&respuesta);
-
-    if (res >= 0) {
-        return atoi(respuesta.content);
-    }
-
-    return -1;
-}
-
 
 int read(int fd, char *buf, int size) {
-    return syscall(SYS_READ, fd, (int)buf, size);
+    int res = send_msg_to_service(OP_READ, fd, 0, 0, buf, size);
+    if (res == ERROR) return ERROR;
+    return app_receive_ok_msg(OP_READ);
 }
 
 int write(int fd, char *content, int len) {
-    return syscall(SYS_WRITE, fd, (int)content, len);
+    int res = send_msg_to_service(OP_WRITE, fd, 0, 0, content, len);
+    if (res == ERROR) return ERROR;
+    return app_receive_ok_msg(OP_WRITE);
 }
 
 int lseek(int fd, int offset, int whence) {
-    char msg_buffer[MSG_SIZE_MAX];
-    char temp[16];
+    (void)whence;
+    int res = send_msg_to_service(OP_LSEEK, fd, offset, 0, NULL, 0);
+    if (res == ERROR) return ERROR;
+    return app_receive_ok_msg(OP_LSEEK);
+}
 
-    // Construir string "fd offset"
-    int_to_string(fd, temp);
-    strcpy(msg_buffer, temp);
-    strcat(msg_buffer, " ");
+int stat(char* filepath){
+    int res = send_msg_to_service(OP_STAT, 0, 0, 0, filepath, strlen((const uint8_t*)filepath));
+    if (res == ERROR) return ERROR;
+    return app_receive_ok_msg(OP_STAT);
+}
 
-    int_to_string(offset, temp);
-    strcat(msg_buffer, temp);
+int mkdir(const char *path) {
+    int res = send_msg_to_service(OP_MKDIR, 0, 0, 0, (void*)path, strlen((const uint8_t*)path));
+    if (res == ERROR) return ERROR;
+    return app_receive_ok_msg(OP_MKDIR);
+}
 
-    int res = sys_try_send_msg(99, msg_buffer, FS_TYPE_LSEEK);
-    if (res == 0) {
-        return -1;
-    }
+int rmdir(const char *path) {
+    int res = send_msg_to_service(OP_RMDIR, 0, 0, 0, (void*)path, strlen((const uint8_t*)path));
+    if (res == ERROR) return ERROR;
+    return app_receive_ok_msg(OP_RMDIR);
+}
 
-    struct Message respuesta;
-    res = sys_recv_msg(&respuesta);
-
-    if (res >= 0) {
-        return atoi(respuesta.content);
-    }
-
-    return -1;
+int chdir(const char *path) {
+    int res = send_msg_to_service(OP_CHDIR, 0, 0, 0, (void*)path, strlen((const uint8_t*)path));
+    if (res == ERROR) return ERROR;
+    return app_receive_ok_msg(OP_CHDIR);
 }
 
 int getcwd(char *buf, int size) {
-    int res = sys_try_send_msg(99, "pwd", FS_TYPE_PWD);
+    int res = send_msg_to_service(OP_CWD, 0, 0, 0, buf, size);
+    if (res == ERROR) return ERROR;
+    return app_receive_content(OP_CWD, buf, size);
+}
 
-    if (res == 0) {
-        return -1;
-    }
+int ls(const char *path) {
+    int res = send_msg_to_service(OP_LS, 0, 0, 0, (void*)path, strlen((const uint8_t*)path));
+    if (res == ERROR) return ERROR;
+    return app_receive_ok_msg(OP_LS);
+}
 
-    struct Message respuesta;
-    res = sys_recv_msg(&respuesta);
+int mknod(const char *path, short major, short minor) {
+    (void)major; (void)minor;
+    int res = send_msg_to_service(OP_MKNOD, 0, 0, 0, (void*)path, strlen((const uint8_t*)path));
+    if (res == ERROR) return ERROR;
+    return app_receive_ok_msg(OP_MKNOD);
+}
 
-    if (res >= 0) {
-        int len = respuesta.content_size;
-        if (len > size) len = size;
-        
-        for(int i = 0; i < len; i++) {
-            buf[i] = respuesta.content[i];
-        }
+int link(const char *old_path, const char *new_path) {
+    char buf[MAX_CONTENT_SIZE];
+    join_strings(buf, old_path, new_path);
+    int res = send_msg_to_service(OP_MKDIR, 0, 0, 0, buf, strlen((const uint8_t*)buf));
+    if (res == ERROR) return ERROR;
+    return app_receive_ok_msg(OP_MKDIR);
+}
 
-        if (size > 0) buf[size - 1] = '\0';
-        
-        return 0;
-    }
+int unlink(const char *path) {
+    int res = send_msg_to_service(OP_UNLINK, 0, 0, 0, (void*)path, strlen((const uint8_t*)path));
+    if (res == ERROR) return ERROR;
+    return app_receive_ok_msg(OP_UNLINK);
+}
 
-    return -1;
+int chown(const char *pathname, uint32_t owner, uint32_t group){
+    int res = send_msg_to_service(OP_CHOWN, owner, group, 0, (void*)pathname, strlen((const uint8_t*)pathname));
+    if (res == ERROR) return ERROR;
+    return app_receive_ok_msg(OP_CHOWN);
+}
+
+int chmod(const char *pathname, uint32_t mode){
+    int res = send_msg_to_service(OP_CHMOD, mode, 0, 0, (void*)pathname, strlen((const uint8_t*)pathname));
+    if (res == ERROR) return ERROR;
+    return app_receive_ok_msg(OP_CHMOD);
 }
 
 int pipe(int fds[2]){
-    return syscall(SYS_PIPE, (int)fds, 0, 0);
+    int res = send_msg_to_service(OP_PIPE, fds[0], fds[1], 0, NULL, 0);
+    if (res == ERROR) return ERROR;
+    return app_receive_ok_msg(OP_PIPE);
 }
 
 int dup(int prev_fd){
-    return syscall(SYS_DUP, prev_fd, 0, 0);
-}
-
-
-int chown(char *args) {
-    int res = sys_try_send_msg(99, args, FS_TYPE_CHOWN);
-    if (res == 0) {
-        return -1;
-    }
-    struct Message respuesta;
-    res = sys_recv_msg(&respuesta);
-    if (res >= 0) {
-        return atoi(respuesta.content);
-    }
-    return -1;
-}
-
-
-int chmod(char *args) {
-    int res = sys_try_send_msg(99, args, FS_TYPE_CHMOD);
-    if (res == 0) {
-        return -1;
-    }
-    struct Message respuesta;
-    res = sys_recv_msg(&respuesta);
-    if (res >= 0) {
-        return atoi(respuesta.content);
-    }
-    return -1;
+    int res = send_msg_to_service(OP_DUP, prev_fd, 0, 0, NULL, 0);
+    if (res == ERROR) return ERROR;
+    return app_receive_ok_msg(OP_DUP);
 }

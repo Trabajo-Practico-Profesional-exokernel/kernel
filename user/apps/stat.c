@@ -4,9 +4,9 @@
 #define MSG_SIZE_MAX 64
 
 void main() {
-    char * name = "some_file.txt";
+    //char * name = "some_file.txt";
 
-    int fd = sys_rm(name);
+    //int fd = rm(name);
 
-    printf("STAT GOT RES %d", fd);
+    printf("STAT");
 }

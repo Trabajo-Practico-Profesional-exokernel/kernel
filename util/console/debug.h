@@ -13,6 +13,6 @@ extern enum DebugPrintMode actual_debug_print_mode;
 
 void enable_debug_print(void);
 void disable_debug_print(void);
-void debug_printf(const uint8_t *fmt, ...);
+void debug_printf(const char *fmt, ...);
 
 #endif

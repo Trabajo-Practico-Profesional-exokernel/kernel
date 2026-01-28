@@ -16,7 +16,7 @@ void disable_debug_print(void) {
     actual_debug_print_mode = DISABLE;
 }
 
-void debug_printf(const uint8_t *fmt, ...) {
+void debug_printf(const char *fmt, ...) {
     if (actual_debug_print_mode != ENABLE) return;
 
     uint8_t buf[256];
@@ -27,5 +27,5 @@ void debug_printf(const uint8_t *fmt, ...) {
     va_end(args);
 
     printPurple((const uint8_t*)"[DEBUG] ");
-    printf((const uint8_t*)"%s\n", buf); 
+    printf("%s\n", buf); 
 }

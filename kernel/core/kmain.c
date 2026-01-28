@@ -75,7 +75,6 @@ void kmain()
     main_tests();
 
     init_files();
-    init_syscalls_files();
     init_syscalls_ipc();
     init_syscalls_proc();
     init_user_pages_alloc();
