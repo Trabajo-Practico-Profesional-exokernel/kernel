@@ -38,7 +38,7 @@ void test_process_management(CTest *ctx) {
 // TEST: IPC (Inter-Process Communication) - Colas de Mensajes
 // Verifica la lógica de encolado y desencolado de mensajes sin context switch.
 // -------------------------------------------------------------------------
-void test_ipc_logic(CTest *ctx) {
+/*void test_ipc_logic(CTest *ctx) {
     // Usamos un proceso ficticio para probar su cola de mensajes
     struct Proc dummy_proc;
     dummy_proc.pid = 999;
@@ -67,7 +67,7 @@ void test_ipc_logic(CTest *ctx) {
     CTEST_ASSERT_EQ(ctx, 0, content_match, "IPC: Content integrity match");
     
     CTEST_ASSERT_EQ(ctx, 0, dummy_proc.msgs_queue.len_queue, "IPC: Queue length decreased (Empty)");
-}
+}*/
 
 
 

@@ -12,8 +12,6 @@ typedef struct {
 
 void init_coordinator();
 void init_servers();
-void server_listen();
-int32_t start_server(Server type);
 extern Coordinator coordinator;
 
 #endif

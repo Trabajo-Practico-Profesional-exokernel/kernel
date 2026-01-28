@@ -33,7 +33,7 @@ int run_kernel_tests(void) {
     CTest suite = init_ctx("RING 0");
 
     test_process_management(&suite);
-    test_ipc_logic(&suite);
+    //test_ipc_logic(&suite);
     test_process_lifecycle_simulation(&suite);
 
     return test_run(&suite);

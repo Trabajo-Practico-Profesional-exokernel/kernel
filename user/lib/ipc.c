@@ -6,137 +6,126 @@
 #include "inc/operations.h"
 #include "ipc_msgs.h"
 
-int32_t get_service_data(int32_t *service, int32_t sender_pid, int32_t type_msg, 
-            int32_t arg_1, int32_t arg_2, int32_t arg_3, 
-            void* content, int32_t len_content){
-    (void)arg_2; (void)arg_3; (void)content; (void)len_content;
-    int32_t result;
-    int32_t coord_pid = get_coord_pid();
-    
-    CoordinatorMsg msg;
-    msg.app_id = sender_pid;
-    msg.type_msg = type_msg;
-    msg.arg_1 = arg_1;
+uint8_t ipc_buffer[MAX_BUFFER_IPC_SIZE] = {0};
 
-    result = try_send_content(coord_pid, (char*)&msg, sizeof(CoordinatorMsg));
-    if (result == ERROR){
+int32_t send_msg(int32_t recv_pid, int32_t arg_1, int32_t arg_2, int32_t arg_3, int32_t arg_4, int32_t arg_5, int32_t arg_6){
+    int32_t sender_pid = getpid();
+    Msg msg = {sender_pid, arg_1, arg_2, arg_3, arg_4, arg_5, arg_6};
+    return try_send_content(recv_pid, (char*)&msg, sizeof(Msg));
+}
+
+int32_t recv_msg(Msg *msg) {
+    if (!msg) {
+        return ERROR;
+    }
+    return recv_content((char*)msg, sizeof(Msg));
+}
+
+int32_t send_ack(int32_t sender_pid, int32_t operation){
+    return send_msg(sender_pid, operation, 0, 0, 0, 0, 0);
+}
+
+int32_t recv_ack(int32_t recv_pid, int32_t operation) {
+    Msg msg;
+    int32_t res = recv_content((char*)&msg, sizeof(Msg));
+    if (res == ERROR) {
         return ERROR;
     }
 
-    AppMsg msg_received;
-    result = try_recv_content((char*)&msg_received, sizeof(AppMsg));
+    return (msg.sender_pid == recv_pid && msg.arg_1 == operation);
+}
 
-    if (result == ERROR){
+
+int32_t app_receive_parameter(uint32_t operation) {
+    Msg msg;
+
+    int32_t res = recv_msg(&msg);
+    if (res == ERROR) {
         return ERROR;
     }
 
-    service[0] = msg_received.arg_1;
-    service[1] = msg_received.arg_2;
+    if (msg.arg_1 != operation){
+        return ERROR;
+    }
+
+    return msg.arg_2;
+}
+
+int32_t app_receive_content(uint32_t operation, char *buffer, int len){
+    Msg msg;
+    int32_t res = recv_msg(&msg);
+
+    if (res == ERROR) {
+        return ERROR;
+    }
+
+    if (msg.arg_1 != operation || msg.arg_2 == ERROR){
+        return ERROR;
+    }
+
+    //FALTA VERIFICAR LA LONGITUD DEL BUFFER VIRTUAL
+    res = virtual_copy(msg.sender_pid, msg.arg_3, (uint32_t)buffer, len);
+    if (res == ERROR){
+        //ver si conviene mas devolver un NACK
+        send_ack(msg.sender_pid, operation);
+        return ERROR;
+    }
+
+    send_ack(msg.sender_pid, operation);
     return SUCCESS;
 }
 
-int send_msg_to_service(int32_t type_msg, 
-                int32_t arg_1, int32_t arg_2, int32_t arg_3, 
-                void* content, int32_t len_content) {
-
-    int32_t service[2];
-    int32_t sender_pid = getpid();
-    int32_t result = get_service_data(service, sender_pid, 
-                    type_msg, arg_1, arg_2, arg_3,
-                    content, len_content);
-    if (result == ERROR) {
-        return ERROR;
-    }
-    int32_t dest_server = service[1];
-    int32_t dest_pid = service[0];
-
-    switch (dest_server) {
-        case COORD: {
-            CoordinatorMsg msg;
-            msg.app_id = sender_pid;
-            msg.type_msg = type_msg;
-            msg.arg_1 = arg_1;
-            
-            result = try_send_content(get_coord_pid(), (char*)&msg, sizeof(CoordinatorMsg));
-            break;
-        }
-
-        case FILESYSTEM: {
-            FilesystemMsg msg;
-            memset(&msg, 0, sizeof(FilesystemMsg));
-            
-            msg.app_id = sender_pid;
-            msg.type_msg = type_msg;
-            msg.arg_1 = arg_1;
-            msg.arg_2 = arg_2;
-            msg.arg_3 = arg_3;
-            if (content && len_content > 0) {
-                int32_t copy_len = (len_content > MAX_CONTENT_SIZE) ?
-                                    MAX_CONTENT_SIZE : len_content;
-                memcpy(msg.content, content, copy_len);
-            }
-
-            result = try_send_content(dest_pid, (char*)&msg, sizeof(FilesystemMsg));
-            break;
-        }
-
-        default:
-            return ERROR;
-    }
-
-    return result;
+int32_t server_send_parameter_to_app(int32_t pid, uint32_t operation, int32_t arg) {
+    return send_msg(pid, operation, arg, 0, 0, 0, 0);
 }
 
-int32_t send_msg_to_app(int32_t server_id, int32_t app_id, int32_t type_msg, int32_t arg_1, int32_t arg_2){
-    AppMsg msg;
-    msg.server_id = server_id;
-    msg.type_msg = type_msg;
-    msg.arg_1 = arg_1;
-    msg.arg_2 = arg_2;
-    int32_t result = try_send_content(app_id, (char*)&msg, sizeof(AppMsg));
-    return result;
-}
+int32_t server_send_content_to_app(int32_t pid, uint32_t operation, char *buffer, int len){
 
-int32_t app_receive_msg(AppMsg *msg) {
-    if (!msg) {
-        return ERROR;
-    }
-    return recv_content((char*)msg, sizeof(AppMsg));
-}
-
-int32_t fs_receive_msg(FilesystemMsg *msg) {
-    if (!msg) {
-        return ERROR;
-    }
-    return recv_content((char*)msg, sizeof(FilesystemMsg));
-}
-
-int32_t app_receive_ok_msg(uint32_t operation) {
-    AppMsg msg;
-    int32_t res = recv_content((char*)&msg, sizeof(AppMsg));
-    if (res == ERROR) {
-        return ERROR;
-    }
-
-    if ((uint32_t)msg.type_msg == operation && msg.arg_1 == SUCCESS){
-        return SUCCESS;
-    }
+    int32_t res;
+    memcpy(&ipc_buffer, buffer, len);
     
-    return ERROR;
+    res = send_msg(pid, operation, SUCCESS, (int)buffer, len, 0, 0);
+    if (res == ERROR){
+        return ERROR;
+    } 
+
+    res = recv_ack(pid, operation);
+    memset(&ipc_buffer, 0, MAX_BUFFER_IPC_SIZE);
+    return res;
 }
 
-int32_t app_receive_content(uint32_t operation, char *buffer, int size){
-    AppMsg msg;
-    (void)buffer; (void)size;
-    // Silenciar warnings de unused params por ahora
-    
-    int32_t res = recv_content((char*)&msg, sizeof(AppMsg));
-    if (res == ERROR) {
+int32_t get_server_pid(int32_t arg_1, int32_t arg_2, int32_t arg_3,
+    int32_t arg_4, int32_t arg_5, int32_t arg_6){
+    int32_t res;
+    int32_t coordinator_pid = get_coord_pid();                  
+    res =  send_msg(coordinator_pid, arg_1, arg_2, arg_3, arg_4, arg_5, arg_6);
+    if (res == ERROR){
         return ERROR;
     }
-    if ((uint32_t)msg.type_msg == operation && msg.arg_1 == SUCCESS){
-        return SUCCESS;
+
+    Msg coordinator_response;
+    res = recv_msg(&coordinator_response);
+    if (res = ERROR){
+        return ERROR;
     }
-    
-    return ERROR;
+
+    res = coordinator_response.arg_1;
+
+    if (res = ERROR){
+        return ERROR;
+    }
+
+    return coordinator_response.arg_2;
+}
+
+int32_t app_send_msg_to_server(int32_t arg_1, int32_t arg_2, int32_t arg_3,
+                                int32_t arg_4, int32_t arg_5, int32_t arg_6){
+
+    int32_t server_pid = get_server_pid(arg_1, arg_2, arg_3, arg_4, arg_5, arg_6);
+
+    if (server_pid < 0){
+        return ERROR;
+    }
+
+    return send_msg(server_pid, arg_1, arg_2, arg_3, arg_4, arg_5, arg_6);
 }

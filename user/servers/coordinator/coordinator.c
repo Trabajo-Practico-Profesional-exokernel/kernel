@@ -56,21 +56,23 @@ int32_t start_server(Server type) {
 
 #define UNUSED(x) (void)(x)
 
-void handler_noop(CoordinatorMsg *op){
+void handler_noop(CoordinatorOperation *op){
     UNUSED(op);
 }
 
 
-void handler_op(CoordinatorMsg *op){
+void handler_op(CoordinatorOperation *op){
     UNUSED(op);
 }
 
-void handler_kernel_op(CoordinatorMsg *op){
+void handler_kernel_op(CoordinatorOperation *op){
     UNUSED(op);
 }
 
-void handler_fs_op(CoordinatorMsg *op){
-    uint32_t fs_pid;
+
+void handler_fs_op(CoordinatorOperation *op){
+    UNUSED(op);
+    /*uint32_t fs_pid;
     fs_pid = server_map_get(&coordinator.server_map, FILESYSTEM);
     int32_t result;
     
@@ -85,20 +87,20 @@ void handler_fs_op(CoordinatorMsg *op){
         send_msg_to_app(COORD, op->app_id, SUCCESS, fs_pid, FILESYSTEM);
     } else {
         send_msg_to_app(COORD, op->app_id, ERROR, 0, 0);
-    }
+    }*/
 }
 
-void handler_pipe_op(CoordinatorMsg *op){
+void handler_pipe_op(CoordinatorOperation *op){
     UNUSED(op);
 }
 
-void handler_generic_op(CoordinatorMsg *op){
+void handler_generic_op(CoordinatorOperation *op){
     UNUSED(op);
 }
 
 #define MAX_HANDLERS (sizeof(dispatch_table) / sizeof(dispatch_table[0]))
 
-typedef void (*op_handler_t)(CoordinatorMsg *);
+typedef void (*op_handler_t)(CoordinatorOperation *);
 
 static const op_handler_t dispatch_table[] = {
     [OP_NOOP]           = handler_noop,
@@ -142,35 +144,4 @@ void init_coordinator(){
 void init_servers(){
     start_server(FILESYSTEM);
     start_server(SHELL);
-}
-
-void send_int_response(int pid_target, int value) {
-    try_send_content(pid_target, (char *)&value, 1);
-}
-
-void send_response_to_app(int32_t app_id, int32_t arg_1){
-    AppMsg msg;
-    msg.arg_1 = arg_1;
-    msg.type_msg = COORD; 
-    msg.arg_2 = 0;
-    try_send_content(app_id, (char*)&msg, sizeof(AppMsg));
-}
-
-void dispatch_request(CoordinatorMsg *msg) {
-    if (msg->type_msg >= 0 && (unsigned int)msg->type_msg < MAX_HANDLERS && dispatch_table[msg->type_msg]) {
-        dispatch_table[msg->type_msg](msg);
-    } else {
-        send_msg_to_app(COORD, msg->app_id, ERROR, 0, 0);
-    }
-}
-
-
-void server_listen() {
-    CoordinatorMsg msg;
-    while (1) {
-        int res = recv_content((char*)&msg, sizeof(CoordinatorMsg));
-        if (res == SUCCESS) {
-            dispatch_request(&msg);
-        }
-    }
 }

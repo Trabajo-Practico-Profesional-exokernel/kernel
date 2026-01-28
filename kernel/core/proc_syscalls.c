@@ -217,63 +217,6 @@ void syscall_get_coord_pid(FullTrapFrame *tf, uintptr_t pc){
     SET_SYSCALL_RET0(tf, coordinator_PID);
 }
 
-void syscall_trysendmsg(FullTrapFrame *tf, uintptr_t pc){
-    debug_printf("syscall send_msg...\n");
-    struct Proc * sender_proc = get_curr();
-    int receiver_proc_pid = SYSCALL_ARG0(tf);
-    uint32_t msg_addr = SYSCALL_ARG1(tf);
-    int type_msg = SYSCALL_ARG2(tf);
-
-    switch_to_kernel_tables();
-
-    
-    if (receiver_proc_pid == 99) {
-        //receiver_proc_pid = filesystem_PID;
-        receiver_proc_pid = 2; // TODO: change this, for now fs server is the first proc.
-    }
-    
-    int result = send_msg(sender_proc, receiver_proc_pid, msg_addr, type_msg);
-
-    // Switch back to proc tables to return to proc
-    SET_SYSCALL_RET0(tf, result);
-    switch_page_table((uint32_t *) sender_proc->pde_paddr);
-    
-}
-
-void syscall_tryrecvmsg(FullTrapFrame *tf, uintptr_t pc) {
-    debug_printf("syscall tryrecvmsg...\n");
-    uint32_t msg_addr = SYSCALL_ARG0(tf);
-
-    struct Proc *receiver_proc = get_curr();
-    
-    switch_to_kernel_tables();
-
-    int result = recv_msg(receiver_proc, msg_addr);
-
-    SET_SYSCALL_RET0(tf, result);
-
-    switch_page_table((uint32_t *) receiver_proc->pde_paddr);
-}
-
-void syscall_recvmsg(FullTrapFrame *tf, uintptr_t pc) {
-    debug_printf("syscall recvmsg...\n");
-    uint32_t msg_addr = SYSCALL_ARG0(tf);
-
-    struct Proc *receiver_proc = get_curr();
-
-    switch_to_kernel_tables();
-
-    int result = recv_msg(receiver_proc, msg_addr);
-    
-    if (result == -1) { // Means no message available! So block
-        receiver_proc->status = PROC_NOT_RUNNABLE;
-        save_curr_proc_state(tf, pc);
-        sched_yield();
-    }
-
-    SET_SYSCALL_RET0(tf, result);
-    switch_page_table((uint32_t *) receiver_proc->pde_paddr);
-}
 
 void syscall_pipe(FullTrapFrame *tf, uintptr_t pc) {
     //enable_debug_print();

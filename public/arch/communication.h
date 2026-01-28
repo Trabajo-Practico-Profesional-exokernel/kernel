@@ -1,6 +1,6 @@
 #ifndef PUBLIC_ARCH_COMMUNICATION_H
 #define PUBLIC_ARCH_COMMUNICATION_H
-
+/*
 #include "types.h"
 #include "mem.h"
 #include "arch_inc/trapframe.h"
@@ -44,5 +44,5 @@ int copyout_msg(struct Proc *p, vaddr_t dst_va, void *src, int len);
 int insert_msg(struct Proc *receiver_proc, struct Message msg);
 struct Message extract_msg(struct Proc *receiver_proc);
 int send_msg(struct Proc * sender_proc, int receiver_proc_pid, uint32_t msg_addr, int msg_type);
-int recv_msg(struct Proc * receiver_proc, uint32_t msg_addr);
+int recv_msg(struct Proc * receiver_proc, uint32_t msg_addr);*/
 #endif

@@ -8,5 +8,4 @@ void main(int argc, char *argv[]) {
 
     init_coordinator();
     init_servers();
-    server_listen();
 }

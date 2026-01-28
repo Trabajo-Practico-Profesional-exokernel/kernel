@@ -886,10 +886,6 @@ int fs_chmod(int proc_pid, const char *filename, int new_mode){
 }
 
 int fs_chown(int proc_pid, const char *filename, int new_uid, int new_gid){
-    debug_printf("proc_pid [%d]", proc_pid);
-    debug_printf("filename [%s]", filename);
-    debug_printf("new_uid [%d]", new_uid);
-    debug_printf("new_gid [%d]", new_gid);
 
     if (new_uid < 0 || new_gid < 0){
         return -1;

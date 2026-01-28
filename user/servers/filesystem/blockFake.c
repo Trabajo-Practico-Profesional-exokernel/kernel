@@ -16,17 +16,11 @@ void block_init(void) {
 
 int block_read(int block, char *mem) {
     char local_buffer[BLOCK_SIZE];
-
-    
     int res = disk_read(block, local_buffer, BLOCK_SIZE);
-
-
     if (res < 0) {
-        debug_printf("[BLOCK READ ERROR] Sector: %d\n", block);
         return res;
     }
     memcpy(mem, local_buffer, BLOCK_SIZE);
-    
     return res;
 }
 
