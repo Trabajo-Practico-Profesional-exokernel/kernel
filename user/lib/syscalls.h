@@ -1,6 +1,7 @@
 #ifndef SYSCALLS_H
 #define SYSCALLS_H
 
+#include "types.h"
 #include "inc/filesystem.h"
 #include "arch/communication.h"
 
@@ -19,7 +20,7 @@ int getchar(void);
 int try_send_content(int proc_pid, char *content, int len_content);
 int try_recv_content(char *content, int len_content);
 int recv_content(char *content, int len_content);
-int virtual_copy(uint32_t src_addr, uint32_t dst_addr, int len);
+int virtual_copy(uint32_t pid_src_proc, uint32_t src_addr, uint32_t dst_addr, int len);
 
 int open(const char *path, int mode);
 int close(int fd);

@@ -432,21 +432,22 @@ void syscall_alive(FullTrapFrame *tf, uintptr_t pc){
 
 void syscall_virtual_copy(FullTrapFrame *tf, uintptr_t pc){
 
-    //HAY QUE AGREGAR UN PARAMETRO MAS EN LA LLAMADA A SYSCALL
-
-    /*uint32_t src_vaddr = SYSCALL_ARG0(tf);
+    uint32_t src_vaddr = SYSCALL_ARG0(tf);
     uint32_t dst_vaddr = SYSCALL_ARG1(tf);
     uint32_t len = SYSCALL_ARG2(tf);
-    int32_t result;
+    uint32_t src_pid = SYSCALL_ARG3(tf);
 
     switch_to_kernel_tables();
 
-    uint32_t src_paddr =
-    uint32_t src_paddr =
+    uint32_t src_paddr = get_paddr_for((uint32_t*)get_proc(src_pid)->pde_paddr, src_vaddr);
+    uint32_t dst_paddr = get_paddr_for((uint32_t*)get_curr()->pde_paddr, dst_vaddr);
 
-    switch_page_table((uint32_t *) get_curr()->pde_paddr);*/
+    memcpy(&dst_paddr, &src_paddr, len);
 
-    SET_SYSCALL_RET0(tf, 0);
+    switch_page_table((uint32_t *) get_curr()->pde_paddr);
+
+    //FALTA AGREGAR VERIFICACIONES EN CASO DE ERROR
+    SET_SYSCALL_RET0(tf, SUCCESS);
 }
 
 void init_syscalls_ipc(void){

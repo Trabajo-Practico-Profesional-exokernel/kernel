@@ -71,8 +71,8 @@ int recv_content(char *content, int len_content){
     return syscall(SYS_RECV_CONTENT, (int)content, len_content, 0, 0);
 }
 
-int virtual_copy(uint32_t src_addr, uint32_t dst_addr, int len){
-    return syscall(SYS_VIRTUAL_COPY, src_addr, dst_addr, len, 0);
+int virtual_copy(uint32_t pid_src_proc, uint32_t src_addr, uint32_t dst_addr, int len){
+    return syscall(SYS_VIRTUAL_COPY, src_addr, dst_addr, len, pid_src_proc);
 }
 
 int open(const char *path, int mode) {
