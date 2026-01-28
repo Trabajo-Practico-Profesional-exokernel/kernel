@@ -14,65 +14,65 @@
 #include "parsers/strutil.h"
 
 int exec(int prog_ind, char ** args){
-    return syscall(SYS_EXEC, prog_ind, (int)(args), 0);
+    return syscall(SYS_EXEC, prog_ind, (int)(args), 0, 0);
 }
 
 int wait(int pid){
-    return syscall(SYS_WAIT, pid, 0, 0);
+    return syscall(SYS_WAIT, pid, 0, 0, 0);
 }
 
 void sys_yield(){
-    syscall(SYS_YIELD, 0, 0, 0);
+    syscall(SYS_YIELD, 0, 0, 0, 0);
 }
 
 __attribute__((noreturn)) void exit(int ret_code) {
-    syscall(SYS_EXIT, ret_code, 0, 0);
+    syscall(SYS_EXIT, ret_code, 0, 0, 0);
     printf("SHOULD NOT REACH HERE! AFTER EXIT\n");
     for(;;){}
 }
 
 int getpid(void) {
-    return syscall(SYS_GETPID, 0, 0, 0);
+    return syscall(SYS_GETPID, 0, 0, 0, 0);
 }
 
 void * sbrk(const int count_pages){
-    return (void *) syscall(SYS_SBRK, count_pages, 0, 0);
+    return (void *) syscall(SYS_SBRK, count_pages, 0, 0, 0);
 }
 
 int uptime(void) {
-    return syscall(SYS_UPTIME, 0, 0, 0);
+    return syscall(SYS_UPTIME, 0, 0, 0, 0);
 }
 
 int alive(int pid){
-    return syscall(SYS_ALIVE, pid, 0, 0);
+    return syscall(SYS_ALIVE, pid, 0, 0, 0);
 }
 
 int get_coord_pid(){
-    return syscall(SYS_COORDPID, 0, 0, 0);
+    return syscall(SYS_COORDPID, 0, 0, 0, 0);
 }
 
 void putchar(char ch) {
-    syscall(SYS_PUTCHAR, ch, 0, 0);
+    syscall(SYS_PUTCHAR, ch, 0, 0, 0);
 }
 
 int getchar(void) {
-    return syscall(SYS_GETCHAR, 0, 0, 0);
+    return syscall(SYS_GETCHAR, 0, 0, 0, 0);
 }
 
 int try_send_content(int proc_pid, char *content, int len_content){
-    return syscall(SYS_TRY_SEND_CONTENT, proc_pid, (int)content, len_content);
+    return syscall(SYS_TRY_SEND_CONTENT, proc_pid, (int)content, len_content, 0);
 }
 
 int try_recv_content(char *content, int len_content){
-    return syscall(SYS_TRY_RECV_CONTENT, (int)content, len_content, 0);
+    return syscall(SYS_TRY_RECV_CONTENT, (int)content, len_content, 0, 0);
 }
 
 int recv_content(char *content, int len_content){
-    return syscall(SYS_RECV_CONTENT, (int)content, len_content, 0);
+    return syscall(SYS_RECV_CONTENT, (int)content, len_content, 0, 0);
 }
 
 int virtual_copy(uint32_t src_addr, uint32_t dst_addr, int len){
-    return syscall(SYS_VIRTUAL_COPY, src_addr, dst_addr, len);
+    return syscall(SYS_VIRTUAL_COPY, src_addr, dst_addr, len, 0);
 }
 
 int open(const char *path, int mode) {

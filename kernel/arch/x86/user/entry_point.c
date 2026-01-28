@@ -11,12 +11,12 @@ __attribute__((noreturn)) void do_exit(void) {
     exit(0); // Syscall exit!
 }
 
-int syscall(int sysno, int arg0, int arg1, int arg2) {
+int syscall(int sysno, int arg0, int arg1, int arg2, int arg3) {
     int ret;
     __asm__ volatile (
         "int $0x80"
         : "=a"(ret)
-        : "a"(sysno), "b"(arg0), "c"(arg1), "d"(arg2)
+        : "a"(sysno), "b"(arg0), "c"(arg1), "d"(arg2), "S"(arg3)
         : "memory"
     );
     return ret;

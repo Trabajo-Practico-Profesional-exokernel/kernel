@@ -10,7 +10,7 @@
 
 void sleep(int delay);
 
-int syscall(int sysno, int arg0, int arg1, int arg2);
+int syscall(int sysno, int arg0, int arg1, int arg2, int arg3);
 
 
 // General functionality defined in user_lib/*.c
