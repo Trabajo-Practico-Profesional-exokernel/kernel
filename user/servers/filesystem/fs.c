@@ -1,5 +1,4 @@
 /* fs.c */
-#include "util.h"
 #include "common.h"
 #include "block.h"
 #include "fs.h"

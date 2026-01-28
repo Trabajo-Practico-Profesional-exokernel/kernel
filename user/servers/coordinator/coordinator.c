@@ -13,11 +13,11 @@
 Coordinator coordinator;
 
 static const char * const server_names[] = {
-    [COORD] = "coordinator",
-    [FILESYSTEM]  = "filesystem",
-    [PIPE]        = "pipe",
-    [CONSOLE]     = "console",
-    [SHELL] = "shell"
+    [COORD]         = "coordinator",
+    [FILESYSTEM]    = "filesystem",
+    [PIPE]          = "pipe",
+    [CONSOLE]       = "console",
+    [SHELL]         = "shell"
 };
 
 #define GET_SERVER_NAME(type) \

@@ -2,10 +2,10 @@
 
 #include "common.h"
 #include "block.h"
-#include "util.h" 
 #include "stdio.h"
-#include "stdio.h"
+#include "string.h"
 #include "console/debug.h"
+
 
 // Prototipos de las syscalls
 extern int disk_read(unsigned int disk_sector, char* buffer, unsigned int read_len);

@@ -3,16 +3,15 @@
 #ifndef COMMON_H
 #define COMMON_H
 
-// Integración: Incluir definiciones de tipos y E/S del kernel
 #include "types.h"
 #include "stdio.h"
 
+#define bcopy(src, dest, size) memcpy(dest, src, size)
+#define bzero(addr, size) memset(addr, 0, size)
+#define same_string(s1, s2) (strcmp(s1, s2) == 0)
 
-// Tamaño del sector
 #define SECTOR_SIZE 512
 
-
-// Tipos específicos usados por simple-linux-fs
 typedef unsigned char uchar_t;
 typedef unsigned int uint_t;
 typedef unsigned long ulong_t;

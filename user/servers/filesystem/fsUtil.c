@@ -2,9 +2,9 @@
 
 #include "fs.h"
 #include "block.h"
-#include "util.h"
 #include "fsUtil.h"
 #include "common.h"
+#include "string.h"
 
 extern superblock_t super;
 extern bmap_t map;

@@ -7,7 +7,6 @@
 #include "stdlib.h"
 #include "disk_syscalls.h"
 #include "fs.h"
-#include "util.h"
 #include "fsUtil.h"
 #include "block.h"
 #include "common.h"
