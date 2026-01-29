@@ -198,9 +198,18 @@ int32_t start_server(Server type) {
 }
 
 
+void init_fds() {
+    for (int i = 0; i < PROCS_MAX; i++) {
+        for (int j = 0; j < MAX_FILES; j++) {
+            coordinator.fd[i][j] = -1;
+        }
+    }
+}
+
 void init_coordinator(){
     server_map_init(&coordinator.server_map);
     server_map_set(&coordinator.server_map, COORD, getpid());
+    init_fds();
 }
 
 void init_servers(){
