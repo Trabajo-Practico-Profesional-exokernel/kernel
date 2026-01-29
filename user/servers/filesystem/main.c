@@ -30,7 +30,7 @@ void handle_open(FilesystemOperation *op) {
     int32_t app_pid = op->app_id;
     char path[MAX_PATH_NAME];
     
-    virtual_copy(app_pid, op->content_1_vaddr, (uint32_t)path, MAX_PATH_NAME);
+    virtual_copy(app_pid, op->content_1_vaddr, (uint32_t)path, op->len_content_1);
     
     int flags = op->arg_1;
 
@@ -91,7 +91,7 @@ void handle_fstat(FilesystemOperation *op) {
     /*int32_t app_pid = op->app_id;
     
     char path[MAX_PATH_NAME];
-    virtual_copy(app_pid, op->content_1_vaddr, path, MAX_PATH_NAME);
+    virtual_copy(app_pid, op->content_1_vaddr, path, op->len_content_1);
     
     fileStat stat_buf;
     int res = fs_stat(path, &stat_buf, app_pid);
@@ -114,7 +114,7 @@ void handle_mkdir(FilesystemOperation *op) {
     int32_t app_pid = op->app_id;
     char path[MAX_PATH_NAME];
 
-    virtual_copy(app_pid, op->content_1_vaddr, (uint32_t)path, MAX_PATH_NAME);
+    virtual_copy(app_pid, op->content_1_vaddr, (uint32_t)path, op->len_content_1);
 
     int res = fs_mkdir(path, app_pid);
     if (res == 0) {
@@ -128,7 +128,7 @@ void handle_rmdir(FilesystemOperation *op) {
     int32_t app_pid = op->app_id;
     char path[MAX_PATH_NAME];
 
-    virtual_copy(app_pid, op->content_1_vaddr, (uint32_t)path, MAX_PATH_NAME);
+    virtual_copy(app_pid, op->content_1_vaddr, (uint32_t)path, op->len_content_1);
 
     int res = fs_rmdir(path, app_pid);
     if (res == 0) {
@@ -142,7 +142,7 @@ void handle_chdir(FilesystemOperation *op) {
     int32_t app_pid = op->app_id;
     char path[MAX_PATH_NAME];
 
-    virtual_copy(app_pid, op->content_1_vaddr, (uint32_t)path, MAX_PATH_NAME);
+    virtual_copy(app_pid, op->content_1_vaddr, (uint32_t)path, op->len_content_1);
 
     int res = fs_cd(path, app_pid);
 
@@ -172,7 +172,7 @@ void handle_mknod(FilesystemOperation *op) {
     int32_t app_pid = op->app_id;
     char path[MAX_PATH_NAME];
 
-    virtual_copy(app_pid, op->content_1_vaddr, (uint32_t)path, MAX_PATH_NAME);
+    virtual_copy(app_pid, op->content_1_vaddr, (uint32_t)path, op->len_content_1);
 
     int fd = fs_open(path, FS_O_RDWR, app_pid);
     int res = -1;
@@ -190,8 +190,8 @@ void handle_link(FilesystemOperation *op) {
     char old_path[MAX_PATH_NAME];
     char new_path[MAX_PATH_NAME];
 
-    virtual_copy(app_pid, op->content_1_vaddr, (uint32_t)old_path, MAX_PATH_NAME);
-    virtual_copy(app_pid, op->content_2_vaddr, (uint32_t)new_path, MAX_PATH_NAME);
+    virtual_copy(app_pid, op->content_1_vaddr, (uint32_t)old_path, op->len_content_1);
+    virtual_copy(app_pid, op->content_2_vaddr, (uint32_t)new_path, op->len_content_2);
 
     int res = fs_link(old_path, new_path, app_pid);
 
@@ -202,7 +202,7 @@ void handle_unlink(FilesystemOperation *op) {
     int32_t app_pid = op->app_id;
     char path[MAX_PATH_NAME];
 
-    virtual_copy(app_pid, op->content_1_vaddr, (uint32_t)path, MAX_PATH_NAME);
+    virtual_copy(app_pid, op->content_1_vaddr, (uint32_t)path, op->len_content_1);
 
     int res = fs_unlink(path, app_pid);
 
@@ -213,7 +213,7 @@ void handle_chown(FilesystemOperation *op) {
     int32_t app_pid = op->app_id;
     char path[MAX_PATH_NAME];
     
-    virtual_copy(app_pid, op->content_1_vaddr, (uint32_t)path, MAX_PATH_NAME);
+    virtual_copy(app_pid, op->content_1_vaddr, (uint32_t)path, op->len_content_1);
     
     int uid = op->arg_1;
     int gid = op->arg_2;
@@ -227,7 +227,7 @@ void handle_chmod(FilesystemOperation *op) {
     int32_t app_pid = op->app_id;
     char path[MAX_PATH_NAME];
     
-    virtual_copy(app_pid, op->content_1_vaddr, (uint32_t)path, MAX_PATH_NAME);
+    virtual_copy(app_pid, op->content_1_vaddr, (uint32_t)path, op->len_content_1);
 
     int mode = op->arg_1;
 

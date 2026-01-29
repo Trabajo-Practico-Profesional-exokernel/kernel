@@ -385,12 +385,14 @@ void syscall_virtual_copy(FullTrapFrame *tf, uintptr_t pc){
     uint32_t src_paddr = get_paddr_for((uint32_t*)get_proc(src_pid)->pde_paddr, src_vaddr);
     uint32_t dst_paddr = get_paddr_for((uint32_t*)get_curr()->pde_paddr, dst_vaddr);
 
-    memcpy(&dst_paddr, &src_paddr, len);
+    if (src_paddr != 0 && dst_paddr != 0) {
+        memcpy((void *)dst_paddr, (void *)src_paddr, len);
+        SET_SYSCALL_RET0(tf, SUCCESS);
+    } else {
+        SET_SYSCALL_RET0(tf, ERROR); 
+    }
 
     switch_page_table((uint32_t *) get_curr()->pde_paddr);
-
-    //FALTA AGREGAR VERIFICACIONES EN CASO DE ERROR
-    SET_SYSCALL_RET0(tf, SUCCESS);
 }
 
 void init_syscalls_ipc(void){

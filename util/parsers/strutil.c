@@ -112,7 +112,7 @@ char* split_at_first_space(char* str) {
     return (char *)0;
 }
 
-static char* split_arg(char* str) {
+char* split_arg(char* str) {
     char* next = (char*)strchr((const uint8_t*)str, ' ');
     if (next) {
         *next = 0;
