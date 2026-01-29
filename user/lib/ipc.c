@@ -67,7 +67,7 @@ int32_t app_receive_content(uint32_t operation, char *buffer, int len){
     res = virtual_copy(msg.sender_pid, msg.arg_3, (uint32_t)buffer, len);
     if (res == ERROR){
         //ver si conviene mas devolver un NACK
-        send_ack(msg.sender_pid, operation);
+        //send_ack(msg.sender_pid, operation);
         return ERROR;
     }
 

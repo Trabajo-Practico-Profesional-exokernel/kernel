@@ -101,6 +101,7 @@ int write(int fd, char *content, int len) {
 
 int lseek(int fd, int offset, int whence) {
     (void)whence;
+    //VERIFICAR CORRECTAMENTE EL ENVIO Y RECIBO DE MENSAJES CUANDO LSEEK FALLA
     int res = app_send_msg_to_server(OP_LSEEK, fd, offset, 0, 0, 0);
     if (res == ERROR) return ERROR;
     return app_receive_parameter(OP_LSEEK);

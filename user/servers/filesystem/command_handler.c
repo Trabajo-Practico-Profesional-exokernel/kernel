@@ -132,7 +132,7 @@ int32_t give_response(int32_t type_command, int32_t arg_1, int32_t arg_2, int32_
         (type_command == FS_OP_LS && arg_2 != 0))
     {
         // Si se espera contenido
-        if (arg_2 != 0 && arg_3 > 0) {
+        if (arg_2 != 0 && arg_3 > 0 && arg_1 > 0) {
             return server_send_content_to_app(current_client_pid, protocol_op, (char*)arg_2, arg_3);
         }
         // Si fallo (ej. bytes_read < 0), enviamos solo el codigo de error
