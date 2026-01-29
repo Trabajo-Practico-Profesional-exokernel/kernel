@@ -14,5 +14,5 @@ int32_t parse_str_int(uint8_t *input, uint8_t **out_str, int32_t *out_int);
 
 void join_strings(char *dest, const char *s1, const char *s2);
 char* split_at_first_space(char* str);
-
+static char* split_arg(char* str);
 #endif /* _PARSERS_STRUTIL_H */
