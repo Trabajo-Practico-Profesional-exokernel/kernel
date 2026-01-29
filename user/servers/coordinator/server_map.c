@@ -16,5 +16,5 @@ uint32_t server_map_get(ServerMap *map, Server type) {
     if (type >= 0 && type < SERVER_COUNT) {
         return map->pids[type];
     }
-    return 0;
+    return -1;
 }

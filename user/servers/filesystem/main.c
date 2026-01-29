@@ -236,7 +236,9 @@ void handle_chmod(FilesystemOperation *op) {
     give_response(FS_OP_CHMOD, res, 0, 0);
 }
 
-void send_error_msg(){}
+void send_error_msg(int32_t operation){
+    give_response(operation, ERROR, 0, 0);
+}
 
 typedef void (*fs_op_handler_t)(FilesystemOperation *op);
 
@@ -268,7 +270,7 @@ void dispatch_command(FilesystemOperation *op) {
     if (op->type_op >= 0 && op->type_op < MAX_OP_HANDLERS && op_dispatch_table[op->type_op]) {
         op_dispatch_table[op->type_op](op);
     } else {
-        send_error_msg();
+        send_error_msg(op->type_op);
     }
 }
 

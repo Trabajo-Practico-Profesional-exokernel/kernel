@@ -9,8 +9,152 @@
 #include "server_map.h"
 #include "string.h"
 #include "stdio.h"
+#include "command_handler.h"
+#include "types.h"
+#include "arch/proc.h"
+#include "server_map.h"
 
 Coordinator coordinator;
+
+int32_t get_server_type(int32_t fd, int32_t pid){
+
+    int32_t type = coordinator.fd[pid][fd];
+
+    if (type >= 0 && type < SERVER_COUNT) {
+        return type;
+    }
+
+    return -1;
+}
+
+int32_t set_server_type(int32_t fd, int32_t pid, int32_t type){
+
+    if (type >= 0 && type < SERVER_COUNT) {
+        coordinator.fd[pid][fd] = type;
+        return SUCCESS;
+    }
+
+    return ERROR;
+}
+
+int32_t coordinator_noop(void) {
+    return -1;
+}
+
+int32_t coordinator_putchar(void) {
+    return -1;
+}
+
+int32_t coordinator_getchar(void) {
+    return -1;
+}
+
+int32_t coordinator_update(int32_t fd, int32_t pid, int32_t type) {
+
+    int32_t server_type = get_server_type(fd, pid);
+    if (server_type < 0){
+        return -1;
+    }
+
+    return set_server_type(fd, pid, type);
+}
+
+int32_t coordinator_open(void) {
+    return server_map_get(&coordinator.server_map, FILESYSTEM);
+}
+
+int32_t coordinator_close(int32_t fd, int32_t pid) {
+    int32_t server_type = get_server_type(fd, pid);
+    if (server_type < 0){
+        return -1;
+    } 
+
+    return server_map_get(&coordinator.server_map, server_type);
+}
+
+int32_t coordinator_read(int32_t fd, int32_t pid) {
+    int32_t server_type = get_server_type(fd, pid);
+    if (server_type < 0){
+        return -1;
+    } 
+
+    return server_map_get(&coordinator.server_map, server_type);
+}
+
+int32_t coordinator_write(int32_t fd, int32_t pid) {
+    int32_t server_type = get_server_type(fd, pid);
+    if (server_type < 0){
+        return -1;
+    } 
+
+    return server_map_get(&coordinator.server_map, server_type);
+}
+
+int32_t coordinator_lseek(int32_t fd, int32_t pid) {
+    int32_t server_type = get_server_type(fd, pid);
+    if (server_type < 0){
+        return -1;
+    } 
+
+    return server_map_get(&coordinator.server_map, server_type);
+}
+
+int32_t coordinator_stat(void) {
+    return server_map_get(&coordinator.server_map, FILESYSTEM);
+}
+
+int32_t coordinator_dup(int32_t fd, int32_t pid) {
+    int32_t server_type = get_server_type(fd, pid);
+    if (server_type < 0){
+        return -1;
+    } 
+
+    return server_map_get(&coordinator.server_map, server_type);
+}
+
+int32_t coordinator_pipe(void) {
+    return server_map_get(&coordinator.server_map, PIPE);
+}
+
+int32_t coordinator_mkdir(void) {
+    return server_map_get(&coordinator.server_map, FILESYSTEM);
+}
+
+int32_t coordinator_rmdir(void) {
+    return server_map_get(&coordinator.server_map, FILESYSTEM);
+}
+
+int32_t coordinator_chdir(void) {
+    return server_map_get(&coordinator.server_map, FILESYSTEM);
+}
+
+int32_t coordinator_cwd(void) {
+    return server_map_get(&coordinator.server_map, FILESYSTEM);
+}
+
+int32_t coordinator_ls(void) {
+    return server_map_get(&coordinator.server_map, FILESYSTEM);
+}
+
+int32_t coordinator_mknod(void) {
+    return server_map_get(&coordinator.server_map, FILESYSTEM);
+}
+
+int32_t coordinator_link(void) {
+    return server_map_get(&coordinator.server_map, FILESYSTEM);
+}
+
+int32_t coordinator_unlink(void) {
+    return server_map_get(&coordinator.server_map, FILESYSTEM);
+}
+
+int32_t coordinator_chown(void) {
+    return server_map_get(&coordinator.server_map, FILESYSTEM);
+}
+
+int32_t coordinator_chmod(void) {
+    return server_map_get(&coordinator.server_map, FILESYSTEM);
+}
 
 static const char * const server_names[] = {
     [COORD]         = "coordinator",
@@ -53,88 +197,6 @@ int32_t start_server(Server type) {
     return ERROR;
 }
 
-
-#define UNUSED(x) (void)(x)
-
-void handler_noop(CoordinatorOperation *op){
-    UNUSED(op);
-}
-
-
-void handler_op(CoordinatorOperation *op){
-    UNUSED(op);
-}
-
-void handler_kernel_op(CoordinatorOperation *op){
-    UNUSED(op);
-}
-
-
-void handler_fs_op(CoordinatorOperation *op){
-    UNUSED(op);
-    /*uint32_t fs_pid;
-    fs_pid = server_map_get(&coordinator.server_map, FILESYSTEM);
-    int32_t result;
-    
-    if (alive(fs_pid)){
-        result = SUCCESS;
-    } else {
-        result = start_server(FILESYSTEM);
-        fs_pid = server_map_get(&coordinator.server_map, FILESYSTEM);
-    }
-
-    if (result == SUCCESS) {
-        send_msg_to_app(COORD, op->app_id, SUCCESS, fs_pid, FILESYSTEM);
-    } else {
-        send_msg_to_app(COORD, op->app_id, ERROR, 0, 0);
-    }*/
-}
-
-void handler_pipe_op(CoordinatorOperation *op){
-    UNUSED(op);
-}
-
-void handler_generic_op(CoordinatorOperation *op){
-    UNUSED(op);
-}
-
-#define MAX_HANDLERS (sizeof(dispatch_table) / sizeof(dispatch_table[0]))
-
-typedef void (*op_handler_t)(CoordinatorOperation *);
-
-static const op_handler_t dispatch_table[] = {
-    [OP_NOOP]           = handler_noop,
-    [OP_EXIT]           = handler_noop,
-    [OP_EXEC]           = handler_noop,
-    [OP_WAIT]           = handler_noop,
-    [OP_YIELD]          = handler_noop,
-    [OP_GETPID]         = handler_noop,
-    [OP_UPTIME]         = handler_noop,
-    [OP_SBRK]           = handler_noop,
-    [OP_PUTCHAR]        = handler_noop,
-    [OP_GETCHAR]        = handler_noop,
-    [OP_OPEN]           = handler_fs_op,
-    [OP_CLOSE]          = handler_fs_op,
-    [OP_READ]           = handler_fs_op,
-    [OP_WRITE]          = handler_fs_op,
-    [OP_LSEEK]          = handler_fs_op,
-    [OP_DUP]            = handler_noop,
-    [OP_PIPE]           = handler_noop,
-    [OP_MKDIR]          = handler_fs_op,
-    [OP_RMDIR]          = handler_fs_op,
-    [OP_CHDIR]          = handler_fs_op,
-    [OP_CWD]            = handler_fs_op,
-    [OP_LS]             = handler_fs_op,
-    [OP_MKNOD]          = handler_fs_op,
-    [OP_LINK]           = handler_fs_op,
-    [OP_UNLINK]         = handler_fs_op,
-    [OP_CHOWN]          = handler_fs_op,
-    [OP_CHMOD]          = handler_fs_op,
-    [OP_DISK_READ]      = handler_noop,
-    [OP_DISK_WRITE]     = handler_noop,
-    [OP_REG_HANDLER]    = handler_noop,
-    [OP_HANDLER_RET]    = handler_noop,
-};
 
 void init_coordinator(){
     server_map_init(&coordinator.server_map);

@@ -3,13 +3,6 @@
 
 typedef enum {
     OP_NOOP = 0,
-    OP_EXIT,
-    OP_EXEC,
-    OP_WAIT,
-    OP_YIELD,
-    OP_GETPID,
-    OP_UPTIME,
-    OP_SBRK,
     OP_PUTCHAR,
     OP_GETCHAR,
     OP_OPEN,
@@ -30,10 +23,7 @@ typedef enum {
     OP_UNLINK,
     OP_CHOWN,
     OP_CHMOD,
-    OP_DISK_READ,
-    OP_DISK_WRITE,
-    OP_REG_HANDLER,
-    OP_HANDLER_RET
+    OP_UPDATE, //no es una syscall pero por el momento lo pongo aca
 } SyscallOp;
 
 typedef enum {
