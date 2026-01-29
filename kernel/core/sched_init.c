@@ -69,8 +69,10 @@ void init_sched_main(void) {
 //    debug_printf("AT CREATE PROCESS DEF expected pc= %x, ", (uint32_t)VADDR_USER_BASE);
 //    printProc(proc_def);
     struct Proc * proc_def = create_process(APP_IND_COORDINATOR, DEF_ARGV);
+    coordinator_PID = proc_def->pid;
     //create_process(APP_IND_SHELL, DEF_ARGV);
-
+    //struct Proc * proc_def = create_process(APP_IND_PROC_A, DEF_ARGV);
+    //struct Proc * proc_def_2 = create_process(APP_IND_PROC_B, DEF_ARGV);
     switch_proc(proc_def);
     
 }

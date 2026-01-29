@@ -188,7 +188,6 @@ int32_t start_server(Server type) {
                 return ERROR;
             }
 
-            printf("[Coordinator] %s started with PID: %d.\n", program_name, proc_pid);
             server_map_set(&coordinator.server_map, type, proc_pid);
 
             return SUCCESS;

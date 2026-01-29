@@ -66,7 +66,6 @@ int32_t get_command(FilesystemOperation *command){
     if (recv_msg(&msg) != SUCCESS) {
         return ERROR;
     }
-
     // se guarda el pid actual del emisor para la respuesta de vuelta
     current_client_pid = msg.sender_pid;
 

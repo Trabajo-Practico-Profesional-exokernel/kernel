@@ -97,21 +97,24 @@ int32_t server_send_content_to_app(int32_t pid, uint32_t operation, char *buffer
 int32_t get_server_pid(int32_t arg_1, int32_t arg_2, int32_t arg_3,
     int32_t arg_4, int32_t arg_5, int32_t arg_6){
     int32_t res;
-    int32_t coordinator_pid = get_coord_pid();                  
+    int32_t coordinator_pid = get_coord_pid();
+
     res =  send_msg(coordinator_pid, arg_1, arg_2, arg_3, arg_4, arg_5, arg_6);
+
     if (res == ERROR){
         return ERROR;
     }
 
     Msg coordinator_response;
     res = recv_msg(&coordinator_response);
-    if (res = ERROR){
+
+    if (res == ERROR){
         return ERROR;
     }
 
     res = coordinator_response.arg_1;
 
-    if (res = ERROR){
+    if (res == ERROR){
         return ERROR;
     }
 
