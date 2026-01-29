@@ -35,8 +35,8 @@ void handle_open(FilesystemOperation *op) {
     int flags = op->arg_1;
 
     int fd = fs_open(path, flags, app_pid);
-    
-    give_response(FS_OP_OPEN, fd, 0, 0);
+
+    give_response(FS_OP_OPEN, fd, 0, 0, fd);
 }
 
 void handle_close(FilesystemOperation *op) {
@@ -45,7 +45,7 @@ void handle_close(FilesystemOperation *op) {
 
     int res = fs_close(fd, app_pid);
 
-    give_response(FS_OP_CLOSE, res, 0, 0);
+    give_response(FS_OP_CLOSE, res, 0, 0, fd);
 }
 
 void handle_read(FilesystemOperation *op) {
@@ -57,8 +57,8 @@ void handle_read(FilesystemOperation *op) {
     int to_read = (count > sizeof(buffer)) ? sizeof(buffer) : count;
 
     int bytes_read = fs_read(fd, buffer, to_read, app_pid);
-
-    give_response(FS_OP_READ, bytes_read, (uint32_t)buffer, strlen(buffer));
+    
+    give_response(FS_OP_READ, bytes_read, (uint32_t)buffer, strlen(buffer), 0);
 }
 
 void handle_write(FilesystemOperation *op) {
@@ -73,7 +73,7 @@ void handle_write(FilesystemOperation *op) {
 
     int bytes_written = fs_write(fd, buffer, to_write, app_pid);
 
-    give_response(FS_OP_WRITE, bytes_written, 0, 0);
+    give_response(FS_OP_WRITE, bytes_written, 0, 0, 0);
 }
 
 void handle_lseek(FilesystemOperation *op) {
@@ -83,7 +83,7 @@ void handle_lseek(FilesystemOperation *op) {
 
     int res = fs_lseek(fd, offset, app_pid);
 
-    give_response(FS_OP_LSEEK, res, 0, 0);
+    give_response(FS_OP_LSEEK, res, 0, 0, 0);
 }
 
 void handle_fstat(FilesystemOperation *op) {
@@ -96,7 +96,7 @@ void handle_fstat(FilesystemOperation *op) {
     fileStat stat_buf;
     int res = fs_stat(path, &stat_buf, app_pid);
 
-    give_response(FS_OP_FSTAT, res, &stat_buf, sizeof(fileStat));*/
+    give_response(FS_OP_FSTAT, res, &stat_buf, sizeof(fileStat), 0);*/
 }
 
 void handle_dup(FilesystemOperation *op) {
@@ -121,7 +121,7 @@ void handle_mkdir(FilesystemOperation *op) {
         fs_sync_current_dir(app_pid);
     }
 
-    give_response(FS_OP_MKDIR, res, 0, 0);
+    give_response(FS_OP_MKDIR, res, 0, 0, 0);
 }
 
 void handle_rmdir(FilesystemOperation *op) {
@@ -135,7 +135,7 @@ void handle_rmdir(FilesystemOperation *op) {
         fs_sync_current_dir(app_pid);
     }
 
-    give_response(FS_OP_RMDIR, res, 0, 0);
+    give_response(FS_OP_RMDIR, res, 0, 0, 0);
 }
 
 void handle_chdir(FilesystemOperation *op) {
@@ -146,7 +146,7 @@ void handle_chdir(FilesystemOperation *op) {
 
     int res = fs_cd(path, app_pid);
 
-    give_response(FS_OP_CHDIR, res, 0, 0);
+    give_response(FS_OP_CHDIR, res, 0, 0, 0);
 }
 
 void handle_pwd(FilesystemOperation *op) {
@@ -154,10 +154,10 @@ void handle_pwd(FilesystemOperation *op) {
     char *path = current_path[app_pid];
     
     if (path == NULL){
-        give_response(FS_OP_PWD, ERROR, 0, 0);
+        give_response(FS_OP_PWD, ERROR, 0, 0, 0);
     }
 
-    give_response(FS_OP_LS, SUCCESS, (uint32_t)path, strlen(path));
+    give_response(FS_OP_PWD, SUCCESS, (uint32_t)path, strlen(path), 0);
 }
 
 void handle_ls(FilesystemOperation *op) {
@@ -165,7 +165,7 @@ void handle_ls(FilesystemOperation *op) {
 
     shell_ls(app_pid);
 
-    give_response(FS_OP_LS, SUCCESS, 0, 0);
+    give_response(FS_OP_LS, SUCCESS, 0, 0, 0);
 }
 
 void handle_mknod(FilesystemOperation *op) {
@@ -182,7 +182,7 @@ void handle_mknod(FilesystemOperation *op) {
         res = 0;
     }
 
-    give_response(FS_OP_MKNOD, res, 0, 0);
+    give_response(FS_OP_MKNOD, res, 0, 0, 0);
 }
 
 void handle_link(FilesystemOperation *op) {
@@ -195,7 +195,7 @@ void handle_link(FilesystemOperation *op) {
 
     int res = fs_link(old_path, new_path, app_pid);
 
-    give_response(FS_OP_LINK, res, 0, 0);
+    give_response(FS_OP_LINK, res, 0, 0, 0);
 }
 
 void handle_unlink(FilesystemOperation *op) {
@@ -206,7 +206,7 @@ void handle_unlink(FilesystemOperation *op) {
 
     int res = fs_unlink(path, app_pid);
 
-    give_response(FS_OP_UNLINK, res, 0, 0);
+    give_response(FS_OP_UNLINK, res, 0, 0, 0);
 }
 
 void handle_chown(FilesystemOperation *op) {
@@ -220,7 +220,7 @@ void handle_chown(FilesystemOperation *op) {
 
     int res = fs_chown(app_pid, path, uid, gid);
 
-    give_response(FS_OP_CHOWN, res, 0, 0);
+    give_response(FS_OP_CHOWN, res, 0, 0, 0);
 }
 
 void handle_chmod(FilesystemOperation *op) {
@@ -233,11 +233,11 @@ void handle_chmod(FilesystemOperation *op) {
 
     int res = fs_chmod(app_pid, path, mode);
 
-    give_response(FS_OP_CHMOD, res, 0, 0);
+    give_response(FS_OP_CHMOD, res, 0, 0, 0);
 }
 
 void send_error_msg(int32_t operation){
-    give_response(operation, ERROR, 0, 0);
+    give_response(operation, ERROR, 0, 0, 0);
 }
 
 typedef void (*fs_op_handler_t)(FilesystemOperation *op);

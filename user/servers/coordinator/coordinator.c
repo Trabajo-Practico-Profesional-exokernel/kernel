@@ -51,11 +51,11 @@ int32_t coordinator_getchar(void) {
 
 int32_t coordinator_update(int32_t fd, int32_t pid, int32_t type) {
 
-    int32_t server_type = get_server_type(fd, pid);
-    if (server_type < 0){
-        return -1;
+    if (fd < 0 || fd >= MAX_FILES || pid < 0 || pid >= PROCS_MAX) {
+        return ERROR;
     }
 
+    reset_current_client_pid();
     return set_server_type(fd, pid, type);
 }
 

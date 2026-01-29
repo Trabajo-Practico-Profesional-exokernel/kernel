@@ -103,15 +103,13 @@ int handle_read(char* args) {
     if (size <= 0 || size > 1024) size = 1024; // Buffer limit
 
     char buffer[1025];
-    int bytes = read(fd, buffer, size);
+    int res = read(fd, buffer, size);
     
-    if (bytes < 0) {
+    if (res == ERR_CODE) {
         printf("Read error or EOF\n");
         return ERR_CODE;
     }
-    
-    buffer[bytes] = 0; // Null terminate para imprimir
-    printf("Read (%d bytes):\n%s\n", bytes, buffer);
+    printf("Read: %s\n", buffer);
     return OK_CODE;
 }
 

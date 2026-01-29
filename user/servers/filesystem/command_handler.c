@@ -9,6 +9,7 @@
 #include "inc/operations.h"
 #include "types.h"
 #include "console/debug.h"
+#include "syscalls.h"
 
 static int32_t current_client_pid = -1;
 
@@ -101,7 +102,23 @@ int32_t get_command(FilesystemOperation *command){
     return SUCCESS;
 }
 
-int32_t give_response(int32_t type_command, int32_t arg_1, int32_t arg_2, int32_t arg_3){
+
+int32_t update_coord_state(int32_t type_server, int32_t type_command, int32_t current_client_pid, int32_t fd){
+    int32_t coord_pid = get_coord_pid();
+    int32_t target_server_type = -1;
+
+    if (type_command == OP_OPEN){
+        target_server_type = type_server; 
+    } else if (type_command == OP_CLOSE){
+        target_server_type = -1;
+    } else {
+        return SUCCESS;
+    }
+
+    return send_msg(coord_pid, OP_UPDATE, target_server_type, current_client_pid, fd, 0, 0);
+}
+
+int32_t give_response(int32_t type_command, int32_t arg_1, int32_t arg_2, int32_t arg_3, int32_t fd){
 
     int32_t protocol_op = unmap_op_code(type_command);
 
@@ -123,6 +140,11 @@ int32_t give_response(int32_t type_command, int32_t arg_1, int32_t arg_2, int32_
     } 
     else {
         // Respuesta estandar (exito/error o valor entero como FD)
+        if (arg_1 >= 0) {
+            if (protocol_op == OP_OPEN || protocol_op == OP_CLOSE) {
+                update_coord_state(FILESYSTEM, protocol_op, current_client_pid, fd);
+            }
+        }
         return server_send_parameter_to_app(current_client_pid, protocol_op, arg_1);
     }
 }

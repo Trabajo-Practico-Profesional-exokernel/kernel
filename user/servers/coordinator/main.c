@@ -106,9 +106,9 @@ void handle_chmod(CoordinatorOperation *op) {
     give_response(op->type_op, res, 0, 0);
 }
 
+
 void handle_update(CoordinatorOperation *op) {
     coordinator_update(op->fd, op->app_id, op->server_type);
-    reset_current_client_pid();
 }
 
 void send_error_msg(int32_t operation) {

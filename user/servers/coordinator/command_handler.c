@@ -6,6 +6,7 @@
 #include "console/debug.h"
 #include "constants.h"
 
+
 static int32_t current_client_pid = -1;
 
 int32_t get_command(CoordinatorOperation *command) {
@@ -15,13 +16,19 @@ int32_t get_command(CoordinatorOperation *command) {
         return ERROR;
     }
 
-    current_client_pid = msg.sender_pid;
-
-    command->app_id = msg.sender_pid;
     command->type_op = msg.arg_1;
 
-    command->fd = msg.arg_2;          
-    command->server_type = msg.arg_3; 
+    if (command->type_op == OP_UPDATE) {
+        command->server_type = msg.arg_2; 
+        command->app_id      = msg.arg_3;
+        command->fd          = msg.arg_4;
+        
+    } else {
+        current_client_pid = msg.sender_pid;
+        command->app_id      = msg.sender_pid;
+        command->fd          = msg.arg_2;          
+        command->server_type = msg.arg_3; 
+    }
 
     return SUCCESS;
 }
