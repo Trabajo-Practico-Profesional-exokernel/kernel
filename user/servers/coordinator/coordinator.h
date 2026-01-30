@@ -7,11 +7,20 @@
 #include "server_map.h"
 
 typedef struct {
+    int32_t fd;
+    int32_t type_server;
+} FdData;
+
+typedef struct {
     ServerMap server_map;
-    int32_t fd[PROCS_MAX][MAX_FILES];
+    FdData fd[PROCS_MAX][MAX_FILES];
 } Coordinator;
 
-int32_t coordinator_update(int32_t fd, int32_t pid, int32_t type);
+
+void init_servers();
+void init_coordinator();
+int32_t get_server_fd(int32_t pid, int32_t fd);
+int32_t coordinator_update(int32_t fd, int32_t pid, int32_t type, int32_t state);
 int32_t coordinator_noop(void);
 int32_t coordinator_putchar(void);
 int32_t coordinator_getchar(void);
@@ -33,6 +42,5 @@ int32_t coordinator_link(void);
 int32_t coordinator_unlink(void);
 int32_t coordinator_chown(void);
 int32_t coordinator_chmod(void);
-void init_servers();
-void init_coordinator();
+
 #endif

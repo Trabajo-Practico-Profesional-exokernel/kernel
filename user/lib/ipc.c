@@ -121,6 +121,43 @@ int32_t get_server_pid(int32_t arg_1, int32_t arg_2, int32_t arg_3,
     return coordinator_response.arg_2;
 }
 
+
+/// MEJORAR ESTA IMPLEMENTACION
+int32_t get_real_fd(int32_t operation, int32_t fd, int32_t server_pid){
+
+    int is_fd_operation = (
+        operation == OP_CLOSE || 
+        operation == OP_READ  || 
+        operation == OP_WRITE ||
+        operation == OP_LSEEK || 
+        operation == OP_DUP);
+
+    if (!is_fd_operation){ 
+        return ERROR;
+    }
+
+    int32_t coordinator_pid = get_coord_pid();
+    int32_t res = send_msg(coordinator_pid, OP_GET_FD, server_pid, fd, 0, 0, 0);
+    if (res == ERROR){
+        return ERROR;
+    }
+
+    Msg coordinator_response;
+    res = recv_msg(&coordinator_response);
+
+    if (res == ERROR){
+        return ERROR;
+    }
+
+    res = coordinator_response.arg_1;
+
+    if (res == ERROR){
+        return ERROR;
+    }
+
+    return coordinator_response.arg_2;
+}
+
 int32_t app_send_msg_to_server(int32_t arg_1, int32_t arg_2, int32_t arg_3,
                                 int32_t arg_4, int32_t arg_5, int32_t arg_6){
 
@@ -129,6 +166,16 @@ int32_t app_send_msg_to_server(int32_t arg_1, int32_t arg_2, int32_t arg_3,
     if (server_pid < 0){
         return ERROR;
     }
+
+    //VER DE REFACTORIZAR LA SIGUIENTE IMPLEMENTACION
+
+    int32_t real_fd = get_real_fd(arg_1, arg_2, server_pid);
+
+    if (real_fd >= 0) {
+        arg_2 = real_fd;
+    }
+
+    // ------------------------------------------------
 
     return send_msg(server_pid, arg_1, arg_2, arg_3, arg_4, arg_5, arg_6);
 }

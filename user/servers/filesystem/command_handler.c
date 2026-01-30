@@ -104,18 +104,23 @@ int32_t get_command(FilesystemOperation *command){
 
 
 int32_t update_coord_state(int32_t type_server, int32_t type_command, int32_t current_client_pid, int32_t fd){
+    
+    if (type_command != OP_OPEN && type_command != OP_CLOSE ){
+        return -1;
+    }
+    
     int32_t coord_pid = get_coord_pid();
-    int32_t target_server_type = -1;
+    int32_t state = 0;
 
     if (type_command == OP_OPEN){
-        target_server_type = type_server; 
+        state = 1; 
     } else if (type_command == OP_CLOSE){
-        target_server_type = -1;
+        state = -1;
     } else {
         return SUCCESS;
     }
 
-    return send_msg(coord_pid, OP_UPDATE, target_server_type, current_client_pid, fd, 0, 0);
+    return send_msg(coord_pid, OP_UPDATE, getpid(), current_client_pid, fd, state, 0);
 }
 
 int32_t give_response(int32_t type_command, int32_t arg_1, int32_t arg_2, int32_t arg_3, int32_t fd){

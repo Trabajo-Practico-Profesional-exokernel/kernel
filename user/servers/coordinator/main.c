@@ -108,11 +108,16 @@ void handle_chmod(CoordinatorOperation *op) {
 
 
 void handle_update(CoordinatorOperation *op) {
-    coordinator_update(op->fd, op->app_id, op->server_type);
+    coordinator_update(op->fd, op->app_id, op->server_type, op->type_op);
 }
 
 void send_error_msg(int32_t operation) {
     give_response(operation, ERROR, 0, 0);
+}
+
+void handle_get_fd(CoordinatorOperation *op) {
+    int32_t res = get_server_fd(op->app_id, op->fd);
+    give_response(op->type_op, res, 0, 0);
 }
 
 void handle_noop() {
@@ -144,6 +149,7 @@ static const coord_op_handler_t op_dispatch_table[] = {
     [OP_CHOWN]          = handle_chown,
     [OP_CHMOD]          = handle_chmod,
     [OP_UPDATE]         = handle_update,
+    [OP_GET_FD]         = handle_get_fd,
 };
 
 #define MAX_OP_HANDLERS (sizeof(op_dispatch_table) / sizeof(op_dispatch_table[0]))

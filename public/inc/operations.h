@@ -24,6 +24,7 @@ typedef enum {
     OP_CHOWN,
     OP_CHMOD,
     OP_UPDATE, //no es una syscall pero por el momento lo pongo aca
+    OP_GET_FD, //no es una syscall pero por el momento lo pongo aca
 } SyscallOp;
 
 typedef enum {

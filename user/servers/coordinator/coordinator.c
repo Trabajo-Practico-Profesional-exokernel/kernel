@@ -16,25 +16,84 @@
 
 Coordinator coordinator;
 
-int32_t get_server_type(int32_t fd, int32_t pid){
+int32_t get_server_type(int32_t fd, int32_t pid) {
+    // printf("[COORD] get_server_type query -> AppPID: %d | AppFD: %d\n", pid, fd);
 
-    int32_t type = coordinator.fd[pid][fd];
-
+    if (pid < 0 || pid >= PROCS_MAX || fd < 0 || fd >= MAX_FILES) {
+        printf("[COORD] ERROR: get_server_type out of bounds (PID: %d, FD: %d)\n", pid, fd);
+        return -1;
+    }
+    
+    int32_t type = coordinator.fd[pid][fd].type_server;
+    
+    // Solo imprimir si encontramos algo util, para no spamear con -1
     if (type >= 0 && type < SERVER_COUNT) {
+        // printf("[COORD] get_server_type MATCH -> AppPID: %d | FD: %d is managed by ServerType: %d\n", pid, fd, type);
         return type;
     }
-
+    
+    // printf("[COORD] get_server_type EMPTY -> AppPID: %d | FD: %d is unmapped (-1)\n", pid, fd);
     return -1;
 }
 
-int32_t set_server_type(int32_t fd, int32_t pid, int32_t type){
-
-    if (type >= 0 && type < SERVER_COUNT) {
-        coordinator.fd[pid][fd] = type;
-        return SUCCESS;
+int32_t get_server_fd(int32_t pid_app, int32_t fd) {
+    if (pid_app < 0 || pid_app >= PROCS_MAX || fd < 0 || fd >= MAX_FILES) {
+        printf("[COORD] ERROR: get_server_fd out of bounds (PID: %d, FD: %d)\n", pid_app, fd);
+        return -1;
     }
 
-    return ERROR;
+    int32_t server_fd = coordinator.fd[pid_app][fd].fd;
+    
+    // printf("[COORD] Translation: AppPID: %d uses AppFD: %d -> Translates to ServerFD: %d\n", pid_app, fd, server_fd);
+    
+    return server_fd;
+}
+
+
+int32_t set_server_type(int32_t server_fd, int32_t pid_app, int32_t pid_server, int32_t state) {
+
+    int32_t server_type = -1;
+    for (int32_t i = 0; i < SERVER_COUNT; i++) {
+        if (coordinator.server_map.pids[i] == pid_server) {
+            server_type = i;
+            break;
+        }
+    }
+
+    if (server_type < 0) {
+        return ERROR;
+    }
+
+    // CASO CIERRE
+    if (state < 0) {
+        for (int32_t i = 0; i < MAX_FILES; i++) {
+            // Buscamos coincidencia exacta para borrar
+            if (coordinator.fd[pid_app][i].fd == server_fd && 
+                coordinator.fd[pid_app][i].type_server == server_type) 
+            {
+                
+                coordinator.fd[pid_app][i].fd = -1;
+                coordinator.fd[pid_app][i].type_server = -1;
+                return SUCCESS;
+            }
+        }
+
+        return ERROR;
+    } 
+    
+    // CASO APERTURA
+    else {
+        for (int32_t i = 0; i < MAX_FILES; i++) {
+            if (coordinator.fd[pid_app][i].type_server == -1) {
+                
+                coordinator.fd[pid_app][i].fd = server_fd;
+                coordinator.fd[pid_app][i].type_server = server_type;
+                
+                return i;
+            }
+        }
+        return ERROR;
+    }
 }
 
 int32_t coordinator_noop(void) {
@@ -49,14 +108,13 @@ int32_t coordinator_getchar(void) {
     return -1;
 }
 
-int32_t coordinator_update(int32_t fd, int32_t pid, int32_t type) {
-
+int32_t coordinator_update(int32_t fd, int32_t pid, int32_t type, int32_t state) {
     if (fd < 0 || fd >= MAX_FILES || pid < 0 || pid >= PROCS_MAX) {
         return ERROR;
     }
 
     reset_current_client_pid();
-    return set_server_type(fd, pid, type);
+    return set_server_type(fd, pid, type, state);
 }
 
 int32_t coordinator_open(void) {
@@ -200,7 +258,8 @@ int32_t start_server(Server type) {
 void init_fds() {
     for (int i = 0; i < PROCS_MAX; i++) {
         for (int j = 0; j < MAX_FILES; j++) {
-            coordinator.fd[i][j] = -1;
+            coordinator.fd[i][j].fd = -1;
+            coordinator.fd[i][j].type_server = -1;
         }
     }
 }
