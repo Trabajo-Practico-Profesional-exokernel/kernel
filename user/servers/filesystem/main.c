@@ -2,7 +2,7 @@
 #include "lib.h"
 #include "inc/filesystem.h"
 #include "inc/syscalls.h"
-#include "arch/communication.h"
+
 #include "string.h"
 #include "stdlib.h"
 #include "disk_syscalls.h"

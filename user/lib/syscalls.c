@@ -1,7 +1,7 @@
 #include "inc/syscalls.h"
 #include "syscalls.h"
 #include "lib.h"
-#include "arch/communication.h"
+
 #include "inc/filesystem.h"
 #include "string.h"
 #include "stdlib.h"

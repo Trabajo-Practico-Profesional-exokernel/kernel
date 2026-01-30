@@ -3,7 +3,7 @@
 
 #include "types.h"
 #include "inc/filesystem.h"
-#include "arch/communication.h"
+
 
 int exec(int prog_ind, char ** args);
 int wait(int pid);

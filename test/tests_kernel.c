@@ -8,7 +8,7 @@
 #include "arch/mem.h"           // alloc_pages, map_page, get_paddr_for
 #include "arch/proc.h"          // struct Proc
 #include "../kernel/core/sched.h"       // get_curr, get_first_free_proc
-#include "arch/communication.h" // IPC: insert_msg, extract_msg, struct Message
+ // IPC: insert_msg, extract_msg, struct Message
 #include "arch_inc/mem_constants.h" // PAGE_SIZE, Permisos
 
 // Variables externas del kernel

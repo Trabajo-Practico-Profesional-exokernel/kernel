@@ -103,6 +103,7 @@ int handle_read(char* args) {
     if (size <= 0 || size > 1024) size = 1024; // Buffer limit
 
     char buffer[1025];
+    memset(buffer, 0, sizeof(buffer));
     int res = read(fd, buffer, size);
     
     if (res == ERR_CODE) {
