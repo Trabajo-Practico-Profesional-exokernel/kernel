@@ -16,7 +16,6 @@ void block_init(void);
 
 int block_read(int block, char *mem);
 
-
 int block_write(int block, char *mem);
 
 #endif

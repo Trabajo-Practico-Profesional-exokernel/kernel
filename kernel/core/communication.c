@@ -1,3 +1,4 @@
+/*
 #include "arch/communication.h"
 #include "types.h"
 #include "arch/mem.h"
@@ -104,3 +105,4 @@ int recv_msg(struct Proc* receiver_proc, uint32_t msg_vaddr) {
     copyout_msg(receiver_proc, msg_vaddr, &msg, sizeof(struct Message));
     return 0;
 }
+*/

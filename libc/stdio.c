@@ -144,7 +144,7 @@ static void printptr(uintptr_t x) {
     }
 }
 
-void printf(const uint8_t *fmt, ...) {
+void printf(const char *fmt, ...) {
     va_list ap;
     va_start(ap, fmt);
 

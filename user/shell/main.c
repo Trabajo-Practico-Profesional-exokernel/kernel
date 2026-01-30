@@ -7,7 +7,6 @@
 #include "parsers/strutil.h"
 
 extern char* _app_names[];
-
 // Own includes
 #include "command_handler.h"
 
@@ -28,15 +27,14 @@ void main() {
 
     while (1){
         printf("user> ");
-        
         // int len = 
         read_line(input_buf, MAX_INPUT);
 
-        char * args= NULL; 
-        split_by_once(input_buf, &args, ' ');
+        char * args= NULL;
+        split_by_once((uint8_t*)input_buf, (uint8_t**)&args, ' ');
 
 
-        if (strncmp(input_buf, "q", 2) == 0) {
+        if (strncmp((const uint8_t*)input_buf, (const uint8_t*)"q", 2) == 0) {
             printf("Bye!\n");
             break;
         }

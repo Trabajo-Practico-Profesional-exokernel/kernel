@@ -81,3 +81,43 @@ int32_t parse_str_int(uint8_t *input, uint8_t **out_str, int32_t *out_int) {
 
     return 0;
 }
+
+void join_strings(char *dest, const char *s1, const char *s2) {
+    int i = 0;
+    int j = 0;
+
+    while(s1[j] != '\0') {
+        dest[i++] = s1[j++];
+    }
+
+    dest[i++] = ' ';
+    
+    j = 0;
+    while(s2[j] != '\0') { 
+        dest[i++] = s2[j++];
+    }
+    
+    dest[i] = '\0';
+}
+
+char* split_at_first_space(char* str) {
+    int i = 0;
+    while(str[i] != '\0') {
+        if (str[i] == ' ') {
+            str[i] = '\0';
+            return &str[i + 1];
+        }
+        i++;
+    }
+    return (char *)0;
+}
+
+char* split_arg(char* str) {
+    char* next = (char*)strchr((const uint8_t*)str, ' ');
+    if (next) {
+        *next = 0;
+        next++;
+        while(*next == ' ') next++;
+    }
+    return next;
+}

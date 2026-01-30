@@ -69,8 +69,8 @@ clean:
 
 servers_dirs:
 	@echo "Building servers:"
-	@./compile_dir_apps.sh $(ARCH) $(SERVERS_DIRS)
-
+	@./compile_dir_apps.sh $(ARCH) -add_meta $(SERVERS_DIRS)
+	
 general_c:
 	@echo "Building general single-file apps:"
 	./compile_file_apps.sh $(ARCH) $(GENERAL_C)

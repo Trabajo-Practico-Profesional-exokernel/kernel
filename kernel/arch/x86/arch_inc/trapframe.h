@@ -106,6 +106,7 @@ typedef TrapFrame FullTrapFrame;
 #define SYSCALL_ARG0(tf) tf->regs.ebx
 #define SYSCALL_ARG1(tf) tf->regs.ecx
 #define SYSCALL_ARG2(tf) tf->regs.edx
+#define SYSCALL_ARG3(tf) tf->regs.esi
 #define SYSCALL_SYSNO(tf) tf->regs.eax
 
 #define SET_SYSCALL_RET0(tf, vl) tf->regs.eax=vl;
