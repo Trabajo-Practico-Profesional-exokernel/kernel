@@ -9,7 +9,10 @@
 #include "fd.h"
 #include "stdio.h"
 #include "console/debug.h"
+#include "testing.h"
+#include "arch_inc/trap_constants.h"
 
+//
 // void *mboot, unsigned int magic_number
 // UNUSED_ARGUMENT(mboot);
 //     UNUSED_ARGUMENT(magic_number);
@@ -34,8 +37,6 @@ void kmain()
 {
 
     init_cpus(); // First init cpus, here we set the cpuid
-    
-
 
     #ifdef IS_RISC
     #else
@@ -58,21 +59,23 @@ void kmain()
     clear();
     move_cursor(0);
 
-    debug_printf("HOLIS\n");
-
+    printf("==>TEST INIT TRAP!\n");
     init_trap();
 
+    printf("==>TEST INIT DISK!\n");
     init_disk(); 
     //Doing it after init_trap just to be able to see a trap/panic if something fails!
     // Mem init for riscv == setup pagetable for kernel.
+    printf("==>TEST INIT MEM!\n");
     mem_init();
+
     #ifdef IS_RISC
     // Why not ... maybe not full needed at first but works.
     switch_to_kernel_tables();
     #endif
     
-    // main_tests();
 
+    printf("==>TEST INIT SYSCALLS!\n");
     init_files();
     init_syscalls_ipc();
     init_syscalls_proc();
@@ -84,16 +87,16 @@ void kmain()
     kbd_init();
     #endif
     disable_debug_print();
-    debug_printf("\n\nHello World!\n");
-    
     // No lock needed for this set since is just 1 writer and once!
     started = 1;
 
     // In riscv is needed, since we are using opensbi, opensbi halts the cpus until notified.
     // Like we would do with started == 0.
     notify_inited();
-    printf("---> x86 start scged \n");
-    init_sched();
+
+    disable_interrupts(); // Disable clock interrupts
+
+    main_tests();
 
     for (;;)
     {

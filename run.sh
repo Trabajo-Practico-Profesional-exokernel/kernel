@@ -6,6 +6,7 @@ clean_user_apps=0
 verbose=0
 debug=0
 trg=riscv
+testing=0
 
 while [[ $# -gt 0 ]]; do
 	case "$1" in
@@ -13,6 +14,7 @@ while [[ $# -gt 0 ]]; do
 	        -v) verbose=1; shift ;;
 	        -d) debug=1; shift ;;
 	        -build_users) clean_user_apps=1; shift ;;
+	        -tests) testing=1; shift ;;
 	        #-*) echo "Got flag $1 after - :${1#-}" ; shift;;  	
 	*) trg=$1 ; shift ;;
 	esac
@@ -89,8 +91,8 @@ echo "trg: $trg with '$NCPU' cpus"
 
 if [[ $debug -eq 1 ]]; then
 	echo "-->Running make ARCH=$trg debug"
-	make ARCH=$trg NCPU=$NCPU debug
+	make ARCH=$trg NCPU=$NCPU TESTING=$testing debug
 else
 	echo "-->Running make ARCH=$trg run"
-	make ARCH=$trg NCPU=$NCPU run	
+	make ARCH=$trg NCPU=$NCPU TESTING=$testing run	
 fi

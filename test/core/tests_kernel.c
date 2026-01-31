@@ -3,13 +3,14 @@
 #include "string.h"
 #include "stdlib.h"
 #include "stdio.h"
-#include "utils.h"
 // Includes internos del kernel necesarios
 #include "arch/mem.h"           // alloc_pages, map_page, get_paddr_for
 #include "arch/proc.h"          // struct Proc
-#include "../kernel/core/sched.h"       // get_curr, get_first_free_proc
+#include "sched.h"       // get_curr, get_first_free_proc
  // IPC: insert_msg, extract_msg, struct Message
 #include "arch_inc/mem_constants.h" // PAGE_SIZE, Permisos
+
+#include "test_utils.h"
 
 // Variables externas del kernel
 extern paddr_t kernel_page_table; // Definido en arch/riscV/mem.c

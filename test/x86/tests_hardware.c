@@ -1,10 +1,10 @@
 #include "tests_hardware.h"
-#include "../test_common.h"
+#include "test_common.h"
 #include "stdio.h"
 #include "arch/mem.h"
 #include "string.h"
 #include "stdlib.h"
-#include "../utils.h"
+#include "test_utils.h"
 
 // Includes específicos de arquitectura x86 (supuestos)
 // Si no tienes un archivo de io.h, las funciones inb/outb se definen abajo inline

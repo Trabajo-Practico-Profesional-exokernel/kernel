@@ -12,6 +12,10 @@ KERNEL_DISK_PATH=.kernel_disk/disk.txt
 NCPU ?= 1
 CPU_STACK_PAGES = 32
 CPU_TRAP_STACK_PAGES = 32
+TESTING ?= 0
+
+KERNEL_MAIN := kernel/core/kmain.c
+
 
 # ----------------------------
 # Compiladores por arquitectura
@@ -23,6 +27,8 @@ ifeq ($(ARCH),x86)
 	CFLAGS  = $(DEF_INCS) -Imeta/gen -Ikernel/arch/x86 -Ikernel/arch/x86/drivers -m32 -nostdlib -nostdinc -fno-builtin -fno-stack-protector \
 	           -nostartfiles -nodefaultlibs -Wall -Wextra -c -g -DIS_X86 -march=i386 -mtune=i386\
 	                   -DNCPU=$(NCPU)
+	TEST_DIRS := test/core test/x86
+	TEST_INCS := -Itest/core -Itest/x86
 
 	ASFLAGS = -f elf
 	LDFLAGS = -T kernel/arch/x86/drivers/linker/link.ld -melf_i386
@@ -30,6 +36,9 @@ ifeq ($(ARCH),x86)
 	                                                        -drive file=$(KERNEL_DISK_PATH),index=1,media=disk,format=raw
 else ifeq ($(ARCH),riscv)
 	CC      = clang
+
+	TEST_DIRS := test/core test/riscv
+	TEST_INCS := -Itest/core -Itest/riscv
 
 	CFLAGS  = $(DEF_INCS) -Imeta/gen -Ikernel/arch/riscV -std=c11 -O2 -g3 -Wall -Wextra --target=riscv32-unknown-elf \
 	           -fno-stack-protector -ffreestanding -nostdlib -DIS_RISC -fno-pic -fno-pie -mcmodel=medany\
@@ -53,14 +62,28 @@ endif
 
 # CAMBIO: Reemplazado 'kernel' por 'kernel/core' en ambas arquitecturas
 ifeq ($(ARCH),x86)
-	SRC_DIRS = kernel/arch/x86 kernel/arch/x86/drivers/io kernel/arch/x86/drivers/loader kernel/core sys libc util util/console util/parsers meta/gen kernel/arch/x86/drivers test test/test_x86
+	SRC_DIRS = kernel/arch/x86 kernel/arch/x86/drivers/io kernel/arch/x86/drivers/loader kernel/core sys libc util util/console util/parsers meta/gen kernel/arch/x86/drivers
 else ifeq ($(ARCH),riscv)
-	SRC_DIRS = kernel/arch/riscV/drivers kernel/arch/riscV kernel/core sys libc util util/console util/parsers meta/gen test test/test_riscv
+	SRC_DIRS = kernel/arch/riscV/drivers kernel/arch/riscV kernel/core sys libc util util/console util/parsers meta/gen
 endif
 
 C_SOURCES := $(foreach dir,$(SRC_DIRS),$(wildcard $(dir)/*.c))
 S_SOURCES := $(foreach dir,$(SRC_DIRS),$(wildcard $(dir)/*.s))
+
+
+ifeq ($(TESTING),1)
+	# Remove real kernel main
+	C_SOURCES := $(filter-out $(KERNEL_MAIN),$(C_SOURCES))
+
+	C_SOURCES += $(foreach dir,$(TEST_DIRS),$(wildcard $(dir)/*.c))
+	CFLAGS += $(TEST_INCS)
+endif
+
+
 SOURCES   := $(C_SOURCES) $(S_SOURCES)
+
+
+
 
 OBJECTS := $(patsubst %,$(BUILD_DIR)/%,$(SOURCES))
 OBJECTS := $(OBJECTS:.c=.o)
