@@ -22,6 +22,8 @@
 #define SYS_ALIVE 15
 #define SYS_VIRTUAL_COPY 16
 
+#define SYS_KILL 17
+
 #define DEF_ERR_CODE -1
 
 

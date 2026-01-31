@@ -38,6 +38,16 @@ int handle_wait(char* args){
     return ret_code;
 }
 
+int handle_kill(char* args){
+
+    long pid_killed = strtol((const uint8_t*)args, NULL, 0);
+    int ret_code= sys_kill(pid_killed);
+    printf("Killed proc %d! exited/result code %d\n", pid_killed, ret_code);
+    return ret_code;
+}
+
+
+
 int handle_exit(char* args) {
     (void)args;
     exit(0);
@@ -368,6 +378,7 @@ struct CommandEntry commands[] = {
     { "start",     start_program },
     { "wait",      handle_wait },
     { "exit",      handle_exit },
+    { "kill",      handle_kill },
     { "smile",     handle_smile },
     { "clear",     handle_clear },
     { "mkfs",      handle_mkfs },

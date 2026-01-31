@@ -4,14 +4,15 @@
 
 // extern char __stack_top[];
 
-extern void main(void);
+// extern void main(void);
+extern void main(int argc, char** argv)__attribute__((weak));
 
 #define VADDR_USER_STACK_SIZE 32* 4096 // 8kb
 #define VADDR_USER_STACK_BASE 0x1800000 + VADDR_USER_STACK_SIZE
 #define VADDR_USER_STACK_TOP VADDR_USER_STACK_BASE
 
 __attribute__((noreturn)) void do_exit(void) {
-    debug_printf("-------> PROCESS EXITED NORMALLY!\n");
+    // debug_printf("-------> PROCESS EXITED NORMALLY!\n");
     exit(0); // Syscall exit!
 }
 
@@ -49,7 +50,7 @@ void arg_main(int argc, char** argv){
         }
     }
 
-    main();
+    main(argc, argv);
     
     do_exit();
 }

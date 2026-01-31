@@ -21,6 +21,11 @@ int wait(int pid){
     return syscall(SYS_WAIT, pid, 0, 0, 0);
 }
 
+
+int sys_kill(int pid){
+    return syscall(SYS_KILL, pid, 0, 0, 0);
+}
+
 void sys_yield(){
     syscall(SYS_YIELD, 0, 0, 0, 0);
 }

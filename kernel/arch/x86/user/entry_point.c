@@ -4,7 +4,7 @@
 #include "stdio.h"
 #include "console/debug.h"
 
-extern void main(void);
+extern void main(int argc, char** argv)__attribute__((weak));
 
 __attribute__((noreturn)) void do_exit(void) {
     debug_printf("-------> PROCESS EXITED NORMALLY!\n");
@@ -40,7 +40,8 @@ void _start(int argc, char** argv){
             debug_printf("=> '%s'\n", argv[curr]);    
         }
     }
-    main();
+    
+    main(argc, argv);
     
     do_exit();
 }

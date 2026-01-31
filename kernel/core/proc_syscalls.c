@@ -165,7 +165,6 @@ void syscall_exit(FullTrapFrame *tf, uintptr_t pc){
     sched_yield();
 }
 
-
 void syscall_wait(FullTrapFrame *tf, uintptr_t pc){
     procid_t waited_proc_pid = SYSCALL_ARG0(tf);
     struct Proc * waiter_proc = get_curr();
@@ -203,6 +202,47 @@ void syscall_wait(FullTrapFrame *tf, uintptr_t pc){
     
     save_curr_proc_state(tf, pc + 4);
     sched_yield();    
+}
+
+void syscall_kill(FullTrapFrame *tf, uintptr_t pc){
+    procid_t killed_proc_pid = SYSCALL_ARG0(tf);
+    struct Proc * killer_proc = get_curr();
+    printf("Process %d should kill at pc: %x(ret to %x) for %d: ",killer_proc->pid, pc, pc+4, killed_proc_pid);
+
+    struct Proc* killed_proc = get_proc(killed_proc_pid);
+
+    if(killed_proc == NULL || killed_proc->status == PROC_FREE){
+        printf("Error waited proc was non valid, or was on a invalid state\n");
+        SET_SYSCALL_RET0(tf, -1) // Error
+        return;
+    }
+    struct ProcExitStatus* killed_exit_status = &exit_statuses[PROCX(killed_proc_pid)];
+    
+    if(killed_proc->status == PROC_DYING){
+        printf(" already exited, cleaning orphan and returning to waiter!\n");
+        
+        switch_to_kernel_tables();
+        // Already finished! So notify directly and return to curr process? no need for sched yield
+        SET_SYSCALL_RET0(tf, killed_exit_status->ret_code)
+        
+        reset_exit_status(killed_exit_status);
+        free_process(killed_proc);
+        
+        switch_page_table((uint32_t *) killer_proc->pde_paddr);
+        
+        return;
+    }
+    printf(" did not exit... cleanup/forcefully!\n");
+    
+    switch_to_kernel_tables();
+    // Already finished! So notify directly and return to curr process? no need for sched yield
+    SET_SYSCALL_RET0(tf, 0)
+    
+    reset_exit_status(killed_exit_status);
+    free_process(killed_proc);
+    
+    switch_page_table((uint32_t *) killer_proc->pde_paddr);
+
 }
 
 
@@ -410,6 +450,8 @@ void init_syscalls_proc(void) {
     register_syscall(SYS_EXEC, syscall_exec);
     register_syscall(SYS_EXIT, syscall_exit);
     register_syscall(SYS_WAIT, syscall_wait);
+    register_syscall(SYS_KILL, syscall_kill);
+
     register_syscall(SYS_YIELD, syscall_yield);
     register_syscall(SYS_GETPID, syscall_getpid);
     register_syscall(SYS_COORDPID, syscall_get_coord_pid);
