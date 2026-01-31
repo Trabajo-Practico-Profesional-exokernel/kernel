@@ -18,6 +18,7 @@
 void init_interactive_tests(void){
 	printf("INITING INTERACTIVE TESTS ON MAIN CPU %d \n", cpuid());
     // main_tests();
+    interactive_shell_main();
 
 }
 void add_interactive_test_core(void){

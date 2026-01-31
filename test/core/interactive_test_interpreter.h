@@ -2,6 +2,6 @@
 #define INTERACTIVE_TESTS
 
 void init_interactive_tests(void);
-void add_interactive_test_core(void);
+void interactive_shell_main(void);
 
 #endif

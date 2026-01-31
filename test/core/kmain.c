@@ -10,7 +10,9 @@
 #include "stdio.h"
 #include "console/debug.h"
 #include "arch_inc/trap_constants.h"
+
 #include "interactive_test_interpreter.h"
+#include "interactive_test_commands.h"
 
 //
 // void *mboot, unsigned int magic_number
@@ -22,14 +24,12 @@
 // Riscv would jump straight to this, because entry point does not jump to kmain
 // on secondary cpus
 void secondary_cpu_main(){
-    add_interactive_test_core();
+    add_start_cpu();
     for (;;)
     {
         // __asm__ __volatile__("wfi");
     }       
 }
-
-volatile static int started = 0;
 
 void kmain()
 {
@@ -42,10 +42,8 @@ void kmain()
     // Riscv opensbi already does this, so its in theory for x86. Or just in case.
     // IN RISCV opensbi does not guarantee that cpuid == 0 is the boot one.
     if(cpuid() != 0){ 
-        printf("Does dis work? %d \n", cpuid());
-        while(started == 0)
-              ;
-
+        wait_start_cpus();
+                
         secondary_cpu_main();
 
         PANIC("Should not reach here secondary cpu!");
@@ -86,11 +84,8 @@ void kmain()
     #endif
     disable_debug_print();
     // No lock needed for this set since is just 1 writer and once!
-    started = 1;
-
     // In riscv is needed, since we are using opensbi, opensbi halts the cpus until notified.
     // Like we would do with started == 0.
-    notify_inited();
     disable_timer_interrupts();
     
 

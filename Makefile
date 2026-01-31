@@ -74,8 +74,10 @@ S_SOURCES := $(foreach dir,$(SRC_DIRS),$(wildcard $(dir)/*.s))
 ifeq ($(TESTING),1)
 	# Remove real kernel main
 	C_SOURCES := $(filter-out $(KERNEL_MAIN),$(C_SOURCES))
+	
+	C_SOURCES += $(shell find $(TEST_DIRS) -type f -name '*.c')
 
-	C_SOURCES += $(foreach dir,$(TEST_DIRS),$(wildcard $(dir)/*.c))
+# 	C_SOURCES += $(foreach dir,$(TEST_DIRS),$(wildcard $(dir)/*.c))
 	CFLAGS += $(TEST_INCS)
 endif
 
