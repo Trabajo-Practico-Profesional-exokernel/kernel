@@ -6,12 +6,12 @@
 #include "interactive_test_commands.h"
 
 int test_handle_run_shell(char* args) {
-    printf("Should run shell with args '%s'\n", args);
+    start_shell();
     return 0;
 }
 
 int test_handle_run_tests(char* args) {
-    printf("Should run test with args '%s'\n", args);
+    run_tests();
     return 0;
 }
 
