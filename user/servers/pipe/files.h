@@ -9,8 +9,8 @@ typedef enum {
 } file_state_t;
 
 typedef enum {
-    PERM_WRITE,
-    PERM_READ
+    PERM_WRITE = 1,
+    PERM_READ  = 2
 } file_perms;
 
 

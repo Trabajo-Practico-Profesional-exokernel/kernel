@@ -30,7 +30,7 @@ int32_t pipe_open(int32_t app_id, int32_t *fds){
     }
 
     struct File *file_w = alloc_file(app_id);
-    file_init(file_w, PERM_READ);
+    file_init(file_w, PERM_WRITE);
 
     add_buffer_to_file(file_r, buffer);
     add_buffer_to_file(file_w, buffer);
@@ -85,7 +85,7 @@ int32_t pipe_dup(int32_t fd, int32_t app_id){
     asign_file_to_fd(fd, app_id, file);
     file_retain(file);
 
-    return SUCCESS;
+    return dup_fd;
 }
 
 int32_t pipe_fstat(int32_t fd, int32_t app_id){

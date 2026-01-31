@@ -35,14 +35,13 @@ void file_retain(struct File*f){
 }
 
 struct File * alloc_file(int32_t pid){
-    for (int i = 0; i < TOTAL_FILES; i++)
+    for (int i = 0; i < MAX_FILES; i++) 
     {
         if (files[pid][i].state == OFF) {
-            file_reset(&files[i]);
-            return &files[i];
+            file_reset(&files[pid][i]);
+            return &files[pid][i];
         }
     }
-
     return NULL;
 }
 
@@ -111,7 +110,7 @@ int add_buffer_to_file(struct File *file, struct MemBuffer *buffer){
 }
 
 int get_fd(int32_t pid){
-    for (int i = 0; i < PROCS_MAX; i++)
+    for (int i = 0; i < MAX_FILES; i++) 
     {
         if (files[pid][i].state == OFF){
             return i;

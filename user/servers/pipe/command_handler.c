@@ -80,29 +80,33 @@ int32_t get_command(PipeOperation *command){
 int32_t give_response(int32_t type_command, int32_t arg_1, int32_t arg_2, int32_t arg_3, int32_t fd_1, int32_t fd_2){
 
     int32_t protocol_op = unmap_op_code(type_command);
-
     if (current_client_pid == -1 || protocol_op == -1) {
         return ERROR;
     }
     
+    // Lógica de envío de contenido (sin cambios, manteniendo el fix anterior para arg_1 >= 0)
     if ((type_command == PIPE_OP_OPEN || 
         type_command == PIPE_OP_READ) && arg_2 != 0)
     {
-        // Si se espera contenido
-        if (arg_2 != 0 && arg_3 > 0 && arg_1 > 0) {
+        if (arg_2 != 0 && arg_3 > 0 && arg_1 >= 0) {
+             if (protocol_op == OP_PIPE) {
+                 update_coord_state(PIPE, OP_OPEN, current_client_pid, fd_1); // Registrar FD Lectura
+                 update_coord_state(PIPE, OP_OPEN, current_client_pid, fd_2); // Registrar FD Escritura
+             }
             return server_send_content_to_app(current_client_pid, protocol_op, (char*)arg_2, arg_3);
         }
-        // Si fallo (ej. bytes_read < 0), enviamos solo el codigo de error
         return server_send_parameter_to_app(current_client_pid, protocol_op, arg_1);
     } 
     else {
-        // Respuesta estandar (exito/error o valor entero como FD)
+        // Respuesta estándar
         if (arg_1 >= 0) {
-            if (protocol_op == OP_CLOSE || protocol_op == OP_DUP) {
+            // Caso CLOSE: Desregistrar el FD cerrado
+            if (protocol_op == OP_CLOSE) {
                 update_coord_state(PIPE, protocol_op, current_client_pid, fd_1);
             }
-            if (protocol_op == OP_OPEN) {
-                update_coord_state(PIPE, protocol_op, current_client_pid, fd_2);
+
+            if (protocol_op == OP_DUP) {
+                update_coord_state(PIPE, OP_OPEN, current_client_pid, arg_1);
             }
         }
         return server_send_parameter_to_app(current_client_pid, protocol_op, arg_1);
