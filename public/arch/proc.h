@@ -4,8 +4,6 @@
 #include "arch_inc/trapframe.h"
 #include "arch_inc/mem_constants.h"
 
-#include "arch/fd.h"
-
 // Forward declaration of MessageQueue if not already defined
 
 #include "mem.h"
