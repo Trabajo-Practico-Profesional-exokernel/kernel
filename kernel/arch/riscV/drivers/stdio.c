@@ -120,7 +120,9 @@ void secondary_entry(void)
 }
 
 void notify_inited(void){
+
     for (int i = 1; i < NCPU; i++) {
+        printf("Start %d/%d \n",i, NCPU);
         sbi_hart_start(i, (unsigned long) secondary_entry, 0);
     }    
 }

@@ -9,8 +9,8 @@
 #include "fd.h"
 #include "stdio.h"
 #include "console/debug.h"
-#include "testing.h"
 #include "arch_inc/trap_constants.h"
+#include "interactive_test_interpreter.h"
 
 //
 // void *mboot, unsigned int magic_number
@@ -22,13 +22,11 @@
 // Riscv would jump straight to this, because entry point does not jump to kmain
 // on secondary cpus
 void secondary_cpu_main(){
-    printf("Should start cpu %d\n", cpuid());
-    init_sched();
-    
+    add_interactive_test_core();
     for (;;)
     {
         // __asm__ __volatile__("wfi");
-    }
+    }       
 }
 
 volatile static int started = 0;
@@ -93,10 +91,10 @@ void kmain()
     // In riscv is needed, since we are using opensbi, opensbi halts the cpus until notified.
     // Like we would do with started == 0.
     notify_inited();
+    disable_timer_interrupts();
+    
 
-    disable_interrupts(); // Disable clock interrupts
-
-    main_tests();
+    init_interactive_tests();
 
     for (;;)
     {
