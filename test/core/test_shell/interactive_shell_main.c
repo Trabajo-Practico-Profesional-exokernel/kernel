@@ -15,13 +15,13 @@
 #define MAX_INPUT 128
 char input_buf[MAX_INPUT];
 void interactive_shell_help(void){
-    printf("TEST SHELL interactive: ");
-    test_help_man("");    
+    //test_help_man("");
 }
 void interactive_shell_main(void) {
     static char input_buf[MAX_INPUT];
+
     while (1){
-        printf("tester> ");
+        printf("\n[tester command]>");
         // int len = 
         read_line(input_buf, MAX_INPUT);
 
@@ -30,11 +30,12 @@ void interactive_shell_main(void) {
 
 
         if (strncmp((const uint8_t*)input_buf, (const uint8_t*)"q", 2) == 0) {
-            printf("Bye!\n");
+            printf("\n[TEST] interactive test shell exited\n");
             break;
         }
         printf("\n");
 
         exec_test_command(input_buf, args);
+        printf("\n[TEST] interactive test shell command executed:\n'%s'\n",input_buf);
     }
 }
