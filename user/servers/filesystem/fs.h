@@ -142,4 +142,5 @@ void fs_pwd(int proc);
 int fs_chmod(int proc_pid, const char *path, int new_mode);
 int fs_chown(int proc_pid, const char *path, int new_uid, int new_gid);
 
+int fs_dup(int fd, int app_id);
 #endif

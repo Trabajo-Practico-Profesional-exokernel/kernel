@@ -2,7 +2,7 @@
 #define FD_H
 
 #include "arch/fd.h"
-
+/*
 #define MAX_BYTES 255
 #define PERM_READ  0x01
 #define PERM_WRITE 0x02
@@ -56,4 +56,5 @@ int add_buffer_to_file(struct File *file, struct MemBuffer *buffer);
 int get_file_descriptor(struct Proc *proc);
 
 struct File * alloc_file();
+*/
 #endif /* FS_SYSCALLS_H */

@@ -51,6 +51,7 @@ typedef enum {
 
 typedef enum {
     PIPE_OP_PING = 0,
+    PIPE_OP_OPEN,
     PIPE_OP_READ,
     PIPE_OP_WRITE,
     PIPE_OP_CLOSE,

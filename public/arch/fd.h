@@ -2,7 +2,7 @@
 #define FD
 
 #include "types.h"
-
+/*
 #define MAX_SIZE_PATH 255
 #define FD_PERM_READ  0x1
 #define FD_PERM_WRITE 0x2
@@ -38,5 +38,5 @@ struct File {
     file_state_t readopen; //estado extremo escritura
     file_state_t writeopen; //estado extremo lectura
 };
-
+*/
 #endif

@@ -910,3 +910,6 @@ int fs_chown(int proc_pid, const char *filename, int new_uid, int new_gid){
     return 0;
 }
 
+int fs_dup(int fd, int app_id){
+    return 0;
+}

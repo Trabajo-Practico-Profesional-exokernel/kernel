@@ -4,7 +4,7 @@
 #include "stdlib.h"
 #include "arch/proc.h"
 #include "constants.h"
-
+/*
 #define TOTAL_FILES PROCS_MAX*MAX_FILES
 
 struct MemBuffer buffers[TOTAL_FILES];
@@ -215,3 +215,4 @@ int get_file_descriptor(struct Proc *proc){
     return -1;
 }
 
+*/

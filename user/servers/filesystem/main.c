@@ -100,15 +100,14 @@ void handle_fstat(FilesystemOperation *op) {
 }
 
 void handle_dup(FilesystemOperation *op) {
-    // Implementación pendiente según soporte del FS
-    // int old_fd = op->fd;
-    // RETORNAR RESPUESTA
+    int32_t app_pid = op->app_id;
+    int32_t fd = op->fd;
+
+    int32_t res = fs_dup(fd, app_pid);
+    
+    give_response(FS_OP_DUP, res, 0, 0, 0);
 }
 
-void handle_pipe(FilesystemOperation *op) {
-    // Implementación pendiente
-    // RETORNAR RESPUESTA
-}
 
 void handle_mkdir(FilesystemOperation *op) {
     int32_t app_pid = op->app_id;
@@ -251,7 +250,6 @@ static const fs_op_handler_t op_dispatch_table[] = {
     [FS_OP_LSEEK]  = handle_lseek,
     [FS_OP_FSTAT]  = handle_fstat,
     [FS_OP_DUP]    = handle_dup,
-    [FS_OP_PIPE]   = handle_pipe,
     [FS_OP_MKDIR]  = handle_mkdir,
     [FS_OP_RMDIR]  = handle_rmdir,
     [FS_OP_CHDIR]  = handle_chdir,

@@ -1,7 +1,123 @@
-#include "stdio.h"
+#include "command_handler.h"
+#include "ipc.h"
+#include "inc/operations.h"
+#include "types.h"
+#include "console/debug.h"
+#include "constants.h"
+#include "pipe.h"
+#include "files.h"
+#include "syscalls.h"
 
+void handle_noop(PipeOperation *op) {
+    (void)op;
+    reset_current_client_pid();
+}
 
+void send_error_msg(int32_t operation) {
+    give_response(operation, ERROR, 0, 0);
+}
 
-int main(){
-    printf("PIPE!!");
+void handle_open(PipeOperation *op) {
+    int32_t app_pid = op->app_id;
+    int32_t fd[2];
+
+    int32_t res = pipe_open(app_pid, fd);
+    
+    give_response(op->type_op, res, fd[0], fd[1]);
+}
+
+void handle_read(PipeOperation *op) {
+    int32_t app_pid = op->app_id;
+    int fd = op->fd;
+    int count = op->len_content;
+
+    char buffer[MAX_BUFFER_IPC_SIZE]; 
+    int to_read = (count > sizeof(buffer)) ? sizeof(buffer) : count;
+
+    int32_t bytes_read = pipe_read(fd, app_pid, buffer, to_read);
+    
+    int len_to_send = (bytes_read > 0) ? bytes_read : 0;
+
+    give_response(PIPE_OP_READ, bytes_read, (uint32_t)buffer, len_to_send);
+}
+
+void handle_write(PipeOperation *op) {
+    int32_t app_pid = op->app_id;
+    int fd = op->fd;
+    int count = op->len_content;
+
+    char buffer[MAX_BUFFER_IPC_SIZE];
+    int to_write = (count > sizeof(buffer)) ? sizeof(buffer) : count;
+
+    virtual_copy(app_pid, op->content_vaddr, (uint32_t)buffer, to_write);
+
+    int bytes_written = pipe_write(fd, app_pid, buffer, to_write);
+
+    give_response(PIPE_OP_WRITE, bytes_written, 0, 0);
+}
+
+void handle_close(PipeOperation *op) {
+    int32_t app_pid = op->app_id;
+    int fd = op->fd;
+
+    int32_t res = pipe_close(fd, app_pid);
+
+    give_response(PIPE_OP_CLOSE, res, 0, fd);
+}
+
+void handle_dup(PipeOperation *op) {
+    int32_t app_pid = op->app_id;
+    int32_t fd = op->fd;
+
+    int32_t res = pipe_dup(fd, app_pid);
+    
+    give_response(PIPE_OP_DUP, res, 0, 0);
+}
+
+void handle_fstat(PipeOperation *op) {
+    PANIC("unimplemented yet");
+}
+
+typedef void (*pipe_op_handler_t)(PipeOperation *op);
+
+static const pipe_op_handler_t op_dispatch_table[] = {
+    [PIPE_OP_PING]      = handle_noop,
+    [PIPE_OP_OPEN]      = handle_open,
+    [PIPE_OP_READ]      = handle_read,
+    [PIPE_OP_WRITE]     = handle_write,
+    [PIPE_OP_CLOSE]     = handle_close,
+    [PIPE_OP_FSTAT]     = handle_fstat,
+    [PIPE_OP_DUP]       = handle_dup
+};
+
+#define MAX_OP_HANDLERS (sizeof(op_dispatch_table) / sizeof(op_dispatch_table[0]))
+
+void dispatch_command(PipeOperation *op) {
+    if (op->type_op >= 0 && op->type_op < MAX_OP_HANDLERS && op_dispatch_table[op->type_op]) {
+        op_dispatch_table[op->type_op](op);
+    } else {
+        send_error_msg(op->type_op);
+    }
+}
+
+void exec_command(PipeOperation command) {
+    dispatch_command(&command);
+}
+
+int main(int argc, char *argv[]) {
+    (void)argc;
+    (void)argv;
+
+    disable_debug_print();
+    pipe_init();
+
+    PipeOperation command;
+
+    while(1){
+        if (get_command(&command) == SUCCESS) {
+            exec_command(command);
+        }
+    }
+    
+    return 0;
 }
