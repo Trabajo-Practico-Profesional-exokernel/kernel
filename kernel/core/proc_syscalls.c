@@ -1,7 +1,6 @@
 #include "arch/trap_handling.h"
 #include "constants.h"
 
-#include "fd.h"
 // Sched exec , wait and so on...
 #include "sched.h"
 #include "proc_syscalls.h"
