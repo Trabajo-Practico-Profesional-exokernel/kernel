@@ -15,7 +15,7 @@ class KernelRun:
         build_users=False,
         only_build=False,
         verbose=False,
-        cwd="src",
+        cwd=".",
         script="./run.sh",
         fs_path = None,
         fs_base_path = None,

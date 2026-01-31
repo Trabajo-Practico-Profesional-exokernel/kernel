@@ -16,7 +16,9 @@ def test_boot():
         ncpu=1,
         testing=True,
         clean=True,
-        use_gdb = False
+        use_gdb = False,
+        fs_base_path = ".kernel_disk/disk_base.txt",
+        fs_path = ".kernel_disk/disk_test.txt",
     )
 
     mon = LineMonitor()

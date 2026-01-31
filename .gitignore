@@ -9,3 +9,5 @@ build/
 .kernel_disk/disk_base.txt
 .kernel_disk/disk_test.txt
 dump
+
+__pycache__
