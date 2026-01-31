@@ -119,6 +119,10 @@ int get_fd(int32_t pid){
     return ERROR;
 }
 
+void reset_fd(int32_t pid, int32_t fd){
+    files[pid][fd].state == OFF;
+}
+
 void file_init(struct File *f, uint8_t perms) {
     
     f->state = ON;

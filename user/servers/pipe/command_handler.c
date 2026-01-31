@@ -93,7 +93,7 @@ int32_t give_response(int32_t type_command, int32_t arg_1, int32_t arg_2, int32_
                  update_coord_state(PIPE, OP_OPEN, current_client_pid, fd_1); // Registrar FD Lectura
                  update_coord_state(PIPE, OP_OPEN, current_client_pid, fd_2); // Registrar FD Escritura
              }
-            return server_send_content_to_app(current_client_pid, protocol_op, (char*)arg_2, arg_3);
+            return server_send_content_to_app(current_client_pid, protocol_op, (char*)arg_2, arg_3, arg_1);
         }
         return server_send_parameter_to_app(current_client_pid, protocol_op, arg_1);
     } 

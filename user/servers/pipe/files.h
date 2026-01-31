@@ -48,9 +48,17 @@ struct File * alloc_file(int32_t pid);
 void file_close_write(struct File *f);
 
 void file_close_read(struct File *f);
+
 void file_retain(struct File*f);
+
 struct File * get_file(int32_t pid, int32_t fd);
+
 void asign_file_to_fd(int32_t fd, int32_t pid, struct File *file);
+
 int get_fd(int32_t pid);
+
 int add_buffer_to_file(struct File *file, struct MemBuffer *buffer);
+
+void reset_fd(int32_t pid, int32_t fd);
+
 #endif

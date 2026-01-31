@@ -63,8 +63,9 @@ int32_t app_receive_content(uint32_t operation, char *buffer, int len){
         return ERROR;
     }
 
-    //FALTA VERIFICAR LA LONGITUD DEL BUFFER VIRTUAL
-    res = virtual_copy(msg.sender_pid, msg.arg_3, (uint32_t)buffer, len);
+    int copy_len = (msg.arg_4 < len) ? msg.arg_4 : len;
+    res = virtual_copy(msg.sender_pid, msg.arg_3, (uint32_t)buffer, copy_len);
+    
     if (res == ERROR){
         //ver si conviene mas devolver un NACK
         //send_ack(msg.sender_pid, operation);
@@ -72,19 +73,19 @@ int32_t app_receive_content(uint32_t operation, char *buffer, int len){
     }
 
     send_ack(msg.sender_pid, operation);
-    return SUCCESS;
+    
+    return msg.arg_2; 
 }
 
 int32_t server_send_parameter_to_app(int32_t pid, uint32_t operation, int32_t arg) {
     return send_msg(pid, operation, arg, 0, 0, 0, 0);
 }
 
-int32_t server_send_content_to_app(int32_t pid, uint32_t operation, char *buffer, int len){
+int32_t server_send_content_to_app(int32_t pid, uint32_t operation, char *buffer, int len, int32_t value){
 
     int32_t res;
     memcpy(&ipc_buffer, buffer, len);
-    
-    res = send_msg(pid, operation, SUCCESS, (int)buffer, len, 0, 0);
+    res = send_msg(pid, operation, value, (int)buffer, len, 0, 0);
     if (res == ERROR){
         return ERROR;
     } 

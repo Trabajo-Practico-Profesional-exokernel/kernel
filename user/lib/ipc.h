@@ -13,7 +13,7 @@ int32_t app_receive_content(uint32_t operation, char *buffer, int len);
 
 int32_t server_send_parameter_to_app(int32_t pid, uint32_t operation, int32_t arg);
 
-int32_t server_send_content_to_app(int32_t pid, uint32_t operation, char *buffer, int len);
+int32_t server_send_content_to_app(int32_t pid, uint32_t operation, char *buffer, int len, int32_t value);
 
 int32_t app_send_msg_to_server(int32_t arg_1, int32_t arg_2, int32_t arg_3, int32_t arg_4, int32_t arg_5, int32_t arg_6);
 

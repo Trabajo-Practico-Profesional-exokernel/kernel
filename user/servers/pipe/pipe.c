@@ -65,7 +65,17 @@ int32_t pipe_write(int32_t fd, int32_t app_id, char *buf, int32_t len){
 }
 
 int32_t pipe_close(int32_t fd, int32_t app_id){
-    return 0;
+
+    struct File *file = get_file(app_id, fd);
+
+    if (file == NULL){
+        return ERROR;
+    }
+
+    file_close(file);
+    reset_fd(app_id, fd);
+
+    return SUCCESS;
 }
 
 int32_t pipe_dup(int32_t fd, int32_t app_id){
