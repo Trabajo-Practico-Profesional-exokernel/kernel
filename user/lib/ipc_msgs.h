@@ -1,7 +1,8 @@
 #ifndef IPC_MSGS_H
 #define IPC_MSGS_H
 
-#include <stdint.h>
+// #include <stdint.h>
+#include "types.h"
 
 #define MAX_CONTENT_SIZE 128
 

@@ -23,7 +23,7 @@ void debug_printf(const char *fmt, ...) {
     va_list args;
     va_start(args, fmt);
     
-    vsnprintf(buf, sizeof(buf), fmt, args);
+    vsnprintf(buf, sizeof(buf), (const uint8_t *)fmt, args);
     va_end(args);
 
     printPurple((const uint8_t*)"[DEBUG] ");

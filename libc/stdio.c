@@ -149,7 +149,8 @@ void printf(const char *fmt, ...) {
     va_start(ap, fmt);
 
     const uint8_t *s;
-    int32_t c0, c1, c2, i, state;
+    // int32_t c0, c1, c2, i, state; // Not used c2...
+    int32_t c0, c1, i, state;
 
     state = 0;
     for (i = 0; fmt[i]; i++) {
@@ -162,7 +163,7 @@ void printf(const char *fmt, ...) {
             }
         } else if (state == '%') {
             c1 = fmt[i + 1] & 0xff;
-            c2 = fmt[i + 2] & 0xff;
+            // c2 = fmt[i + 2] & 0xff;
 
             if (c0 == 'd') {
                 printint(va_arg(ap, int32_t), 10, 1);
