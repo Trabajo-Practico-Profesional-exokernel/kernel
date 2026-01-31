@@ -179,13 +179,18 @@ void syscall_wait(FullTrapFrame *tf, uintptr_t pc){
         return;
     }
     struct ProcExitStatus* waited_exit_status = &exit_statuses[PROCX(waited_proc_pid)];
+    
     if(waited_proc->status == PROC_DYING){
         debug_printf("already exited, cleaning orphan and returning to waiter!\n");
+        
+        switch_to_kernel_tables();
         // Already finished! So notify directly and return to curr process? no need for sched yield
         SET_SYSCALL_RET0(tf, waited_exit_status->ret_code)
         
         reset_exit_status(waited_exit_status);
         free_process(waited_proc);
+        
+        switch_page_table((uint32_t *) waiter_proc->pde_paddr);
         
         return;
     }
