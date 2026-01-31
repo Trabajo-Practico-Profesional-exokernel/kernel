@@ -11,6 +11,8 @@
 
 #include "arch/mem_layout.h"
 
+extern void sched_finish(void);
+
 #define MAX_TIME_SLICES 45
 
 volatile uint64_t ticks = 0;
@@ -168,5 +170,5 @@ void sched_yield(void) {
         switch_proc(curr);
     }
 
-    PANIC("+++++++++++++++++++++ Nothing to run at sched yield!?");    
+    sched_finish();
 }

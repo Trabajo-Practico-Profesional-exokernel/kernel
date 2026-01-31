@@ -14,10 +14,14 @@
 #include "console/debug.h"
 #include "arch_inc/trap_constants.h"
 
+void resume_interactive_shell(void){
+	printf("Go back to test shell cpu: %d \n", cpuid());
+    interactive_shell_main();
 
+}
 void init_interactive_tests(void){
 	printf("INITING INTERACTIVE TESTS ON MAIN CPU %d \n", cpuid());
-    // main_tests();
+    interactive_shell_help();
     interactive_shell_main();
 
 }

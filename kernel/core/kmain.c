@@ -10,6 +10,11 @@
 #include "stdio.h"
 #include "console/debug.h"
 
+// When nothing more to be executed on shell!
+void sched_finish(void){
+    PANIC("+++++++++++++++++++++ Nothing to run at sched yield!?");    
+}
+
 // void *mboot, unsigned int magic_number
 // UNUSED_ARGUMENT(mboot);
 //     UNUSED_ARGUMENT(magic_number);

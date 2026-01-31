@@ -20,6 +20,11 @@
 //     UNUSED_ARGUMENT(magic_number);
 // return 0xDEADBEEF;
 
+// When nothing more to be executed on shell!
+void sched_finish(void){
+    resume_interactive_shell();
+}
+
 
 // Riscv would jump straight to this, because entry point does not jump to kmain
 // on secondary cpus
