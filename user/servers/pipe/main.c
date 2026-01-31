@@ -14,7 +14,7 @@ void handle_noop(PipeOperation *op) {
 }
 
 void send_error_msg(int32_t operation) {
-    give_response(operation, ERROR, 0, 0);
+    give_response(operation, ERROR, 0, 0, 0, 0);
 }
 
 void handle_open(PipeOperation *op) {
@@ -23,7 +23,7 @@ void handle_open(PipeOperation *op) {
 
     int32_t res = pipe_open(app_pid, fd);
     
-    give_response(op->type_op, res, fd[0], fd[1]);
+    give_response(op->type_op, res, (uint32_t)fd, sizeof(fd), fd[0], fd[1]);
 }
 
 void handle_read(PipeOperation *op) {
@@ -38,7 +38,7 @@ void handle_read(PipeOperation *op) {
     
     int len_to_send = (bytes_read > 0) ? bytes_read : 0;
 
-    give_response(PIPE_OP_READ, bytes_read, (uint32_t)buffer, len_to_send);
+    give_response(PIPE_OP_READ, bytes_read, (uint32_t)buffer, len_to_send, 0, 0);
 }
 
 void handle_write(PipeOperation *op) {
@@ -53,7 +53,7 @@ void handle_write(PipeOperation *op) {
 
     int bytes_written = pipe_write(fd, app_pid, buffer, to_write);
 
-    give_response(PIPE_OP_WRITE, bytes_written, 0, 0);
+    give_response(PIPE_OP_WRITE, bytes_written, 0, 0, 0, 0);
 }
 
 void handle_close(PipeOperation *op) {
@@ -62,7 +62,7 @@ void handle_close(PipeOperation *op) {
 
     int32_t res = pipe_close(fd, app_pid);
 
-    give_response(PIPE_OP_CLOSE, res, 0, fd);
+    give_response(PIPE_OP_CLOSE, res, 0, 0, fd, 0);
 }
 
 void handle_dup(PipeOperation *op) {
@@ -71,7 +71,7 @@ void handle_dup(PipeOperation *op) {
 
     int32_t res = pipe_dup(fd, app_pid);
     
-    give_response(PIPE_OP_DUP, res, 0, 0);
+    give_response(PIPE_OP_DUP, res, 0, 0, fd, 0);
 }
 
 void handle_fstat(PipeOperation *op) {
@@ -110,7 +110,7 @@ int main(int argc, char *argv[]) {
 
     disable_debug_print();
     pipe_init();
-
+    
     PipeOperation command;
 
     while(1){

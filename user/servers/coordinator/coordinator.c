@@ -14,6 +14,7 @@
 #include "arch/proc.h"
 #include "server_map.h"
 
+
 Coordinator coordinator;
 
 int32_t get_server_type(int32_t fd, int32_t pid) {
@@ -271,6 +272,7 @@ void init_coordinator(){
 }
 
 void init_servers(){
+    start_server(PIPE);
     start_server(FILESYSTEM);
     start_server(SHELL);
 }

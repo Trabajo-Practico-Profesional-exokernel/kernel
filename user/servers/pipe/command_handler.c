@@ -26,7 +26,7 @@ static int32_t map_op_code(int32_t protocol_op) {
 
 static int32_t unmap_op_code(int32_t pipe_op) {
     switch(pipe_op) {
-        case PIPE_OP_OPEN:   return OP_OPEN;
+        case PIPE_OP_OPEN:   return OP_PIPE;
         case PIPE_OP_READ:   return OP_READ;
         case PIPE_OP_WRITE:  return OP_WRITE;
         case PIPE_OP_CLOSE:  return OP_CLOSE;
@@ -77,62 +77,34 @@ int32_t get_command(PipeOperation *command){
     return SUCCESS;
 }
 
-int32_t give_response(int32_t type_command, int32_t arg_1, int32_t arg_2, int32_t arg_3){
-    return 0;
-}
-/*
-int32_t give_response(int32_t type_command, int32_t arg_1, int32_t arg_2, int32_t arg_3){
-    // Nota: arg_3 en FS era el 'size' solicitado original, arg_2 el buffer.
-    // Aquí asumimos una firma similar: arg_1=resultado/bytes, arg_2=buffer/data, arg_3=len_solicitada
+int32_t give_response(int32_t type_command, int32_t arg_1, int32_t arg_2, int32_t arg_3, int32_t fd_1, int32_t fd_2){
 
     int32_t protocol_op = unmap_op_code(type_command);
 
     if (current_client_pid == -1 || protocol_op == -1) {
         return ERROR;
     }
-
-    if (type_command == PIPE_OP_READ) {
-        // arg_1: Bytes leídos efectivamente
-        // arg_2: Puntero al buffer con datos
-        // arg_3: Bytes solicitados por el usuario
-        
+    
+    if ((type_command == PIPE_OP_OPEN || 
+        type_command == PIPE_OP_READ) && arg_2 != 0)
+    {
+        // Si se espera contenido
         if (arg_2 != 0 && arg_3 > 0 && arg_1 > 0) {
-            return server_send_content_to_app(current_client_pid, protocol_op, (char*)arg_2, arg_1);
+            return server_send_content_to_app(current_client_pid, protocol_op, (char*)arg_2, arg_3);
         }
-        // Si no se leyó nada o hubo error, enviamos el código/cantidad (ej: 0 para EOF o negativo error)
+        // Si fallo (ej. bytes_read < 0), enviamos solo el codigo de error
         return server_send_parameter_to_app(current_client_pid, protocol_op, arg_1);
     } 
-    
-    // --- CASO 2: OTRAS OPERACIONES (Write, Close, Open, Dup) ---
     else {
-        // Si la operación fue exitosa (arg_1 >= 0), verificamos si hay que actualizar al coordinador
+        // Respuesta estandar (exito/error o valor entero como FD)
         if (arg_1 >= 0) {
-            
-            // Si cerramos un pipe, hay que avisar al coordinador para liberar el FD
-            if (protocol_op == OP_CLOSE) {
-                // arg_3 suele traer el FD en give_response del FS si se pasa explícitamente, 
-                // o asumimos que quien llama a give_response tiene el FD a mano.
-                // Como give_response no recibe el FD explícito en tu firma (fd estaba en get_command),
-                // asumiremos que arg_2 o arg_1 contiene el dato relevante o modificamos la firma.
-                
-                // NOTA: En tu FS `give_response` recibe `int32_t fd` como último parámetro.
-                // En tu definición solicitada para Pipe es `int32_t arg_3`.
-                // Asumiré que para OP_CLOSE, el `fd` cerrado debe venir en alguno de los args 
-                // para poder pasarlo a update_coord_state. 
-                // Por convención del FS, pasaremos el FD en la llamada a give_response.
-                
-                // *IMPORTANTE*: Si la firma es estricta (arg_1, arg_2, arg_3), 
-                // asegúrate de pasar el FD en uno de ellos al llamar a esta función desde main.c.
-                // Asumiremos arg_2 = fd para CLOSE en este ejemplo.
-                
-                update_coord_state(PIPE, protocol_op, current_client_pid, arg_2);
+            if (protocol_op == OP_CLOSE || protocol_op == OP_DUP) {
+                update_coord_state(PIPE, protocol_op, current_client_pid, fd_1);
             }
-            
-            else if (protocol_op == OP_OPEN || protocol_op == OP_PIPE) {
-                 update_coord_state(PIPE, protocol_op, current_client_pid, arg_1);
+            if (protocol_op == OP_OPEN) {
+                update_coord_state(PIPE, protocol_op, current_client_pid, fd_2);
             }
         }
-
         return server_send_parameter_to_app(current_client_pid, protocol_op, arg_1);
     }
-}*/
+}

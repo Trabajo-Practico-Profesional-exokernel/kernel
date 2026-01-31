@@ -178,7 +178,7 @@ int chmod(const char *pathname, uint32_t mode){
 int pipe(int fds[2]){
     int res = app_send_msg_to_server(OP_PIPE, 0, 0, 0, (int)fds, sizeof(int)*2);
     if (res == ERROR) return ERROR;
-    return app_receive_parameter(OP_PIPE);
+    return app_receive_content(OP_PIPE, fds, sizeof(int)*2);
 }
 
 int dup(int prev_fd){

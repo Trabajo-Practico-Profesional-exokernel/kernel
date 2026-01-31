@@ -162,20 +162,16 @@ int32_t app_send_msg_to_server(int32_t arg_1, int32_t arg_2, int32_t arg_3,
                                 int32_t arg_4, int32_t arg_5, int32_t arg_6){
 
     int32_t server_pid = get_server_pid(arg_1, arg_2, arg_3, arg_4, arg_5, arg_6);
-
     if (server_pid < 0){
         return ERROR;
     }
-
     //VER DE REFACTORIZAR LA SIGUIENTE IMPLEMENTACION
 
     int32_t real_fd = get_real_fd(arg_1, arg_2, server_pid);
-
     if (real_fd >= 0) {
         arg_2 = real_fd;
     }
 
     // ------------------------------------------------
-
     return send_msg(server_pid, arg_1, arg_2, arg_3, arg_4, arg_5, arg_6);
 }

@@ -6,7 +6,7 @@
 #include "types.h"
 
 int32_t get_command(PipeOperation *command);
-int32_t give_response(int32_t type_command, int32_t arg_1, int32_t arg_2, int32_t arg_3);
+int32_t give_response(int32_t type_command, int32_t arg_1, int32_t arg_2, int32_t arg_3, int32_t fd_1, int32_t fd_2);
 void reset_current_client_pid();
 
 #endif
