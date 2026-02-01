@@ -12,6 +12,20 @@
 #define SSTATUS_UIE (1L << 0)  // User Interrupt Enable
 
 
+static inline uint32_t
+r_sie(void)
+{
+    uint32_t x;
+    __asm__ __volatile__("csrr %0, sie" : "=r"(x));
+    return x;
+}
+
+static inline void
+w_sie(uint32_t x)
+{
+    __asm__ __volatile__("csrw sie, %0" :: "r"(x));
+}
+
 
 // riscv specific
 #define READ_CSR(reg)                                                          \
@@ -86,6 +100,21 @@ interrupts_enabled()
   uint32_t x = r_sstatus();
   return (x & SSTATUS_SIE) != 0;
 }
+
+// disable supervisor timer interrupts only
+static inline void
+disable_timer_interrupts(void)
+{
+    w_sie(r_sie() & ~SIE_STIE);
+}
+
+static inline void
+enable_timer_interrupts(void)
+{
+    w_sie(r_sie() | SIE_STIE);
+}
+
+
 
 // read and write tp, the thread pointer... i.e
 // this core's hartid (core number), the index into cpus[] on procs and so ons.

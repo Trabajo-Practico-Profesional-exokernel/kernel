@@ -1,16 +1,13 @@
 #include "testing.h"
 #include "stdio.h"
-#include "utils.h"
-#include "test_common.h"
-#include "tests_kernel.h"
 #include "console/debug.h"
 #include "console/colors.h"
 
-#ifdef IS_RISC
-#include "test_riscv/tests_hardware.h"
-#else
-#include "test_x86/tests_hardware.h"
-#endif
+#include "test_utils.h"
+#include "test_common.h"
+#include "tests_kernel.h"
+#include "tests_hardware.h"
+
 
 int run_early_boot_tests(void) {
     CTest suite = init_ctx("SELF-TEST KIT");

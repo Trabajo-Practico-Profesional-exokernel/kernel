@@ -21,6 +21,11 @@ int wait(int pid){
     return syscall(SYS_WAIT, pid, 0, 0, 0);
 }
 
+
+int sys_kill(int pid){
+    return syscall(SYS_KILL, pid, 0, 0, 0);
+}
+
 void sys_yield(){
     syscall(SYS_YIELD, 0, 0, 0, 0);
 }
@@ -76,7 +81,7 @@ int virtual_copy(uint32_t pid_src_proc, uint32_t src_addr, uint32_t dst_addr, in
 }
 
 int open(const char *path, int mode) {
-    int res = app_send_msg_to_server(OP_OPEN, 0, mode, 0, (int)path, strlen(path) + 1);
+    int res = app_send_msg_to_server(OP_OPEN, 0, mode, 0, (int)path, strlen((const uint8_t *) path) + 1);
     if (res == ERROR) return ERROR;
     return app_receive_parameter(OP_OPEN);
 }
@@ -112,19 +117,19 @@ int stat(char* filepath){
 }
 
 int mkdir(const char *path) {
-    int res = app_send_msg_to_server(OP_MKDIR, 0, 0, 0, (int)path, strlen(path) + 1);
+    int res = app_send_msg_to_server(OP_MKDIR, 0, 0, 0, (int)path, strlen((const uint8_t *) path) + 1);
     if (res == ERROR) return ERROR;
     return app_receive_parameter(OP_MKDIR);
 }
 
 int rmdir(const char *path) {
-    int res = app_send_msg_to_server(OP_RMDIR, 0, 0, 0, (int)path, strlen(path) + 1);
+    int res = app_send_msg_to_server(OP_RMDIR, 0, 0, 0, (int)path, strlen((const uint8_t *) path) + 1);
     if (res == ERROR) return ERROR;
     return app_receive_parameter(OP_RMDIR);
 }
 
 int chdir(const char *path) {
-    int res = app_send_msg_to_server(OP_CHDIR, 0, 0, 0, (int)path, strlen(path) + 1);
+    int res = app_send_msg_to_server(OP_CHDIR, 0, 0, 0, (int)path, strlen((const uint8_t *) path) + 1);
     if (res == ERROR) return ERROR;
     return app_receive_parameter(OP_CHDIR);
 }
@@ -136,21 +141,21 @@ int getcwd(char *buf, int size) {
 }
 
 int ls(const char *path) {
-    int res = app_send_msg_to_server(OP_LS, 0, 0, 0, (int)path, strlen(path) + 1);
+    int res = app_send_msg_to_server(OP_LS, 0, 0, 0, (int)path, strlen((const uint8_t *) path) + 1);
     if (res == ERROR) return ERROR;
     return app_receive_parameter(OP_LS);
 }
 
 int mknod(const char *path, short major, short minor) {
     (void)major; (void)minor;
-    int res = app_send_msg_to_server(OP_MKNOD, 0, 0, 0, (int)path, strlen(path) + 1);
+    int res = app_send_msg_to_server(OP_MKNOD, 0, 0, 0, (int)path, strlen((const uint8_t *) path) + 1);
     if (res == ERROR) return ERROR;
     return app_receive_parameter(OP_MKNOD);
 }
 
 int link(const char *old_path, const char *new_path) {
-    int len_old = strlen(old_path) + 1;
-    int len_new = strlen(new_path) + 1;
+    int len_old = strlen((const uint8_t *) old_path) + 1;
+    int len_new = strlen((const uint8_t *) new_path) + 1;
     
     int res = app_send_msg_to_server(OP_LINK, (int)old_path, len_old, (int)new_path, len_new, 0);
     if (res == ERROR) return ERROR;
@@ -158,19 +163,19 @@ int link(const char *old_path, const char *new_path) {
 }
 
 int unlink(const char *path) {
-    int res = app_send_msg_to_server(OP_UNLINK, 0, 0, 0, (int)path, strlen(path) + 1);
+    int res = app_send_msg_to_server(OP_UNLINK, 0, 0, 0, (int)path, strlen((const uint8_t *) path) + 1);
     if (res == ERROR) return ERROR;
     return app_receive_parameter(OP_UNLINK);
 }
 
 int chown(const char *pathname, uint32_t owner, uint32_t group){
-    int res = app_send_msg_to_server(OP_CHOWN, 0, owner, group, (int)pathname, strlen(pathname) + 1);
+    int res = app_send_msg_to_server(OP_CHOWN, 0, owner, group, (int)pathname, strlen((const uint8_t *) pathname) + 1);
     if (res == ERROR) return ERROR;
     return app_receive_parameter(OP_CHOWN);
 }
 
 int chmod(const char *pathname, uint32_t mode){
-    int res = app_send_msg_to_server(OP_CHMOD, 0, mode, 0, (int)pathname, strlen(pathname) + 1);
+    int res = app_send_msg_to_server(OP_CHMOD, 0, mode, 0, (int)pathname, strlen((const uint8_t *) pathname) + 1);
     if (res == ERROR) return ERROR;
     return app_receive_parameter(OP_CHMOD);
 }

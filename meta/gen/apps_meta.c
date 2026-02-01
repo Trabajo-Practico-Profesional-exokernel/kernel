@@ -8,7 +8,9 @@ extern char _binary_console_app_bin_start[],_binary_console_app_bin_size[];
 extern char _binary_coordinator_app_bin_start[],_binary_coordinator_app_bin_size[];
 extern char _binary_filesystem_app_bin_start[],_binary_filesystem_app_bin_size[];
 extern char _binary_hello_world_app_bin_start[],_binary_hello_world_app_bin_size[];
+extern char _binary_infinite_loop_app_bin_start[],_binary_infinite_loop_app_bin_size[];
 extern char _binary_kalloc_program_app_bin_start[],_binary_kalloc_program_app_bin_size[];
+extern char _binary_kill_app_bin_start[],_binary_kill_app_bin_size[];
 extern char _binary_page_fault_app_bin_start[],_binary_page_fault_app_bin_size[];
 extern char _binary_periodic_yield_app_bin_start[],_binary_periodic_yield_app_bin_size[];
 extern char _binary_pipe_app_bin_start[],_binary_pipe_app_bin_size[];
@@ -28,7 +30,9 @@ struct AppBinaryInfo _binary_apps[] = {
     {_binary_coordinator_app_bin_start, (size_t) _binary_coordinator_app_bin_size},
     {_binary_filesystem_app_bin_start, (size_t) _binary_filesystem_app_bin_size},
     {_binary_hello_world_app_bin_start, (size_t) _binary_hello_world_app_bin_size},
+    {_binary_infinite_loop_app_bin_start, (size_t) _binary_infinite_loop_app_bin_size},
     {_binary_kalloc_program_app_bin_start, (size_t) _binary_kalloc_program_app_bin_size},
+    {_binary_kill_app_bin_start, (size_t) _binary_kill_app_bin_size},
     {_binary_page_fault_app_bin_start, (size_t) _binary_page_fault_app_bin_size},
     {_binary_periodic_yield_app_bin_start, (size_t) _binary_periodic_yield_app_bin_size},
     {_binary_pipe_app_bin_start, (size_t) _binary_pipe_app_bin_size},

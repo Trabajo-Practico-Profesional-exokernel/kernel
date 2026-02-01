@@ -6,40 +6,40 @@
 #include "arch/mem.h"
 #include "arch/cpus.h"
 #include "arch/trap_handling.h"
+#include "fd.h"
 #include "stdio.h"
 #include "console/debug.h"
+#include "arch_inc/trap_constants.h"
 
-// When nothing more to be executed on shell!
-void sched_finish(void){
-    PANIC("+++++++++++++++++++++ Nothing to run at sched yield!?");    
-}
+#include "interactive_test_interpreter.h"
+#include "interactive_test_commands.h"
 
+//
 // void *mboot, unsigned int magic_number
 // UNUSED_ARGUMENT(mboot);
 //     UNUSED_ARGUMENT(magic_number);
 // return 0xDEADBEEF;
 
+// When nothing more to be executed on shell!
+void sched_finish(void){
+    resume_interactive_shell();
+}
+
 
 // Riscv would jump straight to this, because entry point does not jump to kmain
 // on secondary cpus
 void secondary_cpu_main(){
-    printf("Should start cpu %d\n", cpuid());
-    init_sched();
-    
+    add_start_cpu();
     for (;;)
     {
         // __asm__ __volatile__("wfi");
-    }
+    }       
 }
-
-volatile static int started = 0;
 
 void kmain()
 {
 
     init_cpus(); // First init cpus, here we set the cpuid
-    
-
 
     #ifdef IS_RISC
     #else
@@ -47,10 +47,8 @@ void kmain()
     // Riscv opensbi already does this, so its in theory for x86. Or just in case.
     // IN RISCV opensbi does not guarantee that cpuid == 0 is the boot one.
     if(cpuid() != 0){ 
-        printf("Does dis work? %d \n", cpuid());
-        while(started == 0)
-              ;
-
+        wait_start_cpus();
+                
         secondary_cpu_main();
 
         PANIC("Should not reach here secondary cpu!");
@@ -62,21 +60,24 @@ void kmain()
     clear();
     move_cursor(0);
 
-    debug_printf("HOLIS\n");
-
+    printf("==>TEST INIT TRAP!\n");
     init_trap();
 
+    printf("==>TEST INIT DISK!\n");
     init_disk(); 
     //Doing it after init_trap just to be able to see a trap/panic if something fails!
     // Mem init for riscv == setup pagetable for kernel.
+    printf("==>TEST INIT MEM!\n");
     mem_init();
+
     #ifdef IS_RISC
     // Why not ... maybe not full needed at first but works.
     switch_to_kernel_tables();
     #endif
     
-    // main_tests();
 
+    printf("==>TEST INIT SYSCALLS!\n");
+    init_files();
     init_syscalls_ipc();
     init_syscalls_proc();
     init_user_pages_alloc();
@@ -87,16 +88,13 @@ void kmain()
     kbd_init();
     #endif
     disable_debug_print();
-    debug_printf("\n\nHello World!\n");
-    
     // No lock needed for this set since is just 1 writer and once!
-    started = 1;
-
     // In riscv is needed, since we are using opensbi, opensbi halts the cpus until notified.
     // Like we would do with started == 0.
-    notify_inited();
-    printf("---> x86 start scged \n");
-    init_sched();
+    disable_timer_interrupts();
+    
+
+    init_interactive_tests();
 
     for (;;)
     {

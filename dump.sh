@@ -2,12 +2,13 @@
 
 clean_build=0
 is_user_app=0
+is_test=0
 trg=
-
 while [[ $# -gt 0 ]]; do
 	case "$1" in
 	        -c) clean_build=1; shift ;;
 	        -u) is_user_app=1; shift ;;
+	        -tests) is_test=1; shift ;;
 	        #-*) echo "Got flag $1 after - :${1#-}" ; shift;;  	
 	*) trg=$1 ; shift ;;
 	esac
@@ -35,7 +36,7 @@ else
 	if [[ $clean_build -eq 1 ]]; then
 		echo "Rebuilding kernel with trg $trg"
 		make clean
-		make ARCH=$trg
+		make ARCH=$trg TESTING=$is_test
 	fi
 	
 	llvm-objdump -d build/$trg/kernel.elf

@@ -1,10 +1,10 @@
 #include "tests_hardware.h"
-#include "../test_common.h"
+#include "test_common.h"
 #include "stdio.h"
 #include "arch/mem.h"
 #include "string.h"
 #include "stdlib.h"
-#include "../utils.h"
+#include "test_utils.h"
 
 #include "arch_inc/virtio.h"
 #include "arch_inc/virtio_blk.h"
