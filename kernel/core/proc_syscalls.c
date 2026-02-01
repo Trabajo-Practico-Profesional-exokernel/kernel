@@ -232,6 +232,7 @@ void syscall_kill(FullTrapFrame *tf, uintptr_t pc){
         return;
     }
     printf(" did not exit... cleanup/forcefully!\n");
+    notify_exited(killed_exit_status, -3); // Code for forcefully exited?
     
     switch_to_kernel_tables();
     // Already finished! So notify directly and return to curr process? no need for sched yield
