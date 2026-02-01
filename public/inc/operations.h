@@ -3,8 +3,6 @@
 
 typedef enum {
     OP_NOOP = 0,
-    OP_PUTCHAR,
-    OP_GETCHAR,
     OP_OPEN,
     OP_CLOSE,
     OP_READ,
@@ -61,8 +59,6 @@ typedef enum {
 
 typedef enum {
     CONSOLE_OP_PING = 0,
-    CONSOLE_OP_PUTCHAR,
-    CONSOLE_OP_GETCHAR,
     CONSOLE_OP_READ,
     CONSOLE_OP_WRITE,
     CONSOLE_OP_OPEN,

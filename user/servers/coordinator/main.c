@@ -128,8 +128,6 @@ typedef void (*coord_op_handler_t)(CoordinatorOperation *op);
 
 static const coord_op_handler_t op_dispatch_table[] = {
     [OP_NOOP]           = handle_noop,
-    [OP_PUTCHAR]        = handle_putchar,
-    [OP_GETCHAR]        = handle_getchar,
     [OP_OPEN]           = handle_open,
     [OP_CLOSE]          = handle_close,
     [OP_READ]           = handle_read,

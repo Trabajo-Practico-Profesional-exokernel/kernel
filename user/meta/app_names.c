@@ -3,7 +3,6 @@ char * _app_names[] = {
 "rm",
 "stat",
 "cat",
-"console",
 "coordinator",
 "filesystem",
 "hello_world",
