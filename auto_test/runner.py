@@ -5,22 +5,26 @@ class TestFailure(Exception):
     pass
 
 
-STARTED_LINE= "[TEST] interactive test shell ready\n"
-EXITED_LINE = "[TEST] interactive test shell exited\n"
-
+STARTED_LINE= "[TEST] interactive test shell ready"
+EXITED_LINE = "[TEST] interactive test shell exited"
+LEN_STARTED = len(STARTED_LINE)
 CAN_EXEC_COMMAND_LINE = "[tester command]>"
-EXECUTED_COMAND_LINE = "[TEST] interactive test shell command executed:\n"
+EXECUTED_COMAND_LINE = "[TEST] interactive test shell command executed:"
 
 
 def wait_start(program, timeout):
     start = time.time()
+
     while time.time() - start < timeout:
         line = program.read_line()
-        if line == STARTED_LINE:
-            print("")
-            print(line)
-            return
-        elif line:
+
+        if line:
+            if line == STARTED_LINE:
+                print("")
+                print(line)
+                return
+
+            # print(f"!'{line}' {len(line)} vs {len(STARTED_LINE)}")
             print(f"!{line[:-1]}", end="\r")
 
 def wait_can_exec(program, timeout):
@@ -31,7 +35,21 @@ def wait_can_exec(program, timeout):
             print(line)
             return
         elif line:
-            print(f"!!{line}")
+            print(f"!!{line}", end="\r")
+
+def wait_executed_line(program, monitor, timeout):
+    start = time.time()
+    while time.time() - start < timeout:
+        line = program.read_line()
+        if line == EXECUTED_COMAND_LINE:
+            print("EXECUTED!")
+            return
+        elif line:
+            monitor.feed(line+"\n")
+            if monitor.done():
+                return
+    
+    raise TestFailure("Timeout")
 
 def run_test(program, monitor, timeout=5):
     program.reset()
@@ -41,15 +59,9 @@ def run_test(program, monitor, timeout=5):
         wait_start(program, timeout);
 
         wait_can_exec(program, timeout);
+        print("Now start test, send 'run_tests'");
+        program.send_line("run_tests")
+        wait_executed_line(program, monitor, timeout);
 
-        start = time.time()
-        while time.time() - start < timeout:
-            line = program.read_line()
-            if line:
-                print(line)
-                monitor.feed(line)
-                if monitor.done():
-                    return
-        raise TestFailure("Timeout")
     finally:
         program.kill()

@@ -22,9 +22,8 @@ void resume_interactive_shell(void){
 void init_interactive_tests(void){
 	printf("INITING INTERACTIVE TESTS ON MAIN CPU %d \n", cpuid());
 
-    printf("\n[TEST] interactive test shell ready\n");
     interactive_shell_help();
-    printf("\n[TEST] SOME LOGSSSS SHOULD INIT SHELL MAIN!\n");
+    printf("\n[TEST] interactive test shell ready\n");
 
     interactive_shell_main();
 

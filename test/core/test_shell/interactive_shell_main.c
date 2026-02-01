@@ -15,13 +15,14 @@
 #define MAX_INPUT 128
 char input_buf[MAX_INPUT];
 void interactive_shell_help(void){
-    //test_help_man("");
+    test_help_man("");    
+
 }
 void interactive_shell_main(void) {
     static char input_buf[MAX_INPUT];
 
     while (1){
-        printf("\n[tester command]>");
+        printf("\n[tester command]>\n");
         // int len = 
         read_line(input_buf, MAX_INPUT);
 

@@ -121,7 +121,7 @@ class KernelRun:
             cmd,
             cwd=self.cwd,
             stdout=subprocess.PIPE,
-            stderr=subprocess.STDOUT,
+            stderr=subprocess.PIPE,
             stdin=subprocess.PIPE,
             preexec_fn=os.setsid,
             bufsize=0,
@@ -132,22 +132,56 @@ class KernelRun:
         if not self.proc:
             return None
 
-        rlist, _, _ = select.select([self.proc.stdout], [], [], timeout)
-        if not rlist:
+        if "\n" in self._buffer:
+            line, self._buffer = self._buffer.split("\n", 1)
+            return line.replace("\r", "")
+
+        fd = self.proc.stdout.fileno()
+        r, _, _ = select.select([fd], [], [], timeout)
+        if not r:
             return None
 
-        ch = self.proc.stdout.read(1)
-        if not ch:
+        try:
+            chunk = os.read(fd, 4096)
+        except BlockingIOError:
             return None
 
-        self._buffer += ch
+        if not chunk:
+            return None  # EOF
+
+        self._buffer += chunk.decode("utf-8", errors="replace")
+
         if "\n" not in self._buffer:
             return None
 
         line, self._buffer = self._buffer.split("\n", 1)
-        return line + "\n"
+        return line.replace("\r", "")
 
     def kill(self):
         if self.proc:
             os.killpg(os.getpgid(self.proc.pid), signal.SIGTERM)
             self.proc = None
+
+    def send(self, data: str):
+        """
+        Send raw bytes or string to the kernel's stdin.
+        Does NOT append newline automatically.
+        """
+        if not self.proc or not self.proc.stdin:
+            raise RuntimeError("Process not started or stdin unavailable")
+
+        # ensure string
+        # if isinstance(data, str):
+        #     data = data.encode("utf-8")
+        
+        try:
+            self.proc.stdin.write(data)
+            self.proc.stdin.flush()
+        except BrokenPipeError:
+            raise RuntimeError("Cannot send, process stdin closed")
+
+    def send_line(self, line: str):
+        """
+        Send a line to the kernel's stdin (adds newline).
+        """
+        self.send(line + "\n")
