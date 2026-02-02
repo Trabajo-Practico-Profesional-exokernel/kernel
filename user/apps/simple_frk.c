@@ -3,7 +3,7 @@
 #include "string.h"
 #include "stdlib.h"
 
-#define SLEEP_TIME 90000000
+#define SLEEP_TIME 2
 char * INPUT_STR_BASE = "SOME STRING ";
 
 void main() {
@@ -13,7 +13,7 @@ void main() {
 	while(count < 3){
 		printf("[FRK] WAIT n%d\n", count);
 		count+=1;
-		sleep(SLEEP_TIME);
+		sys_sleep(SLEEP_TIME);
 	}
 
 
@@ -40,7 +40,7 @@ void main() {
 		while(count < 50){
 			printf("[child] WAIT n%d\n", count);
 			count+=1;
-			sleep(SLEEP_TIME);
+			sys_sleep(SLEEP_TIME);
 		}
 
 	    printf("[child] VL allocated STR '%s'\n", allocated);
@@ -58,7 +58,7 @@ void main() {
 	while(count < 50){
 		printf("[parent] WAIT n%d\n", count);
 		count+=1;
-		sleep(SLEEP_TIME);
+		sys_sleep(SLEEP_TIME);
 	}
     printf("[parent] VL allocated STR '%s'\n", allocated);
 }

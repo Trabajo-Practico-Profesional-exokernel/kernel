@@ -13,6 +13,7 @@
 
 #include "proc_pages.h"
 #include "proc_syscalls.h"
+#include "proc_sleeping.h"
 
 
 // #include "ipc.h"
@@ -20,6 +21,7 @@
 void free_process(struct Proc * proc){
     
     free_proc_pages(proc);
+    reset_proc_uptime(proc);
     
     proc->user_sp_start = 0;
     proc->pde_paddr = 0;

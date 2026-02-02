@@ -10,6 +10,7 @@ int wait(int pid);
 int sys_kill(int pid);
 
 int sys_fork(void);
+int sys_sleep(int time);
 
 
 void sys_yield(void);

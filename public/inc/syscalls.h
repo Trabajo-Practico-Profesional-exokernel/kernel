@@ -24,6 +24,7 @@
 
 #define SYS_KILL 17
 #define SYS_FORK 18
+#define SYS_SLEEP 19
 
 #define DEF_ERR_CODE -1
 

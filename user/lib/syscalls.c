@@ -22,6 +22,10 @@ int sys_fork(void){
     return syscall(SYS_FORK, 0, 0, 0, 0);
 }
 
+int sys_sleep(int time){
+    return syscall(SYS_SLEEP, time, 0, 0, 0);
+}
+
 
 int wait(int pid){
     return syscall(SYS_WAIT, pid, 0, 0, 0);

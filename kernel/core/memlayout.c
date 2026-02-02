@@ -8,13 +8,33 @@
 #include "stdio.h"
 #include "console/debug.h"
 
+#include "proc_sleeping.h"
 
 #include "proc.h"
+#include "sched.h"
 #include "proc_pages.h"
 #include "proc_syscalls.h"
 #include "arch/logging.h"
 
 // #include "user_pages_alloc.h"
+extern char __idle_proc_start[], __idle_proc_end[];
+__attribute__((section(".idle_proc")))
+void idle_entry(void) {
+    for(;;){
+    }
+}
+
+
+void init_idle_proc(void){
+    struct Proc * sched_idle_proc = get_idle_proc();
+    sched_idle_proc->pid = PROCS_MAX;
+    init_process_pde(sched_idle_proc);
+
+    sched_idle_proc->pc = VADDR_USER_BASE;
+    map_page((uint32_t*) sched_idle_proc->pde_paddr, VADDR_USER_BASE, (paddr_t) __idle_proc_start,
+             USER_PERMISSIONS_ALL);    
+}
+
 
 
 void init_process_pde(struct Proc * proc){
@@ -130,6 +150,7 @@ void load_create_process_user(struct Proc * proc, const struct AppBinaryInfo * a
     SET_SYSCALL_RET0(proc_tf, argc);
     SET_SYSCALL_RET1(proc_tf, params_vaddr);
 
+    init_proc_uptime(proc);
 }
 
 // For now no extra mapping needed.
@@ -156,6 +177,7 @@ int load_create_forked(struct Proc* parent, struct Proc* child){
     SET_SYSCALL_RET0(child_tf, 0); // Set to 0 so that is flagged to be a child!
 
     child->status = PROC_RUNNABLE;
+    init_proc_uptime(child);
 
     return 0;
 }

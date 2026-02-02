@@ -63,10 +63,10 @@ void init_sched2(void) {
 }
 
 void init_sched_main(void) {
-    // struct Proc * proc_def = create_process(APP_IND_COORDINATOR, DEF_ARGV);
-    // coordinator_PID = proc_def->pid;
-    struct Proc * proc_def = create_process(APP_IND_SIMPLE_FRK, DEF_ARGV);
+    struct Proc * proc_def = create_process(APP_IND_COORDINATOR, DEF_ARGV);
     coordinator_PID = proc_def->pid;
+    // struct Proc * proc_def = create_process(APP_IND_SIMPLE_FRK, DEF_ARGV);
+    // coordinator_PID = proc_def->pid;
 
     switch_proc(proc_def);
     
@@ -76,6 +76,8 @@ void init_sched_main(void) {
 
 struct spinlock lock_test;
 int main_cpuid = -1;
+
+
 
 void init_sched(void) {
 
@@ -91,8 +93,10 @@ void init_sched(void) {
         printf("Main cpu acquired lock!?! %d\n",main_cpuid);        
         lock_test.name= "main lock";
 
-        // for (int i = 0; i < 1000000000; i++){}
+        printf("INITING IDLE PROC In case all procs are blocked!\n");        
+        init_idle_proc();
         printf("Main NOW RELEASE!\n");        
+        // for (int i = 0; i < 1000000000; i++){}
     } else {
         printf("Secondary acquired lock!?! %d.. not main == %d .. name '%s'\n", cpuid(), main_cpuid, lock_test.name);        
         // for (int i = 0; i < 1000000000; i++){}
