@@ -36,6 +36,19 @@ SECTIONS {
     . = ALIGN(4096); /* align to page size */
     __kernel_base_end = .; /* To know where in memory does the kernel base end, without heap memory*/
 
+
+    /* Space for idle proc in case nothing to be executed but still there is a non free process */
+    __idle_proc_start = .;
+
+    .idle_proc : ALIGN(4096) {
+        *(.idle_proc .idle_proc.*)
+    }
+
+    . = ALIGN(4096); /* align to page size */
+    __idle_proc_end = .;
+
+
+
     . = ALIGN(4096); /* align to page size */
     . += 4096; /*For safety */
     . = ALIGN(4096); /* align to page size */

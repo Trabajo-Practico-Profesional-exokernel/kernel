@@ -98,7 +98,7 @@ $(APP_OUT)/%: $(APPS_FOLDER)/%/ | $(APP_OUT)
 # Server apps
 $(APP_OUT)/%: $(SERVERS_FOLDER)/%/ | $(APP_OUT)
 	@echo "Compiling server: $*"
-	@./compile_dir_apps.sh $(ARCH) $<
+	@./compile_dir_apps.sh $(ARCH) -add_meta $<
 
 # ----------------------------
 # Directories
