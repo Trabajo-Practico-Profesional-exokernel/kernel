@@ -9,7 +9,7 @@
 #include "arch/mem.h"
 #include "arch/cpus.h"
 #include "arch/trap_handling.h"
-#include "fd.h"
+// #include "fd.h"
 #include "stdio.h"
 #include "console/debug.h"
 #include "arch_inc/trap_constants.h"

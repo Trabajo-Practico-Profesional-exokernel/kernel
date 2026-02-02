@@ -6,7 +6,7 @@
 #include "arch/mem.h"
 #include "arch/cpus.h"
 #include "arch/trap_handling.h"
-#include "fd.h"
+// #include "fd.h"
 #include "stdio.h"
 #include "console/debug.h"
 #include "arch_inc/trap_constants.h"
@@ -77,7 +77,7 @@ void kmain()
     
 
     printf("==>TEST INIT SYSCALLS!\n");
-    init_files();
+    // init_files();
     init_syscalls_ipc();
     init_syscalls_proc();
     init_user_pages_alloc();
