@@ -52,5 +52,5 @@ struct Proc {
 
 // struct ProcMessageQueue*
 // struct ProcMessageQueue
-
+struct Proc * get_proc(procid_t proc_pid);
 #endif /* !*/

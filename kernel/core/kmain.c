@@ -8,6 +8,8 @@
 #include "arch/trap_handling.h"
 #include "stdio.h"
 #include "console/debug.h"
+#include "console_files.h"
+
 
 // When nothing more to be executed on shell!
 void sched_finish(void){
@@ -59,6 +61,7 @@ void kmain()
 
     disable_debug_print();
     init_arch();
+    reset_std_files();
     clear();
     move_cursor(0);
 

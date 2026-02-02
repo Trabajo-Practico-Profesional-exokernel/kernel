@@ -8,8 +8,10 @@
 #include "stdio.h"
 #include "stdio.h"
 #include "console/debug.h"
-
+#include "arch/proc.h"
 #include "arch/mem_layout.h"
+#include "arch/console.h"
+#include "arch/stdio.h"
 
 extern void sched_finish(void);
 
@@ -121,54 +123,82 @@ void sched_yield(void) {
     ////
     //// Round robin!
     ////
+    for(;;){
 
-    int currind = -1;
+        #ifdef IS_RISC
+        #else
+            asm volatile("sti");
+        #endif
 
-    if (curr){
-        // If it was preemted, not in blocked state or so... then set it as runnable
-        if (curr->status == PROC_RUNNING) {
-            curr->status = PROC_RUNNABLE;  
+        int currind = -1;
+
+        if (curr){
+            // If it was preemted, not in blocked state or so... then set it as runnable
+            if (curr->status == PROC_RUNNING) {
+                curr->status = PROC_RUNNABLE;  
+            }
+
+            currind= PROCX(curr->pid);
+
         }
 
-        currind= PROCX(curr->pid);
+        int ind = currind + 1;
 
+        // Look for next in range [curr+1 ; end] 
+        while (ind < PROCS_MAX &&
+            procs[ind].status !=
+                    PROC_RUNNABLE) {  
+            ind++;
+        }
+        if (ind < PROCS_MAX) { 
+            switch_proc(&procs[ind]);
+        }
+
+        // Now circular loop!
+        // Look for next in range [0; curr] 
+        ind = 0;
+        while (ind < currind &&
+            procs[ind].status !=
+                    PROC_RUNNABLE) {  
+            ind++;
+        }
+
+
+        if (ind < currind) {
+            switch_proc(&procs[ind]);
+        }
+
+        // Found nothing , if curr is blocked or dead.. then reset it 
+        if (curr && curr->status != PROC_RUNNABLE) {
+            curr = NULL;
+        }
+
+        // keep runing the last proc while it exists
+        if (curr) {
+            switch_proc(curr);
+        }
+
+        // claramente hay que corregir esta parte y borrarla al carajo
+        #ifdef IS_RISC
+            long c = getchar(); 
+            if (c != -1) {
+                int res = console_push_input(c);
+                if (res >= 0){
+                    int proc_pid = console_release_waiter_pid();
+
+                    if (proc_pid >= 0){
+                        struct Proc *proc = get_proc(proc_pid);
+                        proc->status = PROC_RUNNABLE;
+                    }
+                }
+                
+            }
+        #else
+            asm volatile("hlt");
+        #endif
     }
+    
 
-    int ind = currind + 1;
-
-    // Look for next in range [curr+1 ; end] 
-    while (ind < PROCS_MAX &&
-           procs[ind].status !=
-                   PROC_RUNNABLE) {  
-        ind++;
-    }
-    if (ind < PROCS_MAX) { 
-        switch_proc(&procs[ind]);
-    }
-
-    // Now circular loop!
-    // Look for next in range [0; curr] 
-    ind = 0;
-    while (ind < currind &&
-           procs[ind].status !=
-                   PROC_RUNNABLE) {  
-        ind++;
-    }
-
-
-    if (ind < currind) {
-        switch_proc(&procs[ind]);
-    }
-
-    // Found nothing , if curr is blocked or dead.. then reset it 
-    if (curr && curr->status != PROC_RUNNABLE) {
-        curr = NULL;
-    }
-
-    // keep runing the last proc while it exists
-    if (curr) {
-        switch_proc(curr);
-    }
-
-    sched_finish();
+    
+    //sched_finish();
 }

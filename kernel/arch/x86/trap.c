@@ -81,7 +81,16 @@ void handle_trap(FullTrapFrame *tf) {
             break;
 
         case (T_IRQ0 + IRQ_COM1):
-            keyboard_handle_interrupt();
+            int res =  keyboard_handle_interrupt();
+            
+            if (res >= 0){
+                int proc_pid = console_release_waiter_pid();
+                if (proc_pid >= 0){
+                    struct Proc *proc = get_proc(proc_pid);
+                    proc->status = PROC_RUNNABLE;
+                }
+            }
+
             pic_acknowledge(4); // Notificar al PIC (IRQ 4)
             break;
 

@@ -47,4 +47,8 @@ int chmod(const char *pathname, uint32_t mode);
 int pipe(int fds[2]);
 int dup(int prev_fd);
 
+int console_read(char *buf, int len);
+int console_write(char *buf, int len);
+int console_close(int fd);
+
 #endif

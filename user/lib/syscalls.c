@@ -1,7 +1,6 @@
 #include "inc/syscalls.h"
 #include "syscalls.h"
 #include "lib.h"
-
 #include "inc/filesystem.h"
 #include "string.h"
 #include "stdlib.h"
@@ -12,6 +11,7 @@
 #include "inc/operations.h"
 #include "constants.h"
 #include "parsers/strutil.h"
+#include "arch/console.h"
 
 int exec(int prog_ind, char ** args){
     return syscall(SYS_EXEC, prog_ind, (int)(args), 0, 0);
@@ -56,12 +56,28 @@ int get_coord_pid(){
     return syscall(SYS_COORDPID, 0, 0, 0, 0);
 }
 
+int console_read(char *buf, int len){
+    return syscall(SYS_CONSOLE_GET, (int)buf, len, 0, 0);
+}
+
+int console_write(char *buf, int len){
+    return syscall(SYS_CONSOLE_PUT, (int)buf, len, 0, 0);
+}
+
+int console_close(int fd){
+    return syscall(SYS_CONSOLE_CLOSE, fd, 0, 0, 0);
+}
+
+
 void putchar(char ch) {
-    syscall(SYS_PUTCHAR, ch, 0, 0, 0);
+    write(STDOUT, &ch, 1);
 }
 
 int getchar(void) {
-    return syscall(SYS_GETCHAR, 0, 0, 0, 0);
+    char c;
+    int bytes = read(STDIN, &c, 1);
+    if (bytes > 0) return c;
+    return ERROR;
 }
 
 int try_send_content(int proc_pid, char *content, int len_content){
@@ -87,18 +103,44 @@ int open(const char *path, int mode) {
 }
 
 int close(int fd) {
+
+    if (fd == STDIN || fd == STDOUT){
+        int res = console_close(fd);
+        //es necesario refactorizar
+        int pid = getpid();
+        int res_update = send_msg(get_coord_pid(), OP_UPDATE, KERNEL, pid, fd, -1, 0);
+
+        if (res_update < 0){
+            printf("ERROR UPDATING STATE IN COORDINATOR\n");
+        }
+
+        if (res > 0) return res;
+    }
+
     int res = app_send_msg_to_server(OP_CLOSE, fd, 0, 0, 0, 0);
     if (res == ERROR) return ERROR;
     return app_receive_parameter(OP_CLOSE);
 }
 
 int read(int fd, char *buf, int size) {
+
+    if (fd == STDIN){
+        int res = console_read(buf, size);
+        if (res > 0) return res;
+    }
+    
     int res = app_send_msg_to_server(OP_READ, fd, 0, 0, (int)buf, size);
     if (res == ERROR) return ERROR;
     return app_receive_content(OP_READ, buf, size);
 }
 
 int write(int fd, char *content, int len) {
+
+    if (fd == STDOUT){
+        int res = console_write(content, len);
+        if (res > 0) return res;
+    }
+
     int res = app_send_msg_to_server(OP_WRITE, fd, 0, 0, (int)content, len);
     if (res == ERROR) return ERROR;
     return app_receive_parameter(OP_WRITE);

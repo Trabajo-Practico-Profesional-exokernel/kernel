@@ -258,7 +258,11 @@ int32_t start_server(Server type) {
 
 void init_fds() {
     for (int i = 0; i < PROCS_MAX; i++) {
-        for (int j = 0; j < MAX_FILES; j++) {
+        coordinator.fd[i][0].fd = 0;
+        coordinator.fd[i][0].type_server = KERNEL;
+        coordinator.fd[i][1].fd = 1;
+        coordinator.fd[i][1].type_server = KERNEL;
+        for (int j = 2; j < MAX_FILES; j++) {
             coordinator.fd[i][j].fd = -1;
             coordinator.fd[i][j].type_server = -1;
         }
