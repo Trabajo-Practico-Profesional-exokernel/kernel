@@ -11,6 +11,8 @@
 
 
 char *DEF_ARGV[] = { "sh_prog","parameter1", 0 };
+char *DEF_FS_ARGS[] = { "filesystem", 0 };
+char *DEF_SHELL_ARGS[] = { "shell", 0 };
 
 extern struct AppBinaryInfo _binary_apps[];
 
@@ -63,12 +65,23 @@ void init_sched2(void) {
 }
 
 void init_sched_main(void) {
+
+    #ifdef IS_RISC
     struct Proc * proc_def = create_process(APP_IND_COORDINATOR, DEF_ARGV);
     coordinator_PID = proc_def->pid;
     // struct Proc * proc_def = create_process(APP_IND_SIMPLE_FRK, DEF_ARGV);
     // coordinator_PID = proc_def->pid;
 
     switch_proc(proc_def);
+
+    #else
+
+    // struct Proc * proc_fs = create_process(APP_IND_FILESYSTEM, DEF_FS_ARGS);
+    struct Proc * proc_shell = create_process(APP_IND_SHELL, DEF_SHELL_ARGS);
+
+    // switch_proc(proc_fs);
+    switch_proc(proc_shell);
+    #endif
     
 }
 
