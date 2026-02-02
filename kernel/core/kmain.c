@@ -79,7 +79,7 @@ void kmain()
 
     init_syscalls_ipc();
     init_syscalls_proc();
-    init_user_pages_alloc();
+    init_proc_mem_management();
 
     #ifdef IS_RISC
     #else

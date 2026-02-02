@@ -23,6 +23,7 @@
 #define SYS_VIRTUAL_COPY 16
 
 #define SYS_KILL 17
+#define SYS_FORK 18
 
 #define DEF_ERR_CODE -1
 

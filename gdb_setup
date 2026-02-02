@@ -1,2 +1,2 @@
 add-symbol-file user/build/filesystem/app.elf
-
+b copy_mem_pages

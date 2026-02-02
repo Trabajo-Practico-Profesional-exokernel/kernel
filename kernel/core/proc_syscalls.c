@@ -72,6 +72,37 @@ void notify_exited(struct ProcExitStatus* exited_status, int ret_code){
 
 
 
+
+
+void syscall_fork(FullTrapFrame *tf, uintptr_t pc) {
+
+    struct Proc* parent_proc = get_curr();
+    switch_to_kernel_tables();
+    
+    printf("Should fork program at ind %d \n", parent_proc->pid);
+    
+    struct Proc* child_proc= get_first_free_proc();
+
+    if (child_proc == NULL){
+        SET_SYSCALL_RET0(tf, DEF_ERR_CODE)
+        save_curr_proc_state(tf, pc + 4);    
+        
+        switch_page_table((uint32_t *) parent_proc->pde_paddr);
+        return;
+    }
+
+    uintptr_t trg_init_pc = pc + 4;
+    printf("Forked?\n");
+    
+    SET_SYSCALL_RET0(tf, child_proc->pid)
+    save_curr_proc_state(tf, trg_init_pc);
+    
+    load_create_forked(parent_proc, child_proc);
+
+
+    switch_page_table((uint32_t *) parent_proc->pde_paddr);
+}
+
 void syscall_exec(FullTrapFrame *tf, uintptr_t pc) {
 
     int prog_ind = SYSCALL_ARG0(tf);
@@ -344,6 +375,14 @@ void syscall_virtual_copy(FullTrapFrame *tf, uintptr_t pc){
     switch_page_table((uint32_t *) get_curr()->pde_paddr);
 }
 
+
+
+
+
+
+
+
+
 void init_syscalls_ipc(void){
     register_syscall(SYS_TRY_SEND_CONTENT, syscall_try_send_content);
     register_syscall(SYS_TRY_RECV_CONTENT, syscall_try_recv_content);
@@ -352,6 +391,8 @@ void init_syscalls_ipc(void){
 
 void init_syscalls_proc(void) {
     register_syscall(SYS_EXEC, syscall_exec);
+    register_syscall(SYS_FORK, syscall_fork);
+
     register_syscall(SYS_EXIT, syscall_exit);
     register_syscall(SYS_WAIT, syscall_wait);
     register_syscall(SYS_KILL, syscall_kill);

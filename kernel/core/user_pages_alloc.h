@@ -12,5 +12,4 @@ void free_user_page(paddr_t paddr);
 
 int try_alloc_user_page(paddr_t * out_paddr);
 
-vaddr_t get_vaddr_user_heap_page(size_t ind);
 #endif

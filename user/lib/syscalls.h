@@ -9,6 +9,9 @@ int exec(int prog_ind, char ** args);
 int wait(int pid);
 int sys_kill(int pid);
 
+int sys_fork(void);
+
+
 void sys_yield(void);
 __attribute__((noreturn)) void exit(int ret_code);
 int getpid(void);
