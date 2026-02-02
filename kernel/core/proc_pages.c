@@ -230,13 +230,9 @@ void free_proc_pages(struct Proc* proc){
 
 
 
-
-void init_proc_pages(struct Proc* proc){
-
+void init_proc_stack(struct Proc* proc){
     // Alloc user stack... still on non user alloc
     proc->user_sp_start = alloc_pages(USER_STACK_PAGE_COUNT);
-    debug_printf("FOR PROC %u USER SP_START IS %x \n", proc->pid, proc->user_sp_start);
-
     //
     // Map user stack to vaddr
     // [USER_PROG_HARD_END ..USER_STACK_PAGE_COUNT .. USER_STACK_HARD_END] ..    
@@ -247,8 +243,10 @@ void init_proc_pages(struct Proc* proc){
     offset_map_range((uint32_t *) proc->pde_paddr, 
             proc->user_sp_start, paddr_sp_end,
             USER_PERMISSIONS_ALL, VADDR_USER_HARD_END); 
+}
 
-
+void init_proc_pages(struct Proc* proc){
+    init_proc_stack(proc);
     struct UserProcPages* proc_pages = &procs_pages[proc->pid];
     proc_pages->vaddr_proc_heap_end = VADDR_USER_HEAP_START; // For now hardcoded hardlimit.. no dynamic setting.
 }
@@ -317,8 +315,11 @@ void syscall_sbrk(FullTrapFrame *tf, uintptr_t pc) {
     
     if(ret_value >= 0){
         vaddr_t ret_vaddr = get_vaddr_user_heap_page(ret_value);
-        debug_printf("SBRK incremented by 1! Allocated page ind %d, vaddr= %x to paddr= %x\n", ret_value, ret_vaddr, allocated_page);
+        printf("SBRK incremented by 1! Allocated page ind %d, vaddr= %x to paddr= %x\n", ret_value, ret_vaddr, allocated_page);
         ret_value = ret_vaddr;
+    } else {
+        printf("ERROR ret %d at alloc sbrk\n", ret_value);
+        ret_value = 0;
     }
 
     // Switch back to proc tables to return to proc

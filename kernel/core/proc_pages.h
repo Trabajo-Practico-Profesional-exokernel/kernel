@@ -18,6 +18,8 @@ vaddr_t get_vaddr_user_heap_page(size_t ind);
 int load_paddr_stack_pages(struct Proc* proc, paddr_t * pages_arr);
 
 void init_proc_pages(struct Proc* proc);
+void init_proc_stack(struct Proc* proc);
+
 void free_proc_pages(struct Proc* proc);
 int copy_mem_pages(struct Proc* src_proc, struct Proc* trg_proc);
 

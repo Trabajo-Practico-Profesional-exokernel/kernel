@@ -76,7 +76,7 @@ void switch_to_idle_proc(void){
     curr->status = PROC_RUNNING;
     curr_slices = MAX_TIME_SLICES;
 
-    debug_printf("--------------------------- SWITCH IDLE PROC %u \n", curr->pid);
+    // printf("--------------------------- SWITCH IDLE PROC %u \n", curr->pid);
     #ifdef IS_RISC
     SSCRATCH_NEW_STACK(&trampoline_stacks[curr->cpunum][TRAMPOLINE_STACK_SIZE])
     #endif

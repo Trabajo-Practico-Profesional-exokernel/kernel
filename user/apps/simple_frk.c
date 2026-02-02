@@ -10,6 +10,11 @@ void main() {
 	int count = 1;
     char * allocated = sbrk(1); // Alloc 1 page
 
+    if(allocated <= 0){
+    	printf("[FRK] Failed sbrk alloc!\n");
+    	return;
+    }
+
 	while(count < 3){
 		printf("[FRK] WAIT n%d\n", count);
 		count+=1;

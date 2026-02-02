@@ -78,6 +78,7 @@ void init_sched_main(void) {
 
     // struct Proc * proc_fs = create_process(APP_IND_FILESYSTEM, DEF_FS_ARGS);
     struct Proc * proc_shell = create_process(APP_IND_SHELL, DEF_SHELL_ARGS);
+    // struct Proc * proc_shell = create_process(APP_IND_SIMPLE_FRK, DEF_SHELL_ARGS);
 
     // switch_proc(proc_fs);
     switch_proc(proc_shell);

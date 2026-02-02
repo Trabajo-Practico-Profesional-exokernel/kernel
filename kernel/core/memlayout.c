@@ -18,12 +18,6 @@
 
 // #include "user_pages_alloc.h"
 extern char __idle_proc_start[], __idle_proc_end[];
-__attribute__((section(".idle_proc")))
-void idle_entry(void) {
-    for(;;){
-    }
-}
-
 
 void init_idle_proc(void){
     struct Proc * sched_idle_proc = get_idle_proc();
@@ -32,7 +26,10 @@ void init_idle_proc(void){
 
     sched_idle_proc->pc = VADDR_USER_BASE;
     map_page((uint32_t*) sched_idle_proc->pde_paddr, VADDR_USER_BASE, (paddr_t) __idle_proc_start,
-             USER_PERMISSIONS_ALL);    
+             USER_PERMISSIONS_ALL); 
+    
+    init_proc_stack(sched_idle_proc);
+    init_trapframe(sched_idle_proc, VADDR_USER_STACK_HARD_END); 
 }
 
 
