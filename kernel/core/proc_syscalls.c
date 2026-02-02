@@ -96,8 +96,13 @@ void syscall_fork(FullTrapFrame *tf, uintptr_t pc) {
     
     SET_SYSCALL_RET0(tf, child_proc->pid)
     save_curr_proc_state(tf, trg_init_pc);
-    
-    load_create_forked(parent_proc, child_proc);
+
+    int ret = load_create_forked(parent_proc, child_proc);
+
+    if(ret < 0){
+        SET_SYSCALL_RET0(tf, ret);
+        save_curr_proc_state(tf, trg_init_pc);
+    }
 
 
     switch_page_table((uint32_t *) parent_proc->pde_paddr);

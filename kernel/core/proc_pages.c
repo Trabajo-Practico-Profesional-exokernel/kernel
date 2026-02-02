@@ -133,6 +133,10 @@ int copy_mem_pages(struct Proc* src_proc, struct Proc* trg_proc){
             _vaddr+=PAGE_SIZE;
         }
     );     
+
+    struct UserProcPages* trg_pages_info = &procs_pages[trg_proc->pid];
+    *trg_pages_info = *src_proc_pages_info;
+    
     return 0;
 }
 

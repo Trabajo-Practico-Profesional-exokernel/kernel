@@ -1,79 +1,115 @@
 ROOT := ..
 USER_FOLDER := $(ROOT)/user
-ARCH        ?= riscv                        # o x86
+ARCH        ?= riscv                        # or x86
 
-
-APPS_FOLDER := $(USER_FOLDER)/apps
+APPS_FOLDER    := $(USER_FOLDER)/apps
 SERVERS_FOLDER := $(USER_FOLDER)/servers
-BUILD_FOLDER := $(USER_FOLDER)/build
+BUILD_FOLDER   := $(USER_FOLDER)/build
+APP_OUT        := $(BUILD_FOLDER)
 
 # ----------------------------
 # App discovery
 # ----------------------------
 
-# 4. servers multi-file (folders) apps
-SERVERS_DIRS := $(filter-out $(SERVERS_FOLDER)/build/, $(wildcard $(SERVERS_FOLDER)/*/))
+# Servers (multi-file dirs)
+SERVERS_DIRS := $(filter-out $(SERVERS_FOLDER)/build/, \
+	$(wildcard $(SERVERS_FOLDER)/*/))
 
-# 5. general single-file (.c)
+# General single-file apps
 GENERAL_C := $(wildcard $(APPS_FOLDER)/*.c)
 
-# 6. general multi-file (folders)
-GENERAL_DIRS := $(filter-out $(APPS_FOLDER)/build/, $(wildcard $(APPS_FOLDER)/*/))
+# General multi-file apps
+GENERAL_DIRS := $(filter-out $(APPS_FOLDER)/build/, \
+	$(wildcard $(APPS_FOLDER)/*/))
 
+GENERAL_C_NAMES   := $(basename $(notdir $(GENERAL_C)))
+GENERAL_DIR_NAMES := $(notdir $(patsubst %/,%,$(GENERAL_DIRS)))
+SERVERS_DIR_NAMES := $(notdir $(patsubst %/,%,$(SERVERS_DIRS)))
 
-GENERAL_C_NAMES       := $(basename $(notdir $(GENERAL_C)))
-GENERAL_DIR_NAMES     := $(notdir $(patsubst %/,%,$(GENERAL_DIRS)))
-
-SERVERS_DIR_NAMES     := $(notdir $(patsubst %/,%,$(SERVERS_DIRS)))
-
+# ----------------------------
+# Metadata app list (unchanged idea)
+# ----------------------------
 
 META_APP_NAMES := \
 	$(SERVERS_DIR_NAMES) \
 	$(GENERAL_C_NAMES) \
 	$(GENERAL_DIR_NAMES)
 
+META_APP_NAMES += shell tests_shell
+META_APP_NAMES := $(sort $(META_APP_NAMES))
 
-# Append main apps i.e shell
-META_APP_NAMES += shell
-META_APP_NAMES += tests_shell
+DEF_EXECUTABLES := touch rm stat cat
 
-META_APP_NAMES     := $(sort $(META_APP_NAMES))
-
-DEF_EXECUTABLES:= touch rm stat cat
-
-### Ensure def excecutables are at the start
+# Ensure default executables are first
 META_APP_NAMES := $(filter-out $(DEF_EXECUTABLES),$(META_APP_NAMES))
-
 META_APP_NAMES := $(strip \
 	$(DEF_EXECUTABLES) \
 	$(META_APP_NAMES))
 
-
 DEF_EXECUTABLE_COUNT := $(words $(DEF_EXECUTABLES))
 
-.PHONY: all metadata clean servers_dirs general_c general_dirs
+# ----------------------------
+# Build outputs
+# ----------------------------
 
-all: metadata servers_dirs general_c general_dirs
-	@echo "NOW COMPILE MAIN APPS ... i.e shell apps"
+SERVER_BINS      := $(addprefix $(APP_OUT)/,$(SERVERS_DIR_NAMES))
+GENERAL_C_BINS   := $(addprefix $(APP_OUT)/,$(GENERAL_C_NAMES))
+GENERAL_DIR_BINS := $(addprefix $(APP_OUT)/,$(GENERAL_DIR_NAMES))
+
+ALL_BINS := \
+	$(SERVER_BINS) \
+	$(GENERAL_C_BINS) \
+	$(GENERAL_DIR_BINS)
+
+# ----------------------------
+# Top-level targets
+# ----------------------------
+
+.PHONY: all clean metadata apps
+
+all: $(APP_OUT) metadata $(ALL_BINS)
+	@echo "Building main apps (shell)"
 	@./compile_dir_apps.sh $(ARCH) -add_meta shell tests_shell
 
-##
-## Metadata building
-##
-metadata:
-# 	@echo "Generate meta got apps $(META_APP_NAMES) ... DEF exec count $(DEF_EXECUTABLE_COUNT)"
-	@./generate_apps_meta.sh $(DEF_EXECUTABLE_COUNT) $(META_APP_NAMES)
-clean:
-	@rm -r $(BUILD_FOLDER)
-	@mkdir -p $(BUILD_FOLDER)
+apps:
+	@echo $(META_APP_NAMES)
 
-servers_dirs:
-	@echo "Building servers:"
-	@./compile_dir_apps.sh $(ARCH) -add_meta $(SERVERS_DIRS)
-	
-general_c:
-	@echo "Building general single-file apps:"
-	./compile_file_apps.sh $(ARCH) $(GENERAL_C)
-general_dirs:
-	@echo "Building general multi-file/dir apps:"
-	./compile_dir_apps.sh $(ARCH) $(GENERAL_DIRS)
+# ----------------------------
+# Metadata
+# ----------------------------
+
+metadata:
+	@./generate_apps_meta.sh $(DEF_EXECUTABLE_COUNT) $(META_APP_NAMES)
+
+# ----------------------------
+# Pattern rules (the important part)
+# ----------------------------
+
+# Single-file apps
+$(APP_OUT)/%: $(APPS_FOLDER)/%.c | $(APP_OUT)
+	@echo "Compiling single-file app: $*"
+	@./compile_file_apps.sh $(ARCH) $<
+
+# Multi-file general apps
+$(APP_OUT)/%: $(APPS_FOLDER)/%/ | $(APP_OUT)
+	@echo "Compiling dir app: $*"
+	@./compile_dir_apps.sh $(ARCH) $<
+
+# Server apps
+$(APP_OUT)/%: $(SERVERS_FOLDER)/%/ | $(APP_OUT)
+	@echo "Compiling server: $*"
+	@./compile_dir_apps.sh $(ARCH) $<
+
+# ----------------------------
+# Directories
+# ----------------------------
+
+$(APP_OUT):
+	@mkdir -p $(APP_OUT)
+
+# ----------------------------
+# Cleanup
+# ----------------------------
+
+clean:
+	rm -rf $(BUILD_FOLDER)
