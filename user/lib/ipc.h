@@ -19,5 +19,6 @@ int32_t app_send_msg_to_server(int32_t arg_1, int32_t arg_2, int32_t arg_3, int3
 
 int32_t recv_msg(Msg *msg);
 int32_t send_msg(int32_t recv_pid, int32_t arg_1, int32_t arg_2, int32_t arg_3, int32_t arg_4, int32_t arg_5, int32_t arg_6);
+int32_t server_get_real_fd(int32_t fd, int32_t app_pid, int32_t type_server);
 
 #endif

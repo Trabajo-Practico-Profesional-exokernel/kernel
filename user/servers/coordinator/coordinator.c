@@ -37,7 +37,7 @@ int32_t get_server_type(int32_t fd, int32_t pid) {
     return -1;
 }
 
-int32_t get_server_fd(int32_t pid_app, int32_t fd) {
+int32_t get_server_fd(int32_t pid_app, int32_t fd, int32_t server_pid) {
     if (pid_app < 0 || pid_app >= PROCS_MAX || fd < 0 || fd >= MAX_FILES) {
         printf("[COORD] ERROR: get_server_fd out of bounds (PID: %d, FD: %d)\n", pid_app, fd);
         return -1;
@@ -50,6 +50,23 @@ int32_t get_server_fd(int32_t pid_app, int32_t fd) {
     return server_fd;
 }
 
+
+int32_t get_server_real_fd(int32_t pid, int32_t fd, int32_t type){
+    if (pid < 0 || pid >= PROCS_MAX || fd < 0 || fd >= MAX_FILES) {
+        printf("[COORD] ERROR: get_server_fd out of bounds (PID: %d, FD: %d)\n", pid, fd);
+        return -1;
+    }
+
+    for (int32_t real_fd = 0; real_fd < MAX_FILES; real_fd++) {
+        // Buscamos coincidencia exacta para borrar
+        if (coordinator.fd[pid][real_fd].fd == fd && 
+            coordinator.fd[pid][real_fd].type_server == type) 
+        {
+            return real_fd;
+        }
+    }
+    return ERROR;
+}
 
 int32_t set_server_type(int32_t server_fd, int32_t pid_app, int32_t pid_server, int32_t state) {
 

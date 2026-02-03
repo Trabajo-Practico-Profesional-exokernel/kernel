@@ -159,6 +159,32 @@ int32_t get_real_fd(int32_t operation, int32_t fd, int32_t server_pid){
     return coordinator_response.arg_2;
 }
 
+
+int32_t server_get_real_fd(int32_t fd, int32_t app_pid, int32_t type_server){
+
+    int32_t coordinator_pid = get_coord_pid();
+    int32_t res = send_msg(coordinator_pid, OP_GET_SERVER_FD, app_pid, fd, type_server, 0, 0);
+    if (res == ERROR){
+        return ERROR;
+    }
+
+    Msg coordinator_response;
+    res = recv_msg(&coordinator_response);
+
+    if (res == ERROR){
+        return ERROR;
+    }
+
+    res = coordinator_response.arg_1;
+
+    if (res == ERROR){
+        return ERROR;
+    }
+
+    return coordinator_response.arg_2;
+}
+
+
 int32_t app_send_msg_to_server(int32_t arg_1, int32_t arg_2, int32_t arg_3,
                                 int32_t arg_4, int32_t arg_5, int32_t arg_6){
 
