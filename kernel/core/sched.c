@@ -6,10 +6,11 @@
 #include "arch/mem.h" // Declares the methods switch page and so on.
 #include "arch/switch.h"// Declares the swtich context to new Proc and sleep method.
 #include "stdio.h"
-#include "stdio.h"
 #include "console/debug.h"
 
 #include "arch/mem_layout.h"
+#include "arch/console.h"
+#include "arch/stdio.h"
 #include "arch/clock_checks.h"
 
 extern void sched_finish(bool curr_is_blocked);
