@@ -17,6 +17,28 @@
 
 Coordinator coordinator;
 
+int32_t is_server_alive(int32_t type_server){
+    int32_t server_pid = server_map_get(&coordinator.server_map, type_server);
+    return (alive(server_pid));
+}
+
+
+int32_t handle_dead_server(int32_t type_server){
+
+    for (int i = 0; i < PROCS_MAX; i++) {
+        for (int j = 0; j < MAX_FILES; j++) {
+
+            if (coordinator.fd[i][j].type_server == type_server){
+                coordinator.fd[i][j].fd = -1;
+                coordinator.fd[i][j].type_server = -1;
+            }
+        
+        }
+    }
+
+    start_server(type_server);
+}
+
 int32_t get_server_type(int32_t fd, int32_t pid) {
     // printf("[COORD] get_server_type query -> AppPID: %d | AppFD: %d\n", pid, fd);
 
@@ -136,6 +158,13 @@ int32_t coordinator_update(int32_t fd, int32_t pid, int32_t type, int32_t state)
 }
 
 int32_t coordinator_open(void) {
+
+    int server_type = FILESYSTEM;
+    if (!is_server_alive(server_type)){
+        handle_dead_server(server_type);
+        return ERROR;
+    }
+
     return server_map_get(&coordinator.server_map, FILESYSTEM);
 }
 
@@ -144,6 +173,11 @@ int32_t coordinator_close(int32_t fd, int32_t pid) {
     if (server_type < 0){
         return -1;
     } 
+
+    if (!is_server_alive(server_type)){
+        handle_dead_server(server_type);
+        return ERROR;
+    }
 
     return server_map_get(&coordinator.server_map, server_type);
 }
@@ -154,6 +188,11 @@ int32_t coordinator_read(int32_t fd, int32_t pid) {
         return -1;
     } 
 
+    if (!is_server_alive(server_type)){
+        handle_dead_server(server_type);
+        return ERROR;
+    }
+
     return server_map_get(&coordinator.server_map, server_type);
 }
 
@@ -163,6 +202,11 @@ int32_t coordinator_write(int32_t fd, int32_t pid) {
         return -1;
     } 
 
+    if (!is_server_alive(server_type)){
+        handle_dead_server(server_type);
+        return ERROR;
+    }
+
     return server_map_get(&coordinator.server_map, server_type);
 }
 
@@ -170,12 +214,22 @@ int32_t coordinator_lseek(int32_t fd, int32_t pid) {
     int32_t server_type = get_server_type(fd, pid);
     if (server_type < 0){
         return -1;
-    } 
+    }
+
+    if (!is_server_alive(server_type)){
+        handle_dead_server(server_type);
+        return ERROR;
+    }
 
     return server_map_get(&coordinator.server_map, server_type);
 }
 
 int32_t coordinator_stat(void) {
+    int server_type = FILESYSTEM;
+    if (!is_server_alive(server_type)){
+        handle_dead_server(server_type);
+        return ERROR;
+    }
     return server_map_get(&coordinator.server_map, FILESYSTEM);
 }
 
@@ -185,50 +239,112 @@ int32_t coordinator_dup(int32_t fd, int32_t pid) {
         return -1;
     } 
 
+    if (!is_server_alive(server_type)){
+        handle_dead_server(server_type);
+        return ERROR;
+    }
+
     return server_map_get(&coordinator.server_map, server_type);
 }
 
 int32_t coordinator_pipe(void) {
+    int server_type = PIPE;
+    if (!is_server_alive(server_type)){
+
+        handle_dead_server(server_type);
+        return ERROR;
+    }
+
     return server_map_get(&coordinator.server_map, PIPE);
 }
 
 int32_t coordinator_mkdir(void) {
+    int server_type = FILESYSTEM;
+    if (!is_server_alive(server_type)){
+        handle_dead_server(server_type);
+        return ERROR;
+    }
     return server_map_get(&coordinator.server_map, FILESYSTEM);
 }
 
 int32_t coordinator_rmdir(void) {
+    int server_type = FILESYSTEM;
+    if (!is_server_alive(server_type)){
+        handle_dead_server(server_type);
+        return ERROR;
+    }
     return server_map_get(&coordinator.server_map, FILESYSTEM);
 }
 
 int32_t coordinator_chdir(void) {
+    int server_type = FILESYSTEM;
+    if (!is_server_alive(server_type)){
+        handle_dead_server(server_type);
+        return ERROR;
+    }
     return server_map_get(&coordinator.server_map, FILESYSTEM);
 }
 
 int32_t coordinator_cwd(void) {
+    int server_type = FILESYSTEM;
+    if (!is_server_alive(server_type)){
+        handle_dead_server(server_type);
+        return ERROR;
+    }
     return server_map_get(&coordinator.server_map, FILESYSTEM);
 }
 
 int32_t coordinator_ls(void) {
+    int server_type = FILESYSTEM;
+    if (!is_server_alive(server_type)){
+        handle_dead_server(server_type);
+        return ERROR;
+    }
     return server_map_get(&coordinator.server_map, FILESYSTEM);
 }
 
 int32_t coordinator_mknod(void) {
+    int server_type = FILESYSTEM;
+    if (!is_server_alive(server_type)){
+        handle_dead_server(server_type);
+        return ERROR;
+    }
     return server_map_get(&coordinator.server_map, FILESYSTEM);
 }
 
 int32_t coordinator_link(void) {
+    int server_type = FILESYSTEM;
+    if (!is_server_alive(server_type)){
+        handle_dead_server(server_type);
+        return ERROR;
+    }
     return server_map_get(&coordinator.server_map, FILESYSTEM);
 }
 
 int32_t coordinator_unlink(void) {
+    int server_type = FILESYSTEM;
+    if (!is_server_alive(server_type)){
+        handle_dead_server(server_type);
+        return ERROR;
+    }
     return server_map_get(&coordinator.server_map, FILESYSTEM);
 }
 
 int32_t coordinator_chown(void) {
+    int server_type = FILESYSTEM;
+    if (!is_server_alive(server_type)){
+        handle_dead_server(server_type);
+        return ERROR;
+    }
     return server_map_get(&coordinator.server_map, FILESYSTEM);
 }
 
 int32_t coordinator_chmod(void) {
+    int server_type = FILESYSTEM;
+    if (!is_server_alive(server_type)){
+        handle_dead_server(server_type);
+        return ERROR;
+    }
     return server_map_get(&coordinator.server_map, FILESYSTEM);
 }
 

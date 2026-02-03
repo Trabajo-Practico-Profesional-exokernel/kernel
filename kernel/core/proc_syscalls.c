@@ -316,7 +316,7 @@ void syscall_recv_content(FullTrapFrame *tf, uintptr_t pc) {
 void syscall_alive(FullTrapFrame *tf, uintptr_t pc){
     uint32_t pid = SYSCALL_ARG0(tf);
     struct Proc *proc = get_proc(pid);
-    uint32_t is_alive = proc->status == PROC_RUNNABLE || proc->status == PROC_RUNNING; 
+    uint32_t is_alive = proc->status != PROC_DYING && proc->status != PROC_FREE; 
     SET_SYSCALL_RET0(tf, is_alive);
 }
 

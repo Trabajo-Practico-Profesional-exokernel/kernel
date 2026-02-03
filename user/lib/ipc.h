@@ -7,6 +7,8 @@
 
 #define MAX_BUFFER_IPC_SIZE 1024
 
+int32_t app_try_recv_msg(Msg *msg);
+
 int32_t app_receive_parameter(uint32_t operation);
 
 int32_t app_receive_content(uint32_t operation, char *buffer, int len);
