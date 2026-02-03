@@ -56,9 +56,6 @@ void syscall_console_get(FullTrapFrame *tf, uintptr_t pc) {
 
 }
 
-void syscall_uptime(FullTrapFrame *tf, uintptr_t pc){
-    SET_SYSCALL_RET0(tf, coordinator_PID);
-}
 
 void syscall_console_close(FullTrapFrame *tf, uintptr_t pc){
     uint32_t fd = SYSCALL_ARG0(tf);
@@ -73,7 +70,6 @@ void syscall_console_close(FullTrapFrame *tf, uintptr_t pc){
 syscall_handler_t syscall_table[MAX_SYSCALLS] = {
     [SYS_CONSOLE_PUT] = syscall_console_put,
     [SYS_CONSOLE_GET] = syscall_console_get,
-    [SYS_UPTIME] = syscall_uptime,
     [SYS_CONSOLE_CLOSE] = syscall_console_close,
     // ... other handlers, wil be registered with register_syscall
 };

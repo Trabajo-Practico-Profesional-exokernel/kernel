@@ -7,5 +7,6 @@ void init_disk(void);
 void notify_inited(void);
 
 void init_user_pages_alloc(void);
+void init_proc_mem_management(void);
 
 #endif /* !*/

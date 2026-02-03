@@ -16,6 +16,7 @@ char * _app_names[] = {
 "proc_b",
 "read_write_shell",
 "shell",
+"simple_frk",
 "tests_shell",
 
 };
