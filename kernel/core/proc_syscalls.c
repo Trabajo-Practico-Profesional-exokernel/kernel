@@ -10,7 +10,7 @@
 #include "arch/logging.h"
 #include "string.h"
 #include "stdlib.h"
-
+#include "console_files.h"
 #include "stdio.h"
 #include "meta/apps_info.h" // Include auto generated app_info and indexs for apps  
 #include "console/debug.h"
@@ -112,7 +112,7 @@ void syscall_exec(FullTrapFrame *tf, uintptr_t pc) {
         sched_yield();
         return;
     }
-
+    init_proc_std_files(proc->pid);
     debug_printf("Should run free proc %p binary: %p \n", proc, &_binary_apps[prog_ind]);
 
     load_create_process_user(proc, &_binary_apps[prog_ind], (char **) &argv_pointers[0]);
@@ -317,7 +317,7 @@ void syscall_recv_content(FullTrapFrame *tf, uintptr_t pc) {
 void syscall_alive(FullTrapFrame *tf, uintptr_t pc){
     uint32_t pid = SYSCALL_ARG0(tf);
     struct Proc *proc = get_proc(pid);
-    uint32_t is_alive = proc->status == PROC_RUNNABLE || proc->status == PROC_RUNNING; 
+    uint32_t is_alive = proc->status != PROC_DYING && proc->status != PROC_FREE; 
     SET_SYSCALL_RET0(tf, is_alive);
 }
 

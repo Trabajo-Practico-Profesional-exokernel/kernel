@@ -8,7 +8,7 @@
 #include "arch/cpus.h"
 #include "stdio.h"
 #include "console/debug.h"
-
+#include "console_files.h"
 
 char *DEF_ARGV[] = { "sh_prog","parameter1", 0 };
 
@@ -16,6 +16,7 @@ extern struct AppBinaryInfo _binary_apps[];
 
 struct Proc * create_process(size_t ind, char ** argv){
     struct Proc * proc = get_first_free_proc();
+    init_proc_std_files(proc->pid);
     proc->gid = 0;
     load_create_process_user(proc, &_binary_apps[ind], argv);
     return proc;

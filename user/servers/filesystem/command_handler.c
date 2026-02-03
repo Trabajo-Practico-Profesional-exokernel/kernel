@@ -149,6 +149,10 @@ int32_t give_response(int32_t type_command, int32_t arg_1, int32_t arg_2, int32_
             if (protocol_op == OP_OPEN || protocol_op == OP_CLOSE) {
                 update_coord_state(FILESYSTEM, protocol_op, current_client_pid, fd);
             }
+            if (protocol_op == OP_OPEN ){
+                int32_t real_fd = server_get_real_fd(arg_1, current_client_pid, FILESYSTEM);
+                return server_send_parameter_to_app(current_client_pid, protocol_op, real_fd);
+            }
         }
         return server_send_parameter_to_app(current_client_pid, protocol_op, arg_1);
     }

@@ -45,7 +45,7 @@ static int32_t update_coord_state(int32_t type_server, int32_t type_command, int
     int32_t coord_pid = get_coord_pid();
     int32_t state = 0;
 
-    if (type_command == OP_OPEN || type_command == OP_PIPE){
+    if (type_command == OP_OPEN || type_command == OP_PIPE || type_command == OP_DUP){
         state = 1; 
     } 
     else if (type_command == OP_CLOSE){
@@ -90,10 +90,17 @@ int32_t give_response(int32_t type_command, int32_t arg_1, int32_t arg_2, int32_
     {
         if (arg_2 != 0 && arg_3 > 0 && arg_1 >= 0) {
              if (protocol_op == OP_PIPE) {
-                 update_coord_state(PIPE, OP_OPEN, current_client_pid, fd_1); // Registrar FD Lectura
-                 update_coord_state(PIPE, OP_OPEN, current_client_pid, fd_2); // Registrar FD Escritura
+                update_coord_state(PIPE, OP_OPEN, current_client_pid, fd_1); // Registrar FD Lectura
+                update_coord_state(PIPE, OP_OPEN, current_client_pid, fd_2); // Registrar FD Escritura
+
+                int32_t real_fd_1 = server_get_real_fd(fd_1, current_client_pid, PIPE);
+                int32_t real_fd_2 = server_get_real_fd(fd_2, current_client_pid, PIPE);
+                int32_t real_fds[] = {real_fd_1, real_fd_2};
+                return server_send_content_to_app(current_client_pid, protocol_op, (char*)real_fds, arg_3, arg_1);
+             } else {
+                return server_send_content_to_app(current_client_pid, protocol_op, (char*)arg_2, arg_3, arg_1);
              }
-            return server_send_content_to_app(current_client_pid, protocol_op, (char*)arg_2, arg_3, arg_1);
+            
         }
         return server_send_parameter_to_app(current_client_pid, protocol_op, arg_1);
     } 
@@ -107,6 +114,8 @@ int32_t give_response(int32_t type_command, int32_t arg_1, int32_t arg_2, int32_
 
             if (protocol_op == OP_DUP) {
                 update_coord_state(PIPE, OP_OPEN, current_client_pid, arg_1);
+                int32_t real_fd_1 = server_get_real_fd(arg_1, current_client_pid, PIPE);
+                return server_send_parameter_to_app(current_client_pid, protocol_op, real_fd_1);
             }
         }
         return server_send_parameter_to_app(current_client_pid, protocol_op, arg_1);

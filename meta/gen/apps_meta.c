@@ -4,7 +4,6 @@ extern char _binary_touch_app_bin_start[],_binary_touch_app_bin_size[];
 extern char _binary_rm_app_bin_start[],_binary_rm_app_bin_size[];
 extern char _binary_stat_app_bin_start[],_binary_stat_app_bin_size[];
 extern char _binary_cat_app_bin_start[],_binary_cat_app_bin_size[];
-extern char _binary_console_app_bin_start[],_binary_console_app_bin_size[];
 extern char _binary_coordinator_app_bin_start[],_binary_coordinator_app_bin_size[];
 extern char _binary_filesystem_app_bin_start[],_binary_filesystem_app_bin_size[];
 extern char _binary_hello_world_app_bin_start[],_binary_hello_world_app_bin_size[];
@@ -26,7 +25,6 @@ struct AppBinaryInfo _binary_apps[] = {
     {_binary_rm_app_bin_start, (size_t) _binary_rm_app_bin_size},
     {_binary_stat_app_bin_start, (size_t) _binary_stat_app_bin_size},
     {_binary_cat_app_bin_start, (size_t) _binary_cat_app_bin_size},
-    {_binary_console_app_bin_start, (size_t) _binary_console_app_bin_size},
     {_binary_coordinator_app_bin_start, (size_t) _binary_coordinator_app_bin_size},
     {_binary_filesystem_app_bin_start, (size_t) _binary_filesystem_app_bin_size},
     {_binary_hello_world_app_bin_start, (size_t) _binary_hello_world_app_bin_size},

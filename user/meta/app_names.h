@@ -1,2 +1,2 @@
-#define APP_COUNT 19
+#define APP_COUNT 18
 #define EXECUTABLE_COUNT 4

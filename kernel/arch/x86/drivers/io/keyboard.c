@@ -3,6 +3,7 @@
 #include "vnode.h"
 #include "constants.h"
 #include "../../interrupt.h"
+#include "arch/console.h"
 
 /*
 Hardware facts (x86 PS/2)
@@ -165,19 +166,15 @@ void interrupt_handler(cpu_state_t state, idt_info_t info, stack_state_t exec)
 //por el momento mantenemos el handle de la interrupcion 36 (entrada de teclado con QEMU -nographic)
 //para QEMU sin el flag "-nographic" con una ventana aparte hay que volver a la implementacion anterior
 //de este handleo, y llamar a esta funcion para la interrupcion 33 en lugar de la interrupcion 36
-void keyboard_handle_interrupt(void)
+int keyboard_handle_interrupt(void)
 {
     uint8_t scan_code = inb(KBD_DATA_PORT);
-    //printf("scan_code hex: [%x] - scan_code [%c]", scan_code, scan_code); 
-    if (get_char_ready){
-        if (actual_char == -1) {
-           //actual_char = kbd_scan_code_to_ascii(scan_code);
-           actual_char = scan_code;
-           //printf("actual char: [%d]", actual_char); 
-        }
-    }
+
+    int res = console_push_input(scan_code);
+    
     pic_acknowledge(1);
     enable_interrupts();
+    return res;
 }
 
 static int kbd_open(vnode_t *n)

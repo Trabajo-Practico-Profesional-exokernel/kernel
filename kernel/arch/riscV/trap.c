@@ -6,8 +6,8 @@
 #include "arch/proc.h"
 #include "stdio.h"
 #include "console/debug.h"
-
-
+#include "arch/console.h"
+#include "arch/stdio.h"
 #include "arch/trap_handling.h"
 
 // Assume its defined somewhere
@@ -191,6 +191,21 @@ void handle_trap(FullTrapFrame *tf) {
         user_pc += 4;  // Skip illegal instruction
         WRITE_CSR(sepc, user_pc);
     } else if(IS_CLOCK_INTERRUPT(scause)) {
+
+        long c = getchar(); 
+        if (c != -1) {
+            int res = console_push_input(c);
+            if (res >= 0){
+                int proc_pid = console_release_waiter_pid();
+
+                if (proc_pid >= 0){
+                    struct Proc *proc = get_proc(proc_pid);
+                    proc->status = PROC_RUNNABLE;
+                }
+            }
+            
+        }
+
         // debug_printf("Clock interrupt ins scause=%x, stval=%x, sepc=%x\n", scause, stval, user_pc);
         SET_NEXT_INTERRUPT(DELAY_INTERRUPT);
         clock_yield(tf, user_pc);
