@@ -1,26 +1,27 @@
 #include "arch/cpus.h"
-#include "arch_inc/trap_constants.h"
- 
 
-struct cpu cpus_structs[NCPU];
-
-int cpuid() {
-  return get_cpu_id();
+int cpuid()
+{
+	return cpunum();
 }
 
-struct cpu* mycpu(void){
-  return &cpus_structs[cpuid()];
+int cpuidx()
+{
+	// apicid and idx are not guaranteed to be the same
+	int apicid = cpunum();
+	for (int i = 0; i < NCPU; i++) {
+		if (cpus[i].cpu_id == apicid)
+			return cpus + i;
+	}
 }
 
-struct cpu* getcpu(int cpuid){
-  return &cpus_structs[cpuid];  
+struct cpu* mycpu(void)
+{
+  return &cpus[cpuidx()];
 }
 
-
-void init_cpus(void){
-
-    // printf("Got cpu id %d \n", get_cpu_id());
-    // int id = r_mhartid();
-    // set_cpuid(id);
+struct cpu* getcpu(int cpuidx)
+{
+  return &cpus[cpuidx];  
 }
 

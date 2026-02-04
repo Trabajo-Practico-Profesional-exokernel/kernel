@@ -70,6 +70,7 @@ void kmain()
     //Doing it after init_trap just to be able to see a trap/panic if something fails!
     // Mem init for riscv == setup pagetable for kernel.
     mem_init();
+
     #ifdef IS_RISC
     // Why not ... maybe not full needed at first but works.
     switch_to_kernel_tables();

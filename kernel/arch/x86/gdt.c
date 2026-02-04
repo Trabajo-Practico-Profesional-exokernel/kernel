@@ -2,7 +2,7 @@
 #include "arch_inc/x86.h"
 #include "arch_inc/mem_constants.h"
 #include "gdt.h"
-#include "cpu.h"
+#include "arch/cpus.h"
 
 #define SEGMENT_BASE    0x0
 #define SEGMENT_LIMIT   0xFFFFF
@@ -30,9 +30,9 @@ void gdt_init()
 	// TODO: ver si se mete dentro de estructura proc, entonces se puede acceder a kstack
     // cpu->cpu_ts.esp0 = KSTACKTOPCPU(0);
 	// cpu->cpu_ts.ss0 = GD_TSS;
-	cpu->cpu_ts.iomap_base = sizeof(struct TaskState);
+	mycpu()->cpu_ts.iomap_base = sizeof(struct TaskState);
 
-    gdt[SEG_TSS] = SEG16(STS_T32A, (uint32_t) (&cpu->cpu_ts), sizeof(struct TaskState) - 1, PL0);
+    gdt[SEG_TSS] = SEG16(STS_T32A, (uint32_t) (&(mycpu()->cpu_ts)), sizeof(struct TaskState) - 1, PL0);
 	gdt[SEG_TSS].s = 0; // set system segment
 	ltr(GD_TSS);	
 }
