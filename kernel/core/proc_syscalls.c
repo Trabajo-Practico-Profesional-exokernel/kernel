@@ -242,6 +242,10 @@ void init_syscalls_ipc(void){
 }
 
 void init_syscalls_proc(void) {
+
+    for(int i =0; i < PROCS_MAX; i++){
+        exit_statuses[i].proc_pid = i;
+    }
     register_syscall(SYS_EXEC, syscall_exec);
     register_syscall(SYS_FORK, syscall_fork);
 

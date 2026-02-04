@@ -15,6 +15,7 @@
 #include "proc_pages.h"
 #include "proc_syscalls.h"
 #include "arch/logging.h"
+#include "console_files.h"
 
 // #include "user_pages_alloc.h"
 extern char __idle_proc_start[], __idle_proc_end[];
@@ -175,6 +176,8 @@ int load_create_forked(struct Proc* parent, struct Proc* child){
 
     child->status = PROC_RUNNABLE;
     init_proc_uptime(child);
+    
+    init_proc_std_files(child->pid);
 
     return 0;
 }

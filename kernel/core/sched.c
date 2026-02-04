@@ -203,9 +203,8 @@ void sched_yield(void) {
         if(curr->status == PROC_RUNNABLE) {
             // keep runing the last proc while it exists
             switch_proc(curr);
-        } else if (curr->status == PROC_NOT_RUNNABLE){
-            curr_is_blocked = true;
         } else {
+            curr_is_blocked = true;
             curr = NULL;            
         }
     }
