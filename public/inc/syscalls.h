@@ -1,8 +1,8 @@
 #ifndef PUBLIC_INC_SYSCALLS
 #define PUBLIC_INC_SYSCALLS
 
-#define SYS_PUTCHAR 0
-#define SYS_GETCHAR 1
+#define SYS_CONSOLE_PUT 0
+#define SYS_CONSOLE_GET 1
 
 #define SYS_EXEC 2
 #define SYS_EXIT 3
@@ -23,6 +23,10 @@
 #define SYS_VIRTUAL_COPY 16
 
 #define SYS_KILL 17
+#define SYS_FORK 18
+#define SYS_SLEEP 19
+
+#define SYS_CONSOLE_CLOSE 20
 
 #define DEF_ERR_CODE -1
 

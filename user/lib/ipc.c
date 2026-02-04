@@ -8,6 +8,9 @@
 
 uint8_t ipc_buffer[MAX_BUFFER_IPC_SIZE] = {0};
 
+#define MAX_APP_ATTEMPTS 50
+
+
 int32_t send_msg(int32_t recv_pid, int32_t arg_1, int32_t arg_2, int32_t arg_3, int32_t arg_4, int32_t arg_5, int32_t arg_6){
     int32_t sender_pid = getpid();
     Msg msg = {sender_pid, arg_1, arg_2, arg_3, arg_4, arg_5, arg_6};
@@ -19,6 +22,21 @@ int32_t recv_msg(Msg *msg) {
         return ERROR;
     }
     return recv_content((char*)msg, sizeof(Msg));
+}
+
+int32_t app_try_recv_msg(Msg *msg) {
+    if (!msg) {
+        return ERROR;
+    }
+
+    for (int i = 0; i<MAX_APP_ATTEMPTS; i++){
+        if (try_recv_content((char*)msg, sizeof(Msg))==SUCCESS){
+            return SUCCESS;
+        }
+        sys_yield();
+    }
+    printf("TIMEOUT\n");
+    return ERROR;
 }
 
 int32_t send_ack(int32_t sender_pid, int32_t operation){
@@ -39,7 +57,7 @@ int32_t recv_ack(int32_t recv_pid, int32_t operation) {
 int32_t app_receive_parameter(uint32_t operation) {
     Msg msg;
 
-    int32_t res = recv_msg(&msg);
+    int32_t res = app_try_recv_msg(&msg);
     if (res == ERROR) {
         return ERROR;
     }
@@ -53,7 +71,7 @@ int32_t app_receive_parameter(uint32_t operation) {
 
 int32_t app_receive_content(uint32_t operation, char *buffer, int len){
     Msg msg;
-    int32_t res = recv_msg(&msg);
+    int32_t res = app_try_recv_msg(&msg);
 
     if (res == ERROR) {
         return ERROR;
@@ -158,6 +176,32 @@ int32_t get_real_fd(int32_t operation, int32_t fd, int32_t server_pid){
 
     return coordinator_response.arg_2;
 }
+
+
+int32_t server_get_real_fd(int32_t fd, int32_t app_pid, int32_t type_server){
+
+    int32_t coordinator_pid = get_coord_pid();
+    int32_t res = send_msg(coordinator_pid, OP_GET_SERVER_FD, app_pid, fd, type_server, 0, 0);
+    if (res == ERROR){
+        return ERROR;
+    }
+
+    Msg coordinator_response;
+    res = recv_msg(&coordinator_response);
+
+    if (res == ERROR){
+        return ERROR;
+    }
+
+    res = coordinator_response.arg_1;
+
+    if (res == ERROR){
+        return ERROR;
+    }
+
+    return coordinator_response.arg_2;
+}
+
 
 int32_t app_send_msg_to_server(int32_t arg_1, int32_t arg_2, int32_t arg_3,
                                 int32_t arg_4, int32_t arg_5, int32_t arg_6){

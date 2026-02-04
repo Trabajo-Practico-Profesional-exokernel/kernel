@@ -6,12 +6,23 @@
 #include "arch/mem.h"
 #include "arch/cpus.h"
 #include "arch/trap_handling.h"
+#include "arch_inc/trap_constants.h"
 #include "stdio.h"
 #include "console/debug.h"
+#include "console_files.h"
+
 
 // When nothing more to be executed on shell!
-void sched_finish(void){
-    PANIC("+++++++++++++++++++++ Nothing to run at sched yield!?");    
+void sched_finish(bool curr_is_blocked){
+
+    if(curr_is_blocked){
+        // Just printf
+        // printf("++++++++ Current is blocked and no other ready proc.. waiting..\n"); 
+        switch_to_idle_proc();        
+    }
+    printf("[INFO] tot idle ticks: %u tot ticks = %u\n",get_idle_ticks(), get_real_ticks());
+
+    PANIC("+++++++++++++++++++++ Nothing to run at sched yield!?\n");    
 }
 
 // void *mboot, unsigned int magic_number
@@ -59,6 +70,7 @@ void kmain()
 
     disable_debug_print();
     init_arch();
+    reset_std_files();
     clear();
     move_cursor(0);
 
@@ -80,7 +92,7 @@ void kmain()
 
     init_syscalls_ipc();
     init_syscalls_proc();
-    init_user_pages_alloc();
+    init_proc_mem_management();
 
     #ifdef IS_RISC
     #else

@@ -10,21 +10,16 @@
 #include "arch/logging.h"
 #include "string.h"
 #include "stdlib.h"
-
+#include "console_files.h"
 #include "stdio.h"
 #include "meta/apps_info.h" // Include auto generated app_info and indexs for apps  
 #include "console/debug.h"
 #include "arch/ipc.h"
 
-extern struct AppBinaryInfo _binary_apps[];
+#include "proc_sleeping.h"
 
 
 struct ProcExitStatus exit_statuses[PROCS_MAX]; // Have for every process a current return status. 
-
-
-
-
-
 
 void reset_exit_status(struct ProcExitStatus* status){
     status->ret_code = 0;
@@ -32,6 +27,10 @@ void reset_exit_status(struct ProcExitStatus* status){
     status->waiters_tail = NULL;
     
     status->link_next_waiting = NULL;
+}
+
+struct ProcExitStatus* get_exit_status(int pid){
+    return &exit_statuses[PROCX(pid)];
 }
 
 
@@ -69,70 +68,6 @@ void notify_exited(struct ProcExitStatus* exited_status, int ret_code){
     
     reset_exit_status(exited_status);
 }
-
-
-
-void syscall_exec(FullTrapFrame *tf, uintptr_t pc) {
-
-    int prog_ind = SYSCALL_ARG0(tf);
-    if (prog_ind < 0 || prog_ind>= APP_COUNT){
-        debug_printf("Invalid exec call ind %d \n", prog_ind);
-        SET_SYSCALL_RET0(tf, DEF_ERR_CODE)        
-        return;
-    }
-    vaddr_t vaddr_argv_pointer = SYSCALL_ARG1(tf);
-    struct Proc* parent_proc = get_curr();
-    switch_to_kernel_tables();
-    
-    paddr_t argv_pointers[MAXARG]; 
-    
-    if (vaddr_argv_pointer != 0){
-        int argc = copy_argv_pointers_from_user(parent_proc, &argv_pointers[0], vaddr_argv_pointer);
-
-        if (argc< 0){
-            SET_SYSCALL_RET0(tf, argc)
-            save_curr_proc_state(tf, pc + 4);    
-            sched_yield();
-            return;
-        }
-    } else {
-        debug_printf("NO proc params exec\n");
-        argv_pointers[0] = 0;
-    }
-
-    debug_printf("Should run program at ind %d \n", prog_ind);
-
-    //int set_init_parameters_for_proc(struct Proc * proc, char ** argv, paddr_t* sp_out);
-    
-    struct Proc* proc= get_first_free_proc();
-    // It cannot but NULL it throws panic for now but check it anyway for the future!
-    if (proc == NULL){
-        SET_SYSCALL_RET0(tf, DEF_ERR_CODE)
-        save_curr_proc_state(tf, pc + 4);    
-        sched_yield();
-        return;
-    }
-
-    debug_printf("Should run free proc %p binary: %p \n", proc, &_binary_apps[prog_ind]);
-
-    load_create_process_user(proc, &_binary_apps[prog_ind], (char **) &argv_pointers[0]);
-
-    debug_printf("Loaded proc\n");
-    reset_exit_status(&exit_statuses[PROCX(proc->pid)]);
-
-    // Do switch to new proc? ... no?
-    SET_SYSCALL_RET0(tf, proc->pid)
-
-
-    // When a new process is to be executed, you reduce response time by running it first.
-    // Save parent proc state
-    save_curr_proc_state(tf, pc + 4);
-    parent_proc->status = PROC_RUNNABLE;
-    
-    switch_proc(proc);
-
-}
-
 
 void syscall_exit(FullTrapFrame *tf, uintptr_t pc){
     int exit_code = SYSCALL_ARG0(tf);
@@ -262,62 +197,10 @@ void syscall_get_coord_pid(FullTrapFrame *tf, uintptr_t pc){
     SET_SYSCALL_RET0(tf, coordinator_PID);
 }
 
-void syscall_try_send_content(FullTrapFrame *tf, uintptr_t pc){
-    struct Proc * sender_proc = get_curr();
-    int receiver_proc_pid = SYSCALL_ARG0(tf);
-    uint32_t content_addr = SYSCALL_ARG1(tf);
-    int len_content = SYSCALL_ARG2(tf);
-
-    switch_to_kernel_tables();
-    
-    int result = send_content(sender_proc->pid, receiver_proc_pid, content_addr, len_content);
-
-    SET_SYSCALL_RET0(tf, result);
-    switch_page_table((uint32_t *) sender_proc->pde_paddr);
-}
-
-void syscall_try_recv_content(FullTrapFrame *tf, uintptr_t pc) {
-    uint32_t content_addr = SYSCALL_ARG0(tf);
-    uint32_t len_content = SYSCALL_ARG1(tf);
-    uint32_t receiver_proc_pid = get_curr()->pid;
-    
-    switch_to_kernel_tables();
-
-    int result = recv_content(receiver_proc_pid, content_addr, len_content);
-
-    SET_SYSCALL_RET0(tf, result);
-
-    switch_page_table((uint32_t *) get_curr()->pde_paddr);
-}
-
-void syscall_recv_content(FullTrapFrame *tf, uintptr_t pc) {
-
-    uint32_t content_addr = SYSCALL_ARG0(tf);
-    uint32_t len_content = SYSCALL_ARG1(tf);
-    struct Proc *receiver_proc = get_curr();
-    uint32_t receiver_proc_pid = receiver_proc->pid;
-    
-    switch_to_kernel_tables();
-
-    int result = recv_content(receiver_proc_pid, content_addr, len_content);
-
-    if (result == ERROR) { // Means no message available, so block
-        receiver_proc->status = PROC_NOT_RUNNABLE;
-        save_curr_proc_state(tf, pc);
-        sched_yield();
-    }
-
-    SET_SYSCALL_RET0(tf, result);
-
-    switch_page_table((uint32_t *) get_curr()->pde_paddr);
-
-}
-
-
 void syscall_alive(FullTrapFrame *tf, uintptr_t pc){
     uint32_t pid = SYSCALL_ARG0(tf);
     struct Proc *proc = get_proc(pid);
-    uint32_t is_alive = proc->status == PROC_RUNNABLE || proc->status == PROC_RUNNING; 
+    uint32_t is_alive = proc->status != PROC_DYING && proc->status != PROC_FREE; 
     SET_SYSCALL_RET0(tf, is_alive);
 }
 
@@ -344,6 +227,14 @@ void syscall_virtual_copy(FullTrapFrame *tf, uintptr_t pc){
     switch_page_table((uint32_t *) get_curr()->pde_paddr);
 }
 
+
+
+
+
+
+
+
+
 void init_syscalls_ipc(void){
     register_syscall(SYS_TRY_SEND_CONTENT, syscall_try_send_content);
     register_syscall(SYS_TRY_RECV_CONTENT, syscall_try_recv_content);
@@ -352,6 +243,8 @@ void init_syscalls_ipc(void){
 
 void init_syscalls_proc(void) {
     register_syscall(SYS_EXEC, syscall_exec);
+    register_syscall(SYS_FORK, syscall_fork);
+
     register_syscall(SYS_EXIT, syscall_exit);
     register_syscall(SYS_WAIT, syscall_wait);
     register_syscall(SYS_KILL, syscall_kill);
@@ -361,5 +254,11 @@ void init_syscalls_proc(void) {
     register_syscall(SYS_COORDPID, syscall_get_coord_pid);
     register_syscall(SYS_ALIVE, syscall_alive);
     register_syscall(SYS_VIRTUAL_COPY, syscall_virtual_copy);
+
+    register_syscall(SYS_SLEEP, syscall_sleep);
+    register_syscall(SYS_UPTIME, syscall_uptime);
+
+    // register_syscall(SYS_LOCK_SLEEP, syscall_lock_sleep);
+
 }
 

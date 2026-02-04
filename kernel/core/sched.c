@@ -10,12 +10,16 @@
 #include "console/debug.h"
 
 #include "arch/mem_layout.h"
+#include "arch/clock_checks.h"
 
-extern void sched_finish(void);
+#include "arch/console.h"
+#include "arch/stdio.h"
+#include "arch/clock_checks.h"
+
+extern void sched_finish(bool curr_is_blocked);
 
 #define MAX_TIME_SLICES 45
 
-volatile uint64_t ticks = 0;
 
 uint32_t curr_slices = 0;
 int filesystem_PID = -1;
@@ -29,6 +33,11 @@ struct Proc * get_curr(){
 
 struct Proc procs[PROCS_MAX]; // All process control structures.
 
+struct Proc idle_proc;
+
+struct Proc * get_idle_proc(){
+    return &idle_proc;
+}
 
 // Uneeded for!
 struct Proc *get_proc_by_pid(int pid){
@@ -66,12 +75,24 @@ struct Proc * get_first_free_proc(){
 }
 
 
+void switch_to_idle_proc(void){
+    curr = &idle_proc;
+    curr->status = PROC_RUNNING;
+    curr_slices = MAX_TIME_SLICES;
 
-
+    // printf("--------------------------- SWITCH IDLE PROC %u \n", curr->pid);
+    #ifdef IS_RISC
+    SSCRATCH_NEW_STACK(&trampoline_stacks[curr->cpunum][TRAMPOLINE_STACK_SIZE])
+    #endif
+    switch_page_table((uint32_t *)curr->pde_paddr);
+    switch_context(curr);
+}
 
 void switch_proc(struct Proc* next) {
     curr = next;
-    curr_slices = 0; // Reset clock slices for new proc.
+    if(curr != &idle_proc){
+        curr_slices = 0; // Reset clock slices for new proc.
+    }
     curr->status = PROC_RUNNING;
 
     // debug_printf("[NEXT PROC BEFORE SWITCH_CONTEXT] ");
@@ -98,15 +119,29 @@ void switch_proc(struct Proc* next) {
 
 // Cambia la firma y el cuerpo:
 void clock_yield(FullTrapFrame *tf, uintptr_t proc_pc) {  // Quitamos uintptr_t proc_pc
+
     curr_slices += 1;
-    ticks+=1;
-    
-    if (curr_slices < MAX_TIME_SLICES){
+    if(curr){ // Only If there is a valid process running even If blocked.
+        check_sleeping_proc();
+
+        if(curr == &idle_proc && curr_slices % MAX_TIME_SLICES == 0){
+            debug_printf("[TICK] idle time slice tot idle: %u tot ticks = %u\n",get_idle_ticks(), get_real_ticks());
+        }
+
+        // NOT implemented yet
+        //check_io_locked_proc();
+        //check_stdin_locked_proc();
+        //check_ipc_locked_proc();
+    }
+
+    if (curr != &idle_proc && curr_slices < MAX_TIME_SLICES){
         return;
     }
 
     curr->pc = proc_pc; 
     update_trapframe(curr, tf);
+
+
     sched_yield();
 }
 
@@ -130,8 +165,7 @@ void sched_yield(void) {
             curr->status = PROC_RUNNABLE;  
         }
 
-        currind= PROCX(curr->pid);
-
+        currind= curr->pid;
     }
 
     int ind = currind + 1;
@@ -139,7 +173,7 @@ void sched_yield(void) {
     // Look for next in range [curr+1 ; end] 
     while (ind < PROCS_MAX &&
            procs[ind].status !=
-                   PROC_RUNNABLE) {  
+                   PROC_RUNNABLE) {
         ind++;
     }
     if (ind < PROCS_MAX) { 
@@ -149,9 +183,11 @@ void sched_yield(void) {
     // Now circular loop!
     // Look for next in range [0; curr] 
     ind = 0;
+
     while (ind < currind &&
            procs[ind].status !=
                    PROC_RUNNABLE) {  
+
         ind++;
     }
 
@@ -161,14 +197,18 @@ void sched_yield(void) {
     }
 
     // Found nothing , if curr is blocked or dead.. then reset it 
-    if (curr && curr->status != PROC_RUNNABLE) {
-        curr = NULL;
+    bool curr_is_blocked = false;
+
+    if(curr){
+        if(curr->status == PROC_RUNNABLE) {
+            // keep runing the last proc while it exists
+            switch_proc(curr);
+        } else if (curr->status == PROC_NOT_RUNNABLE){
+            curr_is_blocked = true;
+        } else {
+            curr = NULL;            
+        }
     }
 
-    // keep runing the last proc while it exists
-    if (curr) {
-        switch_proc(curr);
-    }
-
-    sched_finish();
+    sched_finish(curr_is_blocked);
 }

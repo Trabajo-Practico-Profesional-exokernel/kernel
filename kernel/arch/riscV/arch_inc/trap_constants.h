@@ -161,6 +161,14 @@ set_cpuid(uint32_t x)
   __asm__ __volatile__("mv tp, %0" : : "r" (x));
 }
 
+static inline void 
+setup_wait_mode(uint32_t x)
+{
+  __asm__ __volatile__("mv tp, %0" : : "r" (x));
+}
+
+
+
 
 
 /*

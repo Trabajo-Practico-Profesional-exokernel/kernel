@@ -8,36 +8,69 @@
 #include "sched.h"
 #include "stdio.h"
 #include "console/debug.h"
+#include "arch/console.h"
+#include "console_files.h"
 
-void syscall_putchar(FullTrapFrame *tf, uintptr_t pc) {
-    putchar(SYSCALL_ARG0(tf));
+void syscall_console_put(FullTrapFrame *tf, uintptr_t pc) {
+
+    uint32_t buf_vaddr = SYSCALL_ARG0(tf);
+    uint32_t len = SYSCALL_ARG1(tf);
+    struct Proc *current_proc = get_curr();
+
+    switch_to_kernel_tables();
+
+    uint32_t buf_paddr = get_paddr_for((uint32_t*)current_proc->pde_paddr, buf_vaddr);
+
+    int bytes_write = console_file_write(current_proc->pid, STDOUT, (int*)buf_paddr, len);
+
+    SET_SYSCALL_RET0(tf, bytes_write);
+
+    switch_page_table((uint32_t *) current_proc->pde_paddr);
+
 }
 
 
+void syscall_console_get(FullTrapFrame *tf, uintptr_t pc) {
 
-void syscall_getchar(FullTrapFrame *tf, uintptr_t pc) {
-    while (1) {
-        long ch = getchar();
-        if (ch >= 0) {
-            SET_SYSCALL_RET0(tf, ch); // change sys ret vl
-            break;
-        }
+    uint32_t buf_vaddr = SYSCALL_ARG0(tf);
+    uint32_t len = SYSCALL_ARG1(tf);
+    struct Proc *receiver_proc = get_curr();
 
-        // save_curr_proc_state(tf, pc);
-        // get_curr()->status = PROC_NOT_RUNNABLE;
-        // sched_yield();
-    }            
+    switch_to_kernel_tables();
+
+    uint32_t buf_paddr = get_paddr_for((uint32_t*)receiver_proc->pde_paddr, buf_vaddr);
+
+    int bytes_read = console_file_read(receiver_proc->pid, STDIN, (int*)buf_paddr, len);
+
+    if (bytes_read <= 0 ) { // Means no message available, so block
+        receiver_proc->status = PROC_NOT_RUNNABLE;
+        console_add_waiter(receiver_proc->pid);
+
+        save_curr_proc_state(tf, pc);
+        sched_yield();
+    }
+
+    SET_SYSCALL_RET0(tf, bytes_read);
+
+    switch_page_table((uint32_t *) receiver_proc->pde_paddr);
+
 }
 
-void syscall_uptime(FullTrapFrame *tf, uintptr_t pc){
-    SET_SYSCALL_RET0(tf, coordinator_PID);
+
+void syscall_console_close(FullTrapFrame *tf, uintptr_t pc){
+    uint32_t fd = SYSCALL_ARG0(tf);
+    uint32_t pid = get_curr()->pid;
+
+    int res = console_file_close(pid, fd);
+
+    SET_SYSCALL_RET0(tf, res);
 }
 
 #define MAX_SYSCALLS 50
 syscall_handler_t syscall_table[MAX_SYSCALLS] = {
-    [SYS_PUTCHAR] = syscall_putchar,
-    [SYS_GETCHAR] = syscall_getchar,
-    [SYS_UPTIME] = syscall_uptime,
+    [SYS_CONSOLE_PUT] = syscall_console_put,
+    [SYS_CONSOLE_GET] = syscall_console_get,
+    [SYS_CONSOLE_CLOSE] = syscall_console_close,
     // ... other handlers, wil be registered with register_syscall
 };
 void register_syscall(size_t sysno, syscall_handler_t handler){

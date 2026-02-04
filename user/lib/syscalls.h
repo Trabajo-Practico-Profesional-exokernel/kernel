@@ -9,6 +9,10 @@ int exec(int prog_ind, char ** args);
 int wait(int pid);
 int sys_kill(int pid);
 
+int sys_fork(void);
+int sys_sleep(int time);
+
+
 void sys_yield(void);
 __attribute__((noreturn)) void exit(int ret_code);
 int getpid(void);
@@ -46,5 +50,9 @@ int chmod(const char *pathname, uint32_t mode);
 
 int pipe(int fds[2]);
 int dup(int prev_fd);
+
+int console_read(char *buf, int len);
+int console_write(char *buf, int len);
+int console_close(int fd);
 
 #endif
