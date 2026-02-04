@@ -21,8 +21,8 @@
 // return 0xDEADBEEF;
 
 // When nothing more to be executed on shell!
-void sched_finish(bool current_is_blocked){
-    resume_interactive_shell();
+void sched_finish(struct Proc * last_proc){    
+    resume_interactive_shell(last_proc);
 }
 
 

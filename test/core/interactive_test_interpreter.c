@@ -13,14 +13,11 @@
 #include "stdio.h"
 #include "console/debug.h"
 #include "arch_inc/trap_constants.h"
+#include "sched.h"
 
-void resume_interactive_shell(void){
-	printf("Go back to test shell cpu: %d \n", cpuid());
-    interactive_shell_main();
-
-}
 void init_interactive_tests(void){
 	printf("INITING INTERACTIVE TESTS ON MAIN CPU %d \n", cpuid());
+    init_idle_proc();
 
     interactive_shell_help();
     printf("\n[TEST] interactive test shell ready\n");

@@ -52,6 +52,7 @@ class KernelRun:
         
         if self.build_users:
             cmd.append("-build_users")
+            cmd.append("-c")
         else:
             cmd.append("-c")
 

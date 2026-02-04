@@ -16,7 +16,7 @@
 #include "arch/stdio.h"
 #include "arch/clock_checks.h"
 
-extern void sched_finish(bool curr_is_blocked);
+extern void sched_finish(struct Proc * last_proc);
 
 #define MAX_TIME_SLICES 45
 
@@ -197,17 +197,16 @@ void sched_yield(void) {
     }
 
     // Found nothing , if curr is blocked or dead.. then reset it 
-    bool curr_is_blocked = false;
 
     if(curr){
         if(curr->status == PROC_RUNNABLE) {
             // keep runing the last proc while it exists
             switch_proc(curr);
-        } else {
-            curr_is_blocked = true;
-            curr = NULL;            
         }
     }
 
-    sched_finish(curr_is_blocked);
+    struct Proc * last_proc = curr;
+    curr = NULL;
+    
+    sched_finish(last_proc);
 }

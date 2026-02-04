@@ -37,7 +37,7 @@ def wait_can_exec(program, timeout):
         elif line:
             print(f"!!{line}", end="\r")
 
-def wait_executed_line(program, monitor, timeout):
+def wait_executed_line(program, accumulator, timeout):
     start = time.time()
     while time.time() - start < timeout:
         line = program.read_line()
@@ -45,13 +45,11 @@ def wait_executed_line(program, monitor, timeout):
             print("EXECUTED!")
             return
         elif line:
-            monitor.feed(line+"\n")
-            if monitor.done():
-                return
-    
+            accumulator.feed(line+"\n")
+
     raise TestFailure("Timeout")
 
-def run_test(program, monitor, timeout=5):
+def run_test(program, test_function, timeout=5):
     program.reset()
     program.start()
 
@@ -59,9 +57,13 @@ def run_test(program, monitor, timeout=5):
         wait_start(program, timeout);
 
         wait_can_exec(program, timeout);
-        print("Now start test, send 'run_tests'");
-        program.send_line("run_tests")
-        wait_executed_line(program, monitor, timeout);
+        print("Now start test");
+        accumulator, monitor = test_function(program)
+        wait_executed_line(program, accumulator, timeout);
+
+        tot = "".join(accumulator.lines)
+        print(f"Accumulated '{tot}'")
+        monitor.assert_output(tot)
 
     finally:
         program.kill()

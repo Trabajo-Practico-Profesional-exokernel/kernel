@@ -18,3 +18,8 @@ class LineMonitor:
 
     def missing(self):
         return [r.pattern for r, m in self.rules if not m]
+
+    def assert_output(self, output):
+        for i, (regex, matched) in enumerate(self.rules):
+            if not regex.search(output):
+                raise Exception(f"REGEX {regex} failed on output")

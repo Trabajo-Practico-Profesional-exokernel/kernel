@@ -5,6 +5,8 @@ void init_interactive_tests(void);
 void interactive_shell_main(void);
 void interactive_shell_help(void);
 
-void resume_interactive_shell();
+#include "arch/proc.h"
+
+void resume_interactive_shell(struct Proc * last_proc);
 
 #endif

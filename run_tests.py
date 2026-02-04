@@ -1,8 +1,9 @@
 # test_basic.py
 # from qemu import Qemu
-from auto_test.monitor import LineMonitor
 from auto_test.runner import run_test,TestFailure
 from auto_test.sh_runner import KernelRun
+
+from auto_test.sample_tests import *
 
 def test_boot():
     # program = Qemu([
@@ -21,11 +22,7 @@ def test_boot():
         fs_path = ".kernel_disk/disk_test.txt",
     )
 
-    mon = LineMonitor()
-    mon.expect(r"Interactive shell ready")
-    mon.expect(r">")
-
-    run_test(program, mon)
+    run_test(program, test_simple_write_to_stdout)
 
 if __name__ == "__main__":
     try:

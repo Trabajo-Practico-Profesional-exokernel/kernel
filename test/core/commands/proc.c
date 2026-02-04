@@ -9,6 +9,8 @@
 #include "arch/cpus.h"
 #include "stdio.h"
 #include "console/debug.h"
+#include "console_files.h"
+#include "arch_inc/trap_constants.h"
 
 #include "interactive_test_commands.h"
 
@@ -16,8 +18,9 @@ extern struct AppBinaryInfo _binary_apps[];
 
 struct Proc * create_process_test(size_t ind, char ** argv){
     struct Proc * proc = get_first_free_proc();
-    proc->gid = 0;
     load_create_process_user(proc, &_binary_apps[ind], argv);
+    init_proc_std_files(proc->pid);
+    proc->gid = 0;
     return proc;
 }
 
@@ -30,6 +33,7 @@ void start_shell(void){
     //create_process(APP_IND_SHELL, DEF_ARGV);
     //struct Proc * proc_def = create_process(APP_IND_PROC_A, DEF_ARGV);
     //struct Proc * proc_def_2 = create_process(APP_IND_PROC_B, DEF_ARGV);
+    enable_timer_interrupts();
     switch_proc(proc_def);
 
 }
