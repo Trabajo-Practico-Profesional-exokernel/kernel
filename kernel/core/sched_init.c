@@ -11,6 +11,8 @@
 #include "console_files.h"
 
 char *DEF_ARGV[] = { "sh_prog","parameter1", 0 };
+char *DEF_FS_ARGS[] = { "filesystem", 0 };
+char *DEF_SHELL_ARGS[] = { "shell", 0 };
 
 extern struct AppBinaryInfo _binary_apps[];
 
@@ -49,7 +51,6 @@ void init_sched2(void) {
     // load_create_process_user(get_first_free_proc(), 
     //                     &_binary_apps[APP_IND_FILESYSTEM], DEF_ARGV);
 
-    copy_pages_code_segment(proc_shell, proc_shell);
     debug_printf("AT CREATE PROCESS SHELL expected pc= %x, ", (uint32_t)VADDR_USER_BASE);
     //printProc(proc_shell);
 
@@ -65,15 +66,24 @@ void init_sched2(void) {
 }
 
 void init_sched_main(void) {
-//    struct Proc * proc_def = create_process(APP_IND_PROC_A, DEF_ARGV);
-//    debug_printf("AT CREATE PROCESS DEF expected pc= %x, ", (uint32_t)VADDR_USER_BASE);
-//    printProc(proc_def);
+
+    #ifdef IS_RISC
     struct Proc * proc_def = create_process(APP_IND_COORDINATOR, DEF_ARGV);
     coordinator_PID = proc_def->pid;
-    //create_process(APP_IND_SHELL, DEF_ARGV);
-    //struct Proc * proc_def = create_process(APP_IND_PROC_A, DEF_ARGV);
-    //struct Proc * proc_def_2 = create_process(APP_IND_PROC_B, DEF_ARGV);
+    // struct Proc * proc_def = create_process(APP_IND_SIMPLE_FRK, DEF_ARGV);
+    // coordinator_PID = proc_def->pid;
+
     switch_proc(proc_def);
+
+    #else
+
+    // struct Proc * proc_fs = create_process(APP_IND_FILESYSTEM, DEF_FS_ARGS);
+    struct Proc * proc_shell = create_process(APP_IND_SHELL, DEF_SHELL_ARGS);
+    // struct Proc * proc_shell = create_process(APP_IND_SIMPLE_FRK, DEF_SHELL_ARGS);
+
+    // switch_proc(proc_fs);
+    switch_proc(proc_shell);
+    #endif
     
 }
 
@@ -81,6 +91,8 @@ void init_sched_main(void) {
 
 struct spinlock lock_test;
 int main_cpuid = -1;
+
+
 
 void init_sched(void) {
 
@@ -96,8 +108,10 @@ void init_sched(void) {
         printf("Main cpu acquired lock!?! %d\n",main_cpuid);        
         lock_test.name= "main lock";
 
-        // for (int i = 0; i < 1000000000; i++){}
+        printf("INITING IDLE PROC In case all procs are blocked!\n");        
+        init_idle_proc();
         printf("Main NOW RELEASE!\n");        
+        // for (int i = 0; i < 1000000000; i++){}
     } else {
         printf("Secondary acquired lock!?! %d.. not main == %d .. name '%s'\n", cpuid(), main_cpuid, lock_test.name);        
         // for (int i = 0; i < 1000000000; i++){}
