@@ -26,7 +26,7 @@
 #define SYS_FORK 18
 #define SYS_SLEEP 19
 
-#define SYS_CONSOLE_CLOSE 18
+#define SYS_CONSOLE_CLOSE 20
 
 #define DEF_ERR_CODE -1
 
