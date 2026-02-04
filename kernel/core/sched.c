@@ -125,7 +125,7 @@ void clock_yield(FullTrapFrame *tf, uintptr_t proc_pc) {  // Quitamos uintptr_t 
         check_sleeping_proc();
 
         if(curr == &idle_proc && curr_slices % MAX_TIME_SLICES == 0){
-            printf("[TICK] idle time slice tot idle: %u tot ticks = %u\n",get_idle_ticks(), get_real_ticks());
+            debug_printf("[TICK] idle time slice tot idle: %u tot ticks = %u\n",get_idle_ticks(), get_real_ticks());
         }
 
         // NOT implemented yet
