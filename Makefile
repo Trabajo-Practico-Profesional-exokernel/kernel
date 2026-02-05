@@ -75,7 +75,7 @@ ifeq ($(TESTING),1)
 	# Remove real kernel main
 	C_SOURCES := $(filter-out $(KERNEL_MAIN),$(C_SOURCES))
 	
-	C_SOURCES += $(shell find $(TEST_DIRS) -type f -name '*.c')
+	C_SOURCES += $(shell find $(TEST_DIRS) -type f -name '*.c') user/meta/app_names.c
 
 # 	C_SOURCES += $(foreach dir,$(TEST_DIRS),$(wildcard $(dir)/*.c))
 	CFLAGS += $(TEST_INCS) -DIS_TESTING

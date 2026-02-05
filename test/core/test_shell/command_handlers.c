@@ -27,10 +27,6 @@ int test_start_cpus(char* args) {
 }
 
 
-
-
-
-
 int handle_enable_log_irq(char* args) {
     return enable_clock_yield_logging(args);    
 }
@@ -80,6 +76,9 @@ struct CommandEntry commands[] = {
     },
     { "sched_yield", handle_sched_yield,
     "Corre sched_yield... volviendo al scheduler basicamente"
+    },
+    { "add_proc", handle_create_proc,
+    "Con parametros '<program_name> <args>' Agrega al scheduler un proceso para ser ejecutado"
     },
     { "help", test_help_man, "Da informacion general de comandos"}
     

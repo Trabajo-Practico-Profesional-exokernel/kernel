@@ -11,6 +11,7 @@ void start_shell(void);
 void run_tests(void);
 
 void do_sched_yield(char * args);
+int handle_create_proc(char*program_name);
 
 
 #endif
