@@ -149,7 +149,7 @@ void load_create_process_user(struct Proc * proc, const struct AppBinaryInfo * a
 
     init_proc_uptime(proc);
     add_proc_info(proc);
-    int actual_memory = get_free_user_memory();
+    int actual_memory = get_free_ram_memory();
     update_system_memory(actual_memory);
 }
 

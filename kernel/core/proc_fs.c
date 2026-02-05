@@ -4,6 +4,7 @@
 #include "user_pages_alloc.h"
 #include "arch_inc/mem_constants.h"
 #include "sched.h"
+#include "arch/mem.h"
 
 static SystemInfo sys_info;
 
@@ -23,7 +24,7 @@ void init_system_info(void) {
 
     //falta revisar el CPU count
     sys_info.kernel.cpu_count = 0; 
-    sys_info.kernel.total_memory = user_pages_count() * PAGE_SIZE;
+    sys_info.kernel.total_memory = get_free_ram_memory();
     sys_info.kernel.free_memory = sys_info.kernel.total_memory;
 
 }
@@ -109,13 +110,13 @@ int proc_ls(void) {
     
     printf("\n");
 
-    printf("PID", "GID", "CPU", "STAT", "PROC\n");
+    printf("PID - GID - CPU - STAT - PROC: \n");
     
     for (int i = 0; i < PROCS_MAX; i++) {
         ProcInfo *p = &sys_info.procs[i];
 
         if (p->status != PROC_FREE) {
-            printf("%d %d %d %s %s\n",
+            printf("%d - %d - %d - %s - %s\n",
                    p->pid,
                    p->gid,
                    p->cpunum,

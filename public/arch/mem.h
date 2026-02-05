@@ -9,7 +9,7 @@ void pde_init();
 void mem_init(void);
 paddr_t get_next_free_page();
 paddr_t alloc_pages(uint32_t n);
-
+int get_free_ram_memory();
 // Map a page vaddr to paddr
 //void map_page(gen_pt_t *table1, vaddr_t vaddr, paddr_t paddr, uint32_t flags); //TODO: CHANGE
 
