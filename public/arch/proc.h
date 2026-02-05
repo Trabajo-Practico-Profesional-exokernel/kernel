@@ -21,7 +21,7 @@
 // Just 256 bytes .. so that 8* 256 = 1KB + some bytes for pointers .. args can be passed through 1 page of 4096.. in the user stack..
 #define MAXARG 8
 #define MAX_ARG_LEN 256 
-
+#define MAX_NAME 32
 #define MAX_FILES 16
 
 typedef int32_t procid_t;
@@ -47,6 +47,7 @@ struct Proc {
     int status;           // Process state: PROC_FREE or PROC_RUNNABLE,  PROC_DYING, PROC_RUNNABLE, PROC_RUNNING, PROC_NOT_RUNNABLE 
 
     int cpunum; // The CPU that the env is running on
+    char proc_name[MAX_NAME];
 
 };
 
