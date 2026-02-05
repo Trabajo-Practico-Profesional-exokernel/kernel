@@ -2,6 +2,7 @@
 #include "sched.h"
 #include "arch/clock_checks.h"
 #include "console/debug.h"
+#include "proc_fs.h"
 
 volatile uint64_t ticks = 0;
 
@@ -28,9 +29,22 @@ void init_proc_uptime(struct Proc*  proc){
     procs_timing_info[proc->pid].free = false;
 }
 
+uint32_t get_total_active_ticks(void) {
+    uint32_t total = 0;
+    for (int i = 0; i < PROCS_MAX; i++) {
+        if (!procs_timing_info[i].free) {
+            total += procs_timing_info[i].uptime_ticks;
+        }
+    }
+    return total;
+}
+
+
 void check_sleeping_proc(void){
     ticks+=1; // Only on this core! should increment/check on main core!
-    
+    int real_ticks = get_total_active_ticks();
+
+    update_system_info(ticks, real_ticks);
     struct Proc * curr_proc = get_curr(); 
 
     if(curr_proc->status == PROC_RUNNING){

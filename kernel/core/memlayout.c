@@ -7,9 +7,9 @@
 #include "constants.h"
 #include "stdio.h"
 #include "console/debug.h"
-
+#include "user_pages_alloc.h"
 #include "proc_sleeping.h"
-
+#include "proc_fs.h"
 #include "proc.h"
 #include "sched.h"
 #include "proc_pages.h"
@@ -149,6 +149,9 @@ void load_create_process_user(struct Proc * proc, const struct AppBinaryInfo * a
     SET_SYSCALL_RET1(proc_tf, params_vaddr);
 
     init_proc_uptime(proc);
+    add_proc_info(proc);
+    int actual_memory = get_free_ram_memory();
+    update_system_memory(actual_memory);
 }
 
 // For now no extra mapping needed.

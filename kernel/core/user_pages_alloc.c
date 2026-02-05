@@ -32,6 +32,18 @@ free_page_t *first_page = NULL;
 free_page_t *last_page = NULL;
 // size_t free_pages_count = 0;
 
+size_t get_free_user_memory(void) {
+    size_t count = 0;
+    free_page_t *curr = free_list_head;
+
+    while (curr != NULL) {
+        count++;
+        curr = curr->next;
+    }
+
+    return count * PAGE_SIZE;
+}
+
 bool has_no_user_free_pages(void){
     return free_list_head == NULL;
 }
@@ -50,7 +62,7 @@ paddr_t alloc_user_page(void) {
     // free_pages_count-=1;
 
     memset(page, 0, PAGE_SIZE);
-
+    
     return (paddr_t)page;
 }
 

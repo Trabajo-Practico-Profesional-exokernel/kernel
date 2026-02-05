@@ -28,6 +28,8 @@
 
 #define SYS_CONSOLE_CLOSE 20
 
+#define SYS_PROC_LS 21
+
 #define DEF_ERR_CODE -1
 
 

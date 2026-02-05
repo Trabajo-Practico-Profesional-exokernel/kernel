@@ -78,6 +78,9 @@ int console_close(int fd){
     return syscall(SYS_CONSOLE_CLOSE, fd, 0, 0, 0);
 }
 
+int procls(){
+    return syscall(SYS_PROC_LS, 0, 0, 0, 0);
+}
 
 void putchar(char ch) {
     write(STDOUT, &ch, 1);

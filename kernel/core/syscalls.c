@@ -10,6 +10,7 @@
 #include "console/debug.h"
 #include "arch/console.h"
 #include "console_files.h"
+#include "proc_fs.h"
 
 void syscall_console_put(FullTrapFrame *tf, uintptr_t pc) {
 
@@ -66,11 +67,20 @@ void syscall_console_close(FullTrapFrame *tf, uintptr_t pc){
     SET_SYSCALL_RET0(tf, res);
 }
 
+
+void syscall_proc_ls(FullTrapFrame *tf, uintptr_t pc){
+    proc_ls();
+    SET_SYSCALL_RET0(tf, SUCCESS);
+}
+
+
+
 #define MAX_SYSCALLS 50
 syscall_handler_t syscall_table[MAX_SYSCALLS] = {
     [SYS_CONSOLE_PUT] = syscall_console_put,
     [SYS_CONSOLE_GET] = syscall_console_get,
     [SYS_CONSOLE_CLOSE] = syscall_console_close,
+    [SYS_PROC_LS] = syscall_proc_ls,
     // ... other handlers, wil be registered with register_syscall
 };
 void register_syscall(size_t sysno, syscall_handler_t handler){

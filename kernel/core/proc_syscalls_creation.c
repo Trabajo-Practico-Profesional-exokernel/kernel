@@ -52,6 +52,8 @@ void syscall_exec(FullTrapFrame *tf, uintptr_t pc) {
     //int set_init_parameters_for_proc(struct Proc * proc, char ** argv, paddr_t* sp_out);
     
     struct Proc* proc= get_first_free_proc();
+    strcpy(proc->proc_name, "unknown");
+
     // It cannot but NULL it throws panic for now but check it anyway for the future!
     if (proc == NULL){
         SET_SYSCALL_RET0(tf, DEF_ERR_CODE)
