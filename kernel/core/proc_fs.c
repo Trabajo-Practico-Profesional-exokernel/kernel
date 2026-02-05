@@ -18,23 +18,23 @@ static const char* get_unix_status(int status) {
     }
 }
 
-int init_system_info(void) {
+void init_system_info(void) {
     memset(&sys_info, 0, sizeof(SystemInfo));
 
     //falta revisar el CPU count
     sys_info.kernel.cpu_count = 0; 
-
     sys_info.kernel.total_memory = user_pages_count() * PAGE_SIZE;
     sys_info.kernel.free_memory = sys_info.kernel.total_memory;
 
-    return SUCCESS;
 }
 
-int update_system_info(int ticks, int use_of_cpu, int free_memory) {
+void update_system_memory(int memory){
+    sys_info.kernel.free_memory = memory;
+}
+
+void update_system_info(int ticks, int use_of_cpu) {
     sys_info.kernel.ticks = ticks;
     sys_info.kernel.use_of_cpu = use_of_cpu;
-    sys_info.kernel.free_memory = free_memory;
-    return SUCCESS;
 }
 
 int add_proc_info(struct Proc *proc) {

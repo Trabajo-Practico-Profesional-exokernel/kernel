@@ -7,8 +7,9 @@
 bool has_no_user_free_pages(void);
 size_t user_pages_count(void);
 paddr_t alloc_user_page(void);
-void free_user_page(paddr_t paddr);
+size_t get_free_user_memory(void);
 
+void free_user_page(paddr_t paddr);
 
 int try_alloc_user_page(paddr_t * out_paddr);
 

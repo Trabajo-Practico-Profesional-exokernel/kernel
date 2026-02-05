@@ -54,5 +54,5 @@ int dup(int prev_fd);
 int console_read(char *buf, int len);
 int console_write(char *buf, int len);
 int console_close(int fd);
-
+int procls();
 #endif

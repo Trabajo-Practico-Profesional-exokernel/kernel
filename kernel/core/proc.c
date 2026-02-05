@@ -14,7 +14,7 @@
 #include "proc_pages.h"
 #include "proc_syscalls.h"
 #include "proc_sleeping.h"
-
+#include "proc_fs.h"
 
 // #include "ipc.h"
 
@@ -30,7 +30,7 @@ void free_process(struct Proc * proc){
 
     proc->status = PROC_FREE; 
 
-    
+    delete_proc_info(proc->pid);
     // Trapframe reset? maybe for security reasons.. but create_process would reset it anyway!    
 }
 

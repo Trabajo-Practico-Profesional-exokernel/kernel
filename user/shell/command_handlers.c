@@ -372,6 +372,15 @@ int handle_chmod(char* args) {
     return ERR_CODE;
 }
 
+int handle_procls(char* args) {
+    (void)args;
+    if (procls() == 0) {
+        return OK_CODE;
+    }
+    return ERR_CODE;
+    
+}
+
 struct CommandEntry commands[] = {
     // Existing
     { "exec",      handle_exec },
@@ -400,6 +409,7 @@ struct CommandEntry commands[] = {
     { "pwd",       handle_pwd },
     { "chown",     handle_chown },
     { "chmod",     handle_chmod },
+    { "procls",     handle_procls },
 };
 // Auto-calculate command count
 #define COMMAND_COUNT (sizeof(commands) / sizeof(struct CommandEntry))

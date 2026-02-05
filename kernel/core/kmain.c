@@ -10,7 +10,7 @@
 #include "stdio.h"
 #include "console/debug.h"
 #include "console_files.h"
-
+#include "proc_fs.h"
 
 // When nothing more to be executed on shell!
 void sched_finish(bool curr_is_blocked){
@@ -92,7 +92,8 @@ void kmain()
     init_syscalls_ipc();
     init_syscalls_proc();
     init_proc_mem_management();
-
+    init_system_info();
+    
     #ifdef IS_RISC
     #else
     kbd_hw_enable();

@@ -31,11 +31,11 @@ typedef struct{
     ProcInfo procs[PROCS_MAX];
 } SystemInfo;
 
-int init_system_info();
-int update_system_info(int ticks, int use_of_cpu, int free_memory);
+void init_system_info();
+void update_system_info(int ticks, int use_of_cpu);
+void update_system_memory(int memory);
 int add_proc_info(struct Proc *proc);
 int delete_proc_info(int proc_id);
-
 int proc_ls();
 
 #endif
