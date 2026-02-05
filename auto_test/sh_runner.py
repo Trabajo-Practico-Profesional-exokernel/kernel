@@ -77,6 +77,10 @@ class KernelRun:
         if self.verbose:
             cmd.append("-v")
 
+        if self.fs_path:
+            cmd.append("-disk")
+            cmd.append(f"\"{self.fs_path}\"")
+
         cmd.append(self.arch)
         cmd.append(str(self.ncpu))
         return cmd

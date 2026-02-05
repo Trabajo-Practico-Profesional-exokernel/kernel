@@ -4,6 +4,8 @@
 #include "stdlib.h"
 #include "test_shell/command_handler.h"
 #include "interactive_test_commands.h"
+#include "test_shell/interactive_info_logging.h"
+
 
 int test_handle_run_shell(char* args) {
     start_shell();
@@ -24,23 +26,76 @@ int test_start_cpus(char* args) {
     return 0;
 }
 
-int test_help_man(char* args) {
-    printf("Podes correr:\n");
-    printf("'run_shell <args para la shell>' corre la shell de usuario y podes probar programas de la misma\n");
-    printf("'run_tests <args para los tests>' corre uno o mas tests predefinidos del kernel, en testing.c\n");
-    printf("'start_cpus' empieza el sistema multicore, levanta/desbloquea los cores\n");
+
+
+
+
+
+int handle_enable_log_irq(char* args) {
+    return enable_clock_yield_logging(args);    
+}
+
+int handle_disable_log_irq(char* args) {
+    return disable_clock_yield_logging();    
+}
+
+int handle_enable_interactive_irq(char* args) {
+    return enable_clock_yield_interactive(args);    
+}
+
+int handle_disable_interactive_irq(char* args) {
+    return disable_clock_yield_interactive();    
+}
+
+
+int handle_sched_yield(char *args){
+    do_sched_yield(args);
     return 0;
 }
 
+
+
+int test_help_man(char* args);
+
 struct CommandEntry commands[] = {
-    { "run_shell", test_handle_run_shell },
-    { "run_tests", test_handle_run_tests },
-    { "start_cpus", test_start_cpus },
-    { "help", test_help_man }
+    { "run_shell", test_handle_run_shell,
+    "corre la shell de usuario y podes probar programas de la misma"
+    },
+    { "run_tests", test_handle_run_tests,
+    "recibe: <args para los tests>, corre uno o mas tests predefinidos del kernel, en testing.c"
+    },
+    { "start_cpus", test_start_cpus,
+    "empieza el sistema multicore, levanta/desbloquea los cores"
+    },
+    { "irq_log_on", handle_enable_log_irq,
+    "habilita logs de informacion en cada interrupcion por clock"
+    },
+    { "irq_log_off", handle_disable_log_irq,
+    "deshabilita logs de informacion en cada interrupcion por clock"},
+    { "irq_to_shell_on", handle_enable_interactive_irq,
+    "habilita que en cada interrupcion por clock se vuelva a la test shell"
+    },
+    { "irq_to_shell_off", handle_disable_interactive_irq,
+    "deshabilita que en cada interrupcion por clock se vuelva a la test shell"
+    },
+    { "sched_yield", handle_sched_yield,
+    "Corre sched_yield... volviendo al scheduler basicamente"
+    },
+    { "help", test_help_man, "Da informacion general de comandos"}
     
 };
 // Auto-calculate command count
 #define COMMAND_COUNT (sizeof(commands) / sizeof(struct CommandEntry))
+
+
+int test_help_man(char* args) {
+    printf("Podes correr:\n");
+    for (unsigned int i = 0; i < COMMAND_COUNT; i++) {
+        printf("'%s' %s\n",commands[i].action_name, commands[i].description);
+    }
+    return 0;
+}
+
 
 int exec_test_command(char * action, char* args){
     int len_act = strlen((const uint8_t*)action) + 1;// include 0 byte

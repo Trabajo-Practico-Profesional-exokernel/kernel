@@ -8,6 +8,7 @@ debug=0
 trg=riscv
 testing=0
 only_build=0
+disk=
 
 while [[ $# -gt 0 ]]; do
 	case "$1" in
@@ -17,6 +18,7 @@ while [[ $# -gt 0 ]]; do
 	        -build_users) clean_user_apps=1; shift ;;
 	        -tests) testing=1; shift ;;
 	        -only_build) only_build=1; shift ;;
+			-disk) disk=$2; shift 2 ;;
 	        #-*) echo "Got flag $1 after - :${1#-}" ; shift;;  	
 	*) trg=$1 ; shift ;;
 	esac
@@ -105,6 +107,10 @@ else
 	fi	
 fi
 	
-	
+DISK_ARG=""
+if [[ -n "$disk" ]]; then
+	DISK_ARG="KERNEL_DISK_PATH=$disk"
+fi
+
 echo "Running: make ARCH=$trg NCPU=$NCPU TESTING=$testing $trg_action"
-make ARCH=$trg NCPU=$NCPU TESTING=$testing $trg_action
+make ARCH=$trg $DISK_ARG NCPU=$NCPU TESTING=$testing $trg_action

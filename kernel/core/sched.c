@@ -17,6 +17,9 @@
 #include "arch/clock_checks.h"
 
 extern void sched_finish(struct Proc * last_proc);
+#ifdef IS_TESTING
+extern void on_clock_yield(uint32_t new_curr_slices);
+#endif
 
 #define MAX_TIME_SLICES 45
 
@@ -121,6 +124,11 @@ void switch_proc(struct Proc* next) {
 void clock_yield(FullTrapFrame *tf, uintptr_t proc_pc) {  // Quitamos uintptr_t proc_pc
 
     curr_slices += 1;
+    #ifdef IS_TESTING
+    on_clock_yield(curr_slices);
+    #endif
+
+
     if(curr){ // Only If there is a valid process running even If blocked.
         check_sleeping_proc();
 

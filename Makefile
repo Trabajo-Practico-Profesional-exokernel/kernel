@@ -7,7 +7,7 @@ BUILD_DIR   = build/$(ARCH)
 # CAMBIO: Agregado -Ikernel/core para mantener dependencias de headers
 DEF_INCS     = -Ipublic -Isys -Iutil -Ilibc -Ikernel/core
 
-KERNEL_DISK_PATH=.kernel_disk/disk.txt
+KERNEL_DISK_PATH ?=.kernel_disk/disk.txt
 
 NCPU ?= 1
 CPU_STACK_PAGES = 32
@@ -78,7 +78,7 @@ ifeq ($(TESTING),1)
 	C_SOURCES += $(shell find $(TEST_DIRS) -type f -name '*.c')
 
 # 	C_SOURCES += $(foreach dir,$(TEST_DIRS),$(wildcard $(dir)/*.c))
-	CFLAGS += $(TEST_INCS)
+	CFLAGS += $(TEST_INCS) -DIS_TESTING
 endif
 
 

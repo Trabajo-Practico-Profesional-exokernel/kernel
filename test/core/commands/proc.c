@@ -27,6 +27,11 @@ struct Proc * create_process_test(size_t ind, char ** argv){
 char *DEF_ARGV_TEST[] = { "sh_prog","parameter1", 0 };
 
 
+void do_sched_yield(char * args){
+    enable_timer_interrupts();
+    sched_yield();
+}
+
 void start_shell(void){
     struct Proc * proc_def = create_process_test(APP_IND_COORDINATOR, DEF_ARGV_TEST);
     coordinator_PID = proc_def->pid;

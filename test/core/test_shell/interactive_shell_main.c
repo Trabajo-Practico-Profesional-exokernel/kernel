@@ -18,6 +18,7 @@
 char input_buf[MAX_INPUT];
 
 char* running_command = NULL;
+
 void interactive_shell_help(void){
     test_help_man("");    
 
@@ -39,7 +40,7 @@ void resume_interactive_shell(struct Proc * last_proc){
 
 void interactive_shell_main(void) {
     static char input_buf[MAX_INPUT];
-
+    running_command = NULL;
     while (1){
         printf("\n[tester command]>\n");
         // int len = 

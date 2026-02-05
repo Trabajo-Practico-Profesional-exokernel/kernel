@@ -8,6 +8,7 @@ typedef int (*command_handler_t)(char *args);
 struct CommandEntry {
     char * action_name;
     command_handler_t handler;
+    char * description;
 };
 
 int exec_test_command(char * action, char* args);
