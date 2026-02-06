@@ -270,9 +270,10 @@ int handle_fsck(char* args) {
 
 int handle_pwd(char* args) {
     (void)args;
-    char path[256];
+    char path[256] = {0};
     
     if (getcwd(path, sizeof(path)) == 0) {
+
         printf("%s\n", path); // O printGreen si lo tienes definido
         return OK_CODE;
     }
