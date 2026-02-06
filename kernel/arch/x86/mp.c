@@ -13,6 +13,7 @@ struct cpu cpus[NCPU];
 struct cpu *bootcpu;
 int ismp;  				// true if mp detected
 int ncpu;
+uint8_t ioapicid;
 
 uint8_t percpu_kstacks[NCPU][KSTKSIZE]
 __attribute__ ((aligned(PAGE_SIZE)));
@@ -63,7 +64,7 @@ struct mpioapic {       // I/O APIC table entry
 	uint8_t version;                // I/O APIC version
 	uint8_t flags;                  // I/O APIC flags
 	paddr_t *addr;                  // I/O APIC address
-};
+} __attribute__((__packed__));
 
 // mpproc flags
 #define MPPROC_BOOT 0x02                // This mpproc is the bootstrap processor
@@ -95,8 +96,9 @@ mpsearch1(paddr_t addr, int len)
 
 	for (; mp < end; mp++)
 		if (memcmp(mp->signature, "_MP_", 4) == 0 &&
-		    chksum(mp, sizeof(*mp)) == 0)
+		    chksum(mp, sizeof(*mp)) == 0) {
 			return mp;
+		}
 	return NULL;
 }
 
@@ -178,10 +180,10 @@ mpconfig(struct mp **pmp)
 
 void init_cpus(void)
 {
-	return;
 	struct mp *mp;
 	struct mpconf *conf;
 	struct mpproc *proc;
+	struct mpioapic *ioapic;
 	uint8_t *p;
 	unsigned int i;
 
@@ -196,8 +198,10 @@ void init_cpus(void)
 		switch (*p) {
 		case MPPROC:
 			proc = (struct mpproc *)p;
+
 			if (proc->flags & MPPROC_BOOT)
 				bootcpu = &cpus[ncpu];
+
 			if (ncpu < NCPU) {
 				cpus[ncpu].cpu_id = ncpu;
 				ncpu++;
@@ -209,10 +213,11 @@ void init_cpus(void)
 			continue;
 		case MPBUS:
 		case MPIOAPIC:
-      		// ioapic = (struct mpioapic*)p;
-      		// ioapicid = ioapic->apicno;
-      		// p += sizeof(struct mpioapic);
-      		// continue;
+			printf("SMP: IOAPIC detected\n");
+      		ioapic = (struct mpioapic*)p;
+      		ioapicid = ioapic->apicno;
+      		p += sizeof(struct mpioapic);
+      		continue;
 		case MPIOINTR:
 		case MPLINTR:
 			p += 8;

@@ -8,7 +8,7 @@ main()
 	char wbuf[64] = "Hola";
 	char rbuf[64] = { 0 };
 
-	int w = disk_write(wbuf, 1, 4);
+	int w = disk_write(wbuf, 0, 4);
 	printf("wstatus: %d\n", w);
 
 	int r = disk_read(0, rbuf, 3);

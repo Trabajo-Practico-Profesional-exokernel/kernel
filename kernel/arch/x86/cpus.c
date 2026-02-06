@@ -9,10 +9,12 @@ int cpuidx()
 {
 	// apicid and idx are not guaranteed to be the same
 	int apicid = cpunum();
-	for (int i = 0; i < NCPU; i++) {
+	int i = 0;
+	for (; i < NCPU; i++) {
 		if (cpus[i].cpu_id == apicid)
-			return i;
+			break;
 	}
+    return i;	
 }
 
 struct cpu* 

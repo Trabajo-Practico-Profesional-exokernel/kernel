@@ -23,13 +23,13 @@ void pic_init(void) {
 
     // UNMASK (enables every picirq interrupt)
 	// TODO: config lapic
-    outb(0x21, 0x00);
-    outb(0xA1, 0x00);
+    //outb(0x21, 0x00);
+    //outb(0xA1, 0x00);
 
-	//outb(0x20, 0x68);             /* clear specific mask */
-	//outb(0x20, 0x0a);             /* read IRR by default */
+	outb(0x20, 0x68);             /* clear specific mask */
+	outb(0x20, 0x0a);             /* read IRR by default */
 
-	//outb(0xA0, 0x68);               /* OCW3 */
-	//outb(0xA0, 0x0a);               /* OCW3 */
+	outb(0xA0, 0x68);               /* OCW3 */
+	outb(0xA0, 0x0a);               /* OCW3 */
 
 }

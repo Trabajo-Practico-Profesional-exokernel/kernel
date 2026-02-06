@@ -25,16 +25,15 @@ ifeq ($(ARCH),x86)
 	CC      = gcc
 	AS      = nasm
 	CFLAGS  = $(DEF_INCS) -Imeta/gen -Ikernel/arch/x86 -Ikernel/arch/x86/drivers -m32 -nostdlib -nostdinc -fno-builtin -fno-stack-protector \
-	           -nostartfiles -nodefaultlibs -Wall -Wextra -c -g -DIS_X86 -march=i386 -mtune=i386\
-	                   -DNCPU=$(NCPU)
+	           -nostartfiles -nodefaultlibs -Wall -Wextra -c -g -DIS_X86 -march=i386 -mtune=i386
 	TEST_DIRS := test/core test/x86
 	TEST_INCS := -Itest/core -Itest/x86
 
 	ASFLAGS = -f elf
 	LDFLAGS = -T kernel/arch/x86/drivers/linker/link.ld -melf_i386
-	QEMU    = qemu-system-i386 -cdrom os.iso -m 64 -no-reboot -no-shutdown -d cpu_reset -nographic -serial mon:stdio \
+	QEMU    = qemu-system-i386 -cdrom os.iso -m 64 -no-reboot -no-shutdown -nographic -serial mon:stdio \
 	                           -drive file=$(KERNEL_DISK_PATH),index=1,media=disk,format=raw			 \
-							   -smp $(NCPU)
+							   -smp 2  
 else ifeq ($(ARCH),riscv)
 	CC      = clang
 

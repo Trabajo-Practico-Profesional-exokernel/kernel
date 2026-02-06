@@ -35,7 +35,7 @@ void sched_finish(bool curr_is_blocked){
 // on secondary cpus
 void secondary_cpu_main(){
     printf("Should start cpu %d\n", cpuid());
-    init_sched();
+    //init_sched();
     
     for (;;)
     {
@@ -52,8 +52,6 @@ void kmain()
     
 
 
-    #ifdef IS_RISC
-    #else
     // Halt other cpus if not main one to init kernel.
     // Riscv opensbi already does this, so its in theory for x86. Or just in case.
     // IN RISCV opensbi does not guarantee that cpuid == 0 is the boot one.
@@ -66,7 +64,6 @@ void kmain()
 
         PANIC("Should not reach here secondary cpu!");
     }
-    #endif
 
     disable_debug_print();
     init_arch();
@@ -109,6 +106,7 @@ void kmain()
     // Like we would do with started == 0.
     notify_inited();
     printf("---> x86 start scged \n");
+	lapic_startap(1, secondary_cpu_main);
     init_sched();
 
     for (;;)
