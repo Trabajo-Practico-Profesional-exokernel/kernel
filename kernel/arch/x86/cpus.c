@@ -11,16 +11,19 @@ int cpuidx()
 	int apicid = cpunum();
 	for (int i = 0; i < NCPU; i++) {
 		if (cpus[i].cpu_id == apicid)
-			return cpus + i;
+			return i;
 	}
 }
 
-struct cpu* mycpu(void)
+struct cpu* 
+mycpu(void)
 {
-  return &cpus[cpuidx()];
+  int idx = cpuidx();
+  return &cpus[idx];
 }
 
-struct cpu* getcpu(int cpuidx)
+struct cpu* 
+getcpu(int cpuidx)
 {
   return &cpus[cpuidx];  
 }

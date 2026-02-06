@@ -32,7 +32,7 @@ ifeq ($(ARCH),x86)
 
 	ASFLAGS = -f elf
 	LDFLAGS = -T kernel/arch/x86/drivers/linker/link.ld -melf_i386
-	QEMU    = qemu-system-i386 -cdrom os.iso  -m 64 -no-reboot -no-shutdown -nographic -serial mon:stdio \
+	QEMU    = qemu-system-i386 -cdrom os.iso -m 64 -no-reboot -no-shutdown -d cpu_reset -nographic -serial mon:stdio \
 	                           -drive file=$(KERNEL_DISK_PATH),index=1,media=disk,format=raw			 \
 							   -smp $(NCPU)
 else ifeq ($(ARCH),riscv)
