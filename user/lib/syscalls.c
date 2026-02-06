@@ -168,7 +168,9 @@ int lseek(int fd, int offset, int whence) {
 }
 
 int stat(char* filepath){
-    PANIC("stat not implemented yet");
+    int res = app_send_msg_to_server(OP_STAT, 0, 0, 0, (int)filepath, strlen((const uint8_t *) filepath) + 1);
+    if (res == ERROR) return ERROR;
+    return app_receive_parameter(OP_STAT);
 }
 
 int mkdir(const char *path) {

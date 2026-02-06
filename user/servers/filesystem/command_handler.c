@@ -132,7 +132,7 @@ int32_t give_response(int32_t type_command, int32_t arg_1, int32_t arg_2, int32_
     }
     
     if (type_command == FS_OP_READ || 
-        type_command == FS_OP_FSTAT || 
+        /*type_command == FS_OP_FSTAT || */
         type_command == FS_OP_PWD || 
         (type_command == FS_OP_LS && arg_2 != 0))
     {

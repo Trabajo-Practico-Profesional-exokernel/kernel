@@ -86,17 +86,30 @@ void handle_lseek(FilesystemOperation *op) {
     give_response(FS_OP_LSEEK, res, 0, 0, 0);
 }
 
+void print_file_stat(const char *filename, fileStat *st) {
+    const char *type_str = (st->type == DIRECTORY) ? "directory" : "regular file";
+
+    printf("  File: %s\n", filename);
+    printf("  Size: %d | Blocks: %d\n", st->size, st->numBlocks);
+    printf("  Ino: %d | Links: %d | Type: %s\n", st->inodeNo, st->links, type_str);
+    
+    printf("Access: %d%d%d\n", st->owner_perms, st->group_perms, st->other_perms);
+}
+
 void handle_fstat(FilesystemOperation *op) {
     printf("falta terminar el retorno correctamente");
-    /*int32_t app_pid = op->app_id;
+    int32_t app_pid = op->app_id;
     
     char path[MAX_PATH_NAME];
-    virtual_copy(app_pid, op->content_1_vaddr, path, op->len_content_1);
+    virtual_copy(app_pid, (uint32_t)op->content_1_vaddr, (uint32_t)path, op->len_content_1);
     
     fileStat stat_buf;
     int res = fs_stat(path, &stat_buf, app_pid);
-
-    give_response(FS_OP_FSTAT, res, &stat_buf, sizeof(fileStat), 0);*/
+    if (res == SUCCESS){
+        print_file_stat(path, &stat_buf);
+    }
+    //give_response(FS_OP_FSTAT, res, &stat_buf, sizeof(fileStat), 0);
+    give_response(FS_OP_FSTAT, res, 0, 0, 0);
 }
 
 void handle_dup(FilesystemOperation *op) {
