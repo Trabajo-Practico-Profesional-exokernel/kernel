@@ -23,16 +23,9 @@
 
 
 
-struct Proc * create_process_test(size_t ind, char ** argv){
-    struct Proc * proc = get_first_free_proc();
-    
-    struct BinaryAppEntry* app = get_app_from_ind(ind);
-    
-    load_create_process_user(proc, app, argv);
-    init_proc_std_files(proc->pid);
-    proc->gid = 0;
-    return proc;
-}
+/// For now defined on sched_init.c
+extern struct Proc * create_process(char* proc_name, char ** argv);
+extern struct Proc * create_process_from_ind(int ind, char ** argv);
 
 char *DEF_ARGV_TEST[] = { "sh_prog","parameter1", 0 };
 
@@ -42,8 +35,13 @@ void do_sched_yield(char * args){
     sched_yield();
 }
 
+void load_processes_headers(void){
+    init_proc_headers();
+}
+
+
 void start_shell(void){
-    struct Proc * proc_def = create_process_test(APP_IND_COORDINATOR, DEF_ARGV_TEST);
+    struct Proc * proc_def = create_process("coordinator", DEF_ARGV_TEST);
     coordinator_PID = proc_def->pid;
     //create_process(APP_IND_SHELL, DEF_ARGV);
     //struct Proc * proc_def = create_process(APP_IND_PROC_A, DEF_ARGV);
@@ -94,26 +92,28 @@ int handle_create_proc(char*program_name){
     split_by_once((uint8_t*)program_name, (uint8_t**)&args, ' ');
 
 
-    int len_name = strlen(program_name) +1;
-    for (int ind_program = 0; ind_program < APP_COUNT; ind_program++) {
-        if (strncmp(program_name, _app_names[ind_program] , len_name) == 0) {
+    int ind_program = get_app_from_name(program_name);
 
-            // Build argv
-            char* argv[MAX_ARG];
-            int count = build_interactive_argv(&argv[1], args, MAX_ARG);
-            if(count < 0){
-                printf("Error at parsing parameters.\n");
-                return count;
-            }
-            argv[0] = program_name;
-
-            count+=1;
-            printf("DO Create proc exec %d %s with %d args\n", ind_program,program_name, count);
-            struct Proc * new_proc = create_process_test(ind_program, &argv);
-            return new_proc->pid;
-        }
+    if(ind_program < 0){
+        printf("No such program '%s' to run!\n", program_name);
+        return -1;
     }
-    return -1;
+    
+    int len_name = strlen(program_name) +1;
+    // Build argv
+    char* argv[MAX_ARG];
+    int count = build_interactive_argv(&argv[1], args, MAX_ARG);
+    if(count < 0){
+        printf("Error at parsing parameters.\n");
+        return count;
+    }
+    argv[0] = program_name;
+
+    count+=1;
+    printf("DO Create proc exec %d %s with %d args\n", ind_program,program_name, count);
+    struct Proc * new_proc = create_process_from_ind(ind_program, &argv);
+    
+    return new_proc->pid;
 }
 
 

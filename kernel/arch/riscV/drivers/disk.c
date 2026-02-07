@@ -15,7 +15,7 @@
 
 
 // By default it allows to access from sector 0
-int user_fs_init_sector = 0;
+uint32_t user_fs_init_sector = 0;
 
 char disk_request_content_buffer[SECTOR_SIZE];
 
@@ -93,7 +93,7 @@ int check_valid_size_write(size_t len){
 
 void syscall_disk_read(FullTrapFrame *tf, uintptr_t pc) {
     
-    virt_blk_sector_t src_disk_sector = SYSCALL_ARG0(tf);
+    virt_blk_sector_t src_disk_sector = ((uint32_t) SYSCALL_ARG0(tf)) + user_fs_init_sector;
     vaddr_t trg_buffer_vaddr = SYSCALL_ARG1(tf);
     size_t read_len = SYSCALL_ARG2(tf);
 
@@ -144,7 +144,7 @@ void syscall_disk_read(FullTrapFrame *tf, uintptr_t pc) {
 
 void syscall_disk_write(FullTrapFrame *tf, uintptr_t pc) {
     vaddr_t src_buffer_vaddr = SYSCALL_ARG0(tf);
-    paddr_t trg_disk_sector = SYSCALL_ARG1(tf);
+    paddr_t trg_disk_sector = ((uint32_t) SYSCALL_ARG1(tf)) + user_fs_init_sector;
     size_t write_len = SYSCALL_ARG2(tf);
 
     int err = check_valid_size_write(write_len);
