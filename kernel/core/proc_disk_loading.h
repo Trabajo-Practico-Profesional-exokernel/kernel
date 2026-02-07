@@ -21,8 +21,8 @@ void init_proc_headers(void);
 
 int get_app_count(void);
 struct BinaryAppEntry* get_app_from_ind(int ind);
-struct BinaryAppEntry* get_app_from_name(char* name);
+int get_app_from_name(char* name);
 
-int load_app_code_to_user_mem(struct BinaryAppEntry* appInfo, uint32_t* pde_table);
-
+int load_app_code_to_user_mem(const struct BinaryAppEntry* app_info, 
+            vaddr_t* curr_vaddr, uint32_t* pde_table);
 #endif

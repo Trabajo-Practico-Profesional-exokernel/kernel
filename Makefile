@@ -24,7 +24,7 @@ KERNEL_MAIN := kernel/core/kmain.c
 ifeq ($(ARCH),x86)
 	CC      = gcc
 	AS      = nasm
-	CFLAGS  = $(DEF_INCS) -Imeta/gen -Ikernel/arch/x86 -Ikernel/arch/x86/drivers -m32 -nostdlib -nostdinc -fno-builtin -fno-stack-protector \
+	CFLAGS  = $(DEF_INCS) -Ikernel/arch/x86 -Ikernel/arch/x86/drivers -m32 -nostdlib -nostdinc -fno-builtin -fno-stack-protector \
 	           -nostartfiles -nodefaultlibs -Wall -Wextra -c -g -DIS_X86 -march=i386 -mtune=i386\
 	                   -DNCPU=$(NCPU)
 	TEST_DIRS := test/core test/x86
@@ -40,7 +40,7 @@ else ifeq ($(ARCH),riscv)
 	TEST_DIRS := test/core test/riscv
 	TEST_INCS := -Itest/core -Itest/riscv
 
-	CFLAGS  = $(DEF_INCS) -Imeta/gen -Ikernel/arch/riscV -std=c11 -O2 -g3 -Wall -Wextra --target=riscv32-unknown-elf \
+	CFLAGS  = $(DEF_INCS) -Ikernel/arch/riscV -std=c11 -O2 -g3 -Wall -Wextra --target=riscv32-unknown-elf \
 	           -fno-stack-protector -ffreestanding -nostdlib -DIS_RISC -fno-pic -fno-pie -mcmodel=medany\
 	                           -DNCPU=$(NCPU) \
 	                           -DCPU_STACK_PAGES=$(CPU_STACK_PAGES) \
@@ -62,9 +62,9 @@ endif
 
 # CAMBIO: Reemplazado 'kernel' por 'kernel/core' en ambas arquitecturas
 ifeq ($(ARCH),x86)
-	SRC_DIRS = kernel/arch/x86 kernel/arch/x86/drivers/io kernel/arch/x86/drivers/loader kernel/core sys libc util util/console util/parsers meta/gen kernel/arch/x86/drivers
+	SRC_DIRS = kernel/arch/x86 kernel/arch/x86/drivers/io kernel/arch/x86/drivers/loader kernel/core sys libc util util/console util/parsers kernel/arch/x86/drivers
 else ifeq ($(ARCH),riscv)
-	SRC_DIRS = kernel/arch/riscV/drivers kernel/arch/riscV kernel/core sys libc util util/console util/parsers meta/gen
+	SRC_DIRS = kernel/arch/riscV/drivers kernel/arch/riscV kernel/core sys libc util util/console util/parsers
 endif
 
 C_SOURCES := $(foreach dir,$(SRC_DIRS),$(wildcard $(dir)/*.c))
@@ -75,7 +75,8 @@ ifeq ($(TESTING),1)
 	# Remove real kernel main
 	C_SOURCES := $(filter-out $(KERNEL_MAIN),$(C_SOURCES))
 	
-	C_SOURCES += $(shell find $(TEST_DIRS) -type f -name '*.c') user/meta/app_names.c
+	C_SOURCES += $(shell find $(TEST_DIRS) -type f -name '*.c')
+#user/meta/app_names.c Not needed as of now since have access
 
 # 	C_SOURCES += $(foreach dir,$(TEST_DIRS),$(wildcard $(dir)/*.c))
 	CFLAGS += $(TEST_INCS) -DIS_TESTING

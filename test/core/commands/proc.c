@@ -4,7 +4,7 @@
 #include "arch/logging.h"
 #include "arch/mem_layout.h"
 #include "arch_inc/mem_constants.h" //defines perms like PAGE_R and so on.
-#include "meta/apps_info.h" // Include auto generated app_info and indexs for apps  
+// #include "meta/apps_info.h" // Include auto generated app_info and indexs for apps  
 #include "constants.h"
 #include "arch/cpus.h"
 #include "stdio.h"
@@ -18,14 +18,17 @@
 #include "stdlib.h"
 #include "parsers/strutil.h"
 
-extern struct AppBinaryInfo _binary_apps[];
-extern char* _app_names[];
+// extern struct AppBinaryInfo _binary_apps[];
+#include "proc_disk_loading.h"
 
 
 
 struct Proc * create_process_test(size_t ind, char ** argv){
     struct Proc * proc = get_first_free_proc();
-    load_create_process_user(proc, &_binary_apps[ind], argv);
+    
+    struct BinaryAppEntry* app = get_app_from_ind(ind);
+    
+    load_create_process_user(proc, app, argv);
     init_proc_std_files(proc->pid);
     proc->gid = 0;
     return proc;

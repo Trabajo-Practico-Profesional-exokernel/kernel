@@ -12,10 +12,10 @@
 #include "stdlib.h"
 
 #include "stdio.h"
-#include "meta/apps_info.h" // Include auto generated app_info and indexs for apps  
 #include "console/debug.h"
 #include "arch/ipc.h"
 
+#include "proc_disk_loading.h"
 
 
 void syscall_try_send_content(FullTrapFrame *tf, uintptr_t pc){

@@ -12,17 +12,17 @@
 #include "stdlib.h"
 
 #include "stdio.h"
-#include "meta/apps_info.h" // Include auto generated app_info and indexs for apps  
 #include "console/debug.h"
 #include "arch/ipc.h"
 #include "console_files.h"
 
-extern struct AppBinaryInfo _binary_apps[];
+//extern struct AppBinaryInfo _binary_apps[];
+#include "proc_disk_loading.h"
 
 void syscall_exec(FullTrapFrame *tf, uintptr_t pc) {
 
     int prog_ind = SYSCALL_ARG0(tf);
-    if (prog_ind < 0 || prog_ind>= APP_COUNT){
+    if (prog_ind < 0 || prog_ind>= get_app_count()){
         debug_printf("Invalid exec call ind %d \n", prog_ind);
         SET_SYSCALL_RET0(tf, DEF_ERR_CODE)        
         return;
@@ -61,10 +61,18 @@ void syscall_exec(FullTrapFrame *tf, uintptr_t pc) {
         sched_yield();
         return;
     }
+    struct BinaryAppEntry* app = get_app_from_ind(prog_ind);
 
-    debug_printf("Should run free proc %p binary: %p \n", proc, &_binary_apps[prog_ind]);
+    if(app == NULL){
+        printf("Invalid app ind %d to exec process!\n", prog_ind);
+        SET_SYSCALL_RET0(tf, -1);
+        save_curr_proc_state(tf, pc + 4);    
+        sched_yield();
+    }
 
-    load_create_process_user(proc, &_binary_apps[prog_ind], (char **) &argv_pointers[0]);
+    debug_printf("Should run free proc %p binary: %s at off: %u \n", proc, app->name, app->start);
+
+    load_create_process_user(proc, app, (char **) &argv_pointers[0]);
 
     debug_printf("Loaded proc\n");
     reset_exit_status(get_exit_status(proc->pid));
