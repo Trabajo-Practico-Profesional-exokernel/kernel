@@ -58,11 +58,11 @@ for name, path in APPS:
     print(f"{ind}: {name} -> {path}")
     ind+=1
 
+print(f"Total apps: {len(APPS)}, add padding: {PADDING} bytes, total size: {sum(os.path.getsize(p) for _, p in APPS) + PADDING} bytes")
+
 
 
 with open(OUT_FILE, "wb") as f:
-    # 2MB padding to leave space for the real filesystem content
-    f.write(b"\x00" * PADDING)
 
     header_pos = f.tell()
 
@@ -95,3 +95,6 @@ with open(OUT_FILE, "wb") as f:
         f.write(ENTRY_STRUCT.pack(name.encode(),
                             offsets[i],
                             size))
+
+    f.seek(end_pos)
+    f.write(b"\x00" * PADDING)

@@ -374,7 +374,7 @@ int32_t start_server(Server type) {
             argv[1] = 0;
             argv[2] = 0;
 
-            int proc_pid = exec(ind_program, argv);
+            int proc_pid = sys_exec(argv); // No necesitamos pasar el índice del programa, el exec se encargará de buscarlo por nombre
             if (proc_pid < 0) {
                 printf("[Coordinator] Failed to start %s. Error: %d\n", program_name, proc_pid);
                 return ERROR;

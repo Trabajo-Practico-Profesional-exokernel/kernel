@@ -65,7 +65,7 @@ int exec_program(char* program_name, char*args){
                 printf("shell exec arg %d == '%s'\n", argc, argv[argc]);
             }
 
-            int proc_pid= exec(ind_program, &argv[0]);
+            int proc_pid= sys_exec(&argv[0]);
 
             printf("Program %s started proc_id is ... %d\n", program_name, proc_pid);
             return proc_pid;

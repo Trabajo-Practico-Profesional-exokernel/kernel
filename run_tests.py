@@ -18,8 +18,8 @@ def test_boot():
         testing=True,
         clean=True,
         use_gdb = False,
-        fs_base_path = ".kernel_disk/disk_base.txt",
-        fs_path = ".kernel_disk/disk_test.txt",
+        fs_base_path = ".kernel_disk/disk_base.img",
+        fs_path = ".kernel_disk/disk_test.img",
     )
 
     run_test(program, test_simple_write_to_stdout)

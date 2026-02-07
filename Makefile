@@ -7,7 +7,7 @@ BUILD_DIR   = build/$(ARCH)
 # CAMBIO: Agregado -Ikernel/core para mantener dependencias de headers
 DEF_INCS     = -Ipublic -Isys -Iutil -Ilibc -Ikernel/core
 
-KERNEL_DISK_PATH ?=.kernel_disk/disk.txt
+KERNEL_DISK_PATH ?=.kernel_disk/disk.img
 
 NCPU ?= 1
 CPU_STACK_PAGES = 32

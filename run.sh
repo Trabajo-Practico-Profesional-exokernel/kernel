@@ -56,12 +56,17 @@ if [[ $clean_user_apps -eq 1 ]]; then
 	fi
 	echo "clean user apps build"
 
+	DISK_USER_ARG=""
+	if [[ -n "$disk" ]]; then
+		DISK_USER_ARG="TRG_DISK=$disk"
+	fi
+
 	if [[ "$trg" == "riscv" ]]; then
 		echo "-->Compiling user space apps for riscv!"
-		make
+		make $DISK_USER_ARG
 	else
 		echo "-->Compiling user space apps for x86!"
-		make ARCH=x86
+		make ARCH=x86 $DISK_USER_ARG
 	fi
 
 	if [[ $? -ne 0 ]]; then

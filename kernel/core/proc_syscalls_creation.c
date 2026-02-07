@@ -21,13 +21,7 @@
 
 void syscall_exec(FullTrapFrame *tf, uintptr_t pc) {
 
-    int prog_ind = SYSCALL_ARG0(tf);
-    if (prog_ind < 0 || prog_ind>= get_app_count()){
-        debug_printf("Invalid exec call ind %d \n", prog_ind);
-        SET_SYSCALL_RET0(tf, DEF_ERR_CODE)        
-        return;
-    }
-    vaddr_t vaddr_argv_pointer = SYSCALL_ARG1(tf);
+    vaddr_t vaddr_argv_pointer = SYSCALL_ARG0(tf);
     struct Proc* parent_proc = get_curr();
     switch_to_kernel_tables();
     
@@ -46,13 +40,29 @@ void syscall_exec(FullTrapFrame *tf, uintptr_t pc) {
         debug_printf("NO proc params exec\n");
         argv_pointers[0] = 0;
     }
-
-    debug_printf("Should run program at ind %d \n", prog_ind);
-
-    //int set_init_parameters_for_proc(struct Proc * proc, char ** argv, paddr_t* sp_out);
     
+    
+    printf("EXEC should run program with name '%s' \n", (char *) argv_pointers[0]);
+
+
     struct Proc* proc= get_first_free_proc();
-    strcpy(proc->proc_name, "unknown");
+
+
+    int prog_ind = get_app_from_name((char *) argv_pointers[0]);
+    struct BinaryAppEntry* app = NULL;
+
+    if(prog_ind >= 0){
+        app = get_app_from_ind(prog_ind);
+    }
+
+    if(app == NULL){
+        printf("Invalid app ind %d to exec process from '%s'!\n", prog_ind,
+            (char *) argv_pointers[0]);
+
+        SET_SYSCALL_RET0(tf, -1);
+        save_curr_proc_state(tf, pc + 4);    
+        sched_yield();
+    }
 
     // It cannot but NULL it throws panic for now but check it anyway for the future!
     if (proc == NULL){
@@ -61,22 +71,15 @@ void syscall_exec(FullTrapFrame *tf, uintptr_t pc) {
         sched_yield();
         return;
     }
-    struct BinaryAppEntry* app = get_app_from_ind(prog_ind);
 
-    if(app == NULL){
-        printf("Invalid app ind %d to exec process!\n", prog_ind);
-        SET_SYSCALL_RET0(tf, -1);
-        save_curr_proc_state(tf, pc + 4);    
-        sched_yield();
-    }
-
-    debug_printf("Should run free proc %p binary: %s at off: %u \n", proc, app->name, app->start);
+    printf("Should run free proc %p binary: %s at off: %u \n", proc, app->name, app->start);
 
     load_create_process_user(proc, app, (char **) &argv_pointers[0]);
 
-    debug_printf("Loaded proc\n");
+    debug_printf("Loaded proc '%s'\n", app->name);
     reset_exit_status(get_exit_status(proc->pid));
     init_proc_std_files(proc->pid);
+    strcpy(proc->proc_name, app->name);
 
     // Do switch to new proc? ... no?
     SET_SYSCALL_RET0(tf, proc->pid)

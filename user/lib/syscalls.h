@@ -5,7 +5,7 @@
 #include "inc/filesystem.h"
 
 
-int exec(int prog_ind, char ** args);
+int sys_exec(char ** args);
 int wait(int pid);
 int sys_kill(int pid);
 
