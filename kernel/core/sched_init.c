@@ -9,6 +9,7 @@
 #include "stdio.h"
 #include "console/debug.h"
 #include "console_files.h"
+#include "proc_disk_loading.h"
 
 char *DEF_ARGV[] = { "sh_prog","parameter1", 0 };
 char *DEF_FS_ARGS[] = { "filesystem", 0 };
@@ -110,6 +111,10 @@ void init_sched(void) {
 
         printf("INITING IDLE PROC In case all procs are blocked!\n");        
         init_idle_proc();
+        
+        printf("INITING USER APP HEADERS!\n");        
+        init_proc_headers();
+
         printf("Main NOW RELEASE!\n");        
         // for (int i = 0; i < 1000000000; i++){}
     } else {
@@ -124,5 +129,7 @@ void init_sched(void) {
     acquire(&lock_test);
 
     printf("Just one cpu should init sched %d == main == %d?!\n", cpuid(), main_cpuid);
-    init_sched_main();
+
+
+    // init_sched_main();
 }

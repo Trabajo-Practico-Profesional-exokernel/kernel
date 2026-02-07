@@ -11,11 +11,57 @@
 #include "arch_inc/virtio.h"
 #include "console/debug.h"
 
+#include "arch/disk.h"
+
+
+// By default it allows to access from sector 0
+int user_fs_init_sector = 0;
+
+char disk_request_content_buffer[SECTOR_SIZE];
+
+void set_user_fs_start(int bytes_offset){
+    user_fs_init_sector = (bytes_offset / SECTOR_SIZE) + 1;
+    // +1 to ensure its aligned/safe with sector size  
+}
+
+int read_disk(void *buf, int offset, int length)
+{
+    int remaining = length;
+    int sector = offset / SECTOR_SIZE;
+    int sector_offset = offset % SECTOR_SIZE;
+    char *dst = (char *)buf;
+
+    while (remaining > 0) {
+        int err = read_write_disk(
+            &disk_request_content_buffer[0],
+            sector,
+            false /* read */
+        );
+        if (err != 0) {
+            return remaining;   // or return -1;
+        }
+
+        int to_copy = SECTOR_SIZE - sector_offset;
+        if (to_copy > remaining)
+            to_copy = remaining;
+
+        memcpy(dst,
+               &disk_request_content_buffer[sector_offset],
+               to_copy);
+
+        dst += to_copy;
+        remaining -= to_copy;
+
+        sector++;
+        sector_offset = 0;  // only first sector has an offset
+    }
+
+    return 0;
+}
+
 extern void sched_yield(void);
 extern void save_curr_proc_state(FullTrapFrame *tf, uintptr_t pc);
 extern struct Proc * get_curr(void);
-
-char disk_request_content_buffer[SECTOR_SIZE];
 
 int check_valid_size_read(size_t len){
     if (len > SECTOR_SIZE){
