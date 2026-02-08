@@ -20,6 +20,7 @@
 
 // extern struct AppBinaryInfo _binary_apps[];
 #include "proc_disk_loading.h"
+#include "arch/arch_init.h"
 
 
 

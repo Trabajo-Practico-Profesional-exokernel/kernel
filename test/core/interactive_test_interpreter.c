@@ -19,6 +19,9 @@ void init_interactive_tests(void){
 	printf("INITING INTERACTIVE TESTS ON MAIN CPU %d \n", cpuid());
     init_idle_proc();
 
+    init_cpu_info();
+    set_as_main_cpu();
+
     interactive_shell_help();
     printf("\n[TEST] interactive test shell ready\n");
 
