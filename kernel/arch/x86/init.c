@@ -1,10 +1,11 @@
-#include "arch/stdio.h"
+#include "stdio.h"
 #include "arch/arch_init.h"
 #include "arch/mem.h"
 #include "arch/cpus.h"
 #include "types.h"
  
 #include "arch_inc/cpu.h"
+#include "arch_inc/x86.h"
 #include "arch_inc/mem_constants.h"
 #include "idt.h"
 #include "gdt.h"
@@ -17,6 +18,8 @@
 
 extern char __trap_stack_top[];
 extern pd_entry *kernel_pde;
+extern struct Segdesc gdt[GDT_NUM_ENTRIES];
+extern idt_gate_t idt[IDT_NUM_ENTRIES];
 
 static void cpu_init(void){
     struct TaskState ts = { .prev_tss = 0, .esp0 = __trap_stack_top, .ss0 = GD_KD };
@@ -55,6 +58,13 @@ void init_arch(void){
 void
 init_arch_others()
 {
-	
+	switch_to_kernel_tables();
+	lgdt(gdt, sizeof(gdt));
+	lapic_init();
+	lidt(idt, sizeof(idt));
+	xchg(&(mycpu()->cpu_status), CPU_STARTED); // tell start_cpus() we're up
+
+	printf("CPU %d now RUNNING\n", mycpu()->cpu_id);
+	while (1);
 }
 

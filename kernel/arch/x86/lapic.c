@@ -54,7 +54,7 @@ lapic_init()
 {
 	if (!lapicaddr)
 		return;
-
+	lapic = lapicaddr;
 
 	// enable Local APIC and set spurious interrupt 
 	lapicw(SVR, ENABLE | (T_IRQ0 + IRQ_SPURIOUS));

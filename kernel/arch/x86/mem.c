@@ -87,6 +87,11 @@ void mem_init(void){
     );
 
 
+    direct_map_range(kernel_pde, 
+            (paddr_t) LAPIC_BASE,
+            (paddr_t) LAPIC_BASE + PAGE_SIZE,
+            KERNEL_PERMISSIONS_ALL
+    );
 
     switch_page_table(kernel_pde);
 

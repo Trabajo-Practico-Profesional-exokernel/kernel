@@ -109,7 +109,6 @@ void kmain()
     // Like we would do with started == 0.
     notify_inited();
     printf("---> x86 start scged \n");
-	lapic_startap(1, secondary_cpu_main);
     init_sched();
 
     for (;;)

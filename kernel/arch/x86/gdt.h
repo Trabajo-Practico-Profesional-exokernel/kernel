@@ -22,6 +22,8 @@
 #define PL0 0x0
 #define PL3 0x3
 
+#define GDT_NUM_ENTRIES 6
+
 /*
     segment descriptor is 8 byte (64 bit) long:
     

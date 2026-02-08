@@ -1,7 +1,7 @@
 #include "idt.h"
 #include "arch_inc/trapframe.h"
+#include "arch_inc/x86.h"
 #include "arch/proc.h"
-#include "io.h"
 #include "constants.h"
 #include "arch/logging.h"
 #include "trap.h"

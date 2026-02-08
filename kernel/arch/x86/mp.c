@@ -204,6 +204,7 @@ void init_cpus(void)
 
 			if (ncpu < NCPU) {
 				cpus[ncpu].cpu_id = ncpu;
+				cpus[ncpu].cpu_status = CPU_HALTED;
 				ncpu++;
 			} else {
 				printf("SMP: too many CPUs, CPU %d disabled\n",

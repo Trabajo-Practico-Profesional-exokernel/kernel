@@ -3,9 +3,9 @@
 
 #include "serial_handler.h"
 #include "keyboard.h"
-#include "io.h"
 
 #include "arch/stdio.h"
+#include "arch_inc/x86.h"
 
 
 /* The I/O ports */

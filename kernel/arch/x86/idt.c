@@ -6,7 +6,8 @@ que maneja 15 líneas IRQ físicas (IRQ0–IRQ15).
 #include "idt.h"
 #include "trap.h"
 #include "interrupt.h"
-#include "drivers/io.h"
+
+#include "arch_inc/x86.h"
 
 
 idt_gate_t idt[IDT_NUM_ENTRIES];
@@ -102,5 +103,5 @@ void idt_init(void) {
     // mock proc
     create_user_idt_gate(0x80, (uint32_t)syscall_handler);
 
-    idt_load_and_set((uint32_t)&idt_ptr);
+    lidt(idt, sizeof(idt));
 }

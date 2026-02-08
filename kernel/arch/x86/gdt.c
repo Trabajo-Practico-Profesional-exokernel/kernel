@@ -7,7 +7,6 @@
 #define SEGMENT_BASE    0x0
 #define SEGMENT_LIMIT   0xFFFFF
 
-#define GDT_NUM_ENTRIES 6
 
 struct Segdesc gdt[GDT_NUM_ENTRIES] = {
 	/* SEGNULL */

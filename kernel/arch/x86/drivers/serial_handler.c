@@ -1,4 +1,4 @@
-#include "io.h"
+#include "arch_inc/x86.h"
 
 #define SERIAL_COM1_PORT 0x3F8 
 // COM1 base port... definido por separado para claridad por las dudas.
