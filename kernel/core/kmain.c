@@ -48,6 +48,7 @@ volatile static int started = 0;
 void kmain()
 {
 
+    mem_init(); // first of all set up paging
     init_cpus(); // First init cpus, here we set the cpuid
     
 
@@ -76,9 +77,11 @@ void kmain()
     init_trap();
 
     init_disk(); 
+
+	start_cpus();
+
     //Doing it after init_trap just to be able to see a trap/panic if something fails!
     // Mem init for riscv == setup pagetable for kernel.
-    mem_init();
 
     #ifdef IS_RISC
     // Why not ... maybe not full needed at first but works.
@@ -114,3 +117,5 @@ void kmain()
         // __asm__ __volatile__("wfi");
     }
 }
+
+

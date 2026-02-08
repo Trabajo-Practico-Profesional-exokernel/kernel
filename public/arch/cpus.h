@@ -6,6 +6,8 @@
 
 void init_cpus(void);
 
+void start_cpus(void);
+
 int cpuid();
 
 struct cpu* mycpu(void);

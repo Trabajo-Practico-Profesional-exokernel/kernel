@@ -153,8 +153,7 @@ lapic_startap(uint8_t apicid, uint32_t addr)
 	// Regular hardware is supposed to only accept a STARTUP
 	// when it is in the halted state due to an INIT.  So the second
 	// should be ignored, but it is part of the official Intel algorithm.
-	// Bochs complains about the second one.  Too bad for Bochs.
-	for(int i = 0; i < 2; i++){
+	for (int i = 0; i < 2; i++) {
 		lapicw(ICRHI, apicid<<24);
 		lapicw(ICRLO, STARTUP | (addr>>12));
 		microdelay(200);

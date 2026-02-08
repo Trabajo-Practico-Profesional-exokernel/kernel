@@ -5,9 +5,10 @@
 #include "types.h"
  
 #include "arch_inc/cpu.h"
-#include "../idt.h"
-#include "../gdt.h"
-#include "../interrupt.h"
+#include "arch_inc/mem_constants.h"
+#include "idt.h"
+#include "gdt.h"
+#include "interrupt.h"
 
 #include "serial_handler.h"
 
@@ -15,6 +16,7 @@
 #define GD_KD  0x10
 
 extern char __trap_stack_top[];
+extern pd_entry *kernel_pde;
 
 static void cpu_init(void){
     struct TaskState ts = { .prev_tss = 0, .esp0 = __trap_stack_top, .ss0 = GD_KD };
@@ -50,4 +52,9 @@ void init_arch(void){
     cpu_init();
 }
 
+void
+init_arch_others()
+{
+	
+}
 
