@@ -3,6 +3,7 @@
 #include "arch/logging.h"
 #include "arch/mem_layout.h"
 #include "arch_inc/mem_constants.h" //defines perms like PAGE_R and so on.
+#include "arch_inc/trap_constants.h" //defines perms like PAGE_R and so on.
 #include "constants.h"
 #include "arch/cpus.h"
 #include "stdio.h"
@@ -10,9 +11,14 @@
 #include "console_files.h"
 #include "proc_disk_loading.h"
 
+#include "arch/arch_init.h"
+
 char *DEF_ARGV[] = { "sh_prog","parameter1", 0 };
 char *DEF_FS_ARGS[] = { "filesystem", 0 };
 char *DEF_SHELL_ARGS[] = { "shell", 0 };
+
+char *INF_LOOP_1_ARGS[] = { "infinite_loop", "Some LOG", 0 };
+char *INF_LOOP_2_ARGS[] = { "infinite_loop", "LOG 2", 0 };
 
 
 char*APP_NAME_SHELL = "shell";
@@ -49,114 +55,52 @@ struct Proc * create_process(char* proc_name, char ** argv){
 
     return create_process_from_ind(ind, argv);
 }
-void init_sched2(void) {
 
-    // Main user process
-    // load_create_process_user(proc_shell, &_binary_apps[APP_NAME_PROC_A]);
-
-    #ifdef IS_RISC
-    struct Proc * proc_fs = create_process(APP_NAME_FILESYSTEM, DEF_ARGV);
-    filesystem_PID = proc_fs->pid;
-
-    struct Proc * proc_shell = create_process(APP_NAME_SHELL, DEF_ARGV);
-    #else
-    // load_create_process_user(proc_shell, &_binary_apps[APP_NAME_SHELL], DEF_ARGV);
-    struct Proc * proc_shell = create_process(APP_NAME_SHELL, DEF_ARGV);
-//    struct Proc * fs_server = create_process(APP_NAME_FILESYSTEM, DEF_ARGV);
-//    filesystem_PID = fs_server->pid;
-    // create_process(APP_NAME_PROC_A, DEF_ARGV);
-    // create_process(APP_NAME_PERIODIC_YIELD, DEF_ARGV);
-
-    #endif
-    // load_create_process_user(proc_shell, &_binary_apps[APP_NAME_FILESYSTEM], DEF_ARGV);
-    
-    // load_create_process_user(proc_shell, &_binary_apps[APP_NAME_TESTS_SHELL], DEF_ARGV);
-
-    // Extra initial processes....
-    // load_create_process_user(get_first_free_proc(), 
-    //                     &_binary_apps[APP_NAME_FILESYSTEM], DEF_ARGV);
-
-    debug_printf("AT CREATE PROCESS SHELL expected pc= %x, ", (uint32_t)VADDR_USER_BASE);
-    //printProc(proc_shell);
-
-    
-    // Start proc_shell!
-    #ifdef IS_RISC
-    switch_proc(proc_fs);
-    #else
-    switch_proc(proc_shell);
-    #endif
-    
-    PANIC("unreachable here!");
-}
-
-void init_sched_main(void) {
-
-    #ifdef IS_RISC
-    struct Proc * proc_def = create_process(APP_NAME_COORDINATOR, DEF_ARGV);
-    coordinator_PID = proc_def->pid;
-    // struct Proc * proc_def = create_process(APP_NAME_SIMPLE_FRK, DEF_ARGV);
-    // coordinator_PID = proc_def->pid;
-
-    switch_proc(proc_def);
-
-    #else
-
-    // struct Proc * proc_fs = create_process(APP_NAME_FILESYSTEM, DEF_FS_ARGS);
-    struct Proc * proc_shell = create_process(APP_NAME_SHELL, DEF_SHELL_ARGS);
-    // struct Proc * proc_shell = create_process(APP_NAME_SIMPLE_FRK, DEF_SHELL_ARGS);
-
-    // switch_proc(proc_fs);
-    switch_proc(proc_shell);
-    #endif
-    
-}
 
 #include "arch/spin_locks.h"
 
 struct spinlock lock_test;
-int main_cpuid = -1;
 
-
-
-void init_sched(void) {
-
+void init_sched_secondary_cpu(void){
+    init_cpu_info();
+    printf("Secondary cpu %d should init sched secondary\n", cpuid());
     acquire(&lock_test);
-    printf("ACQUIRED ?!\n");
 
-    // for (int i = 0; i < 2000000000; i++){}
-
-    printf("AFTER SLEEP ?!\n");
+    printf("Secondary CPU inited!! %d \n", cpuid());
     
-    if(main_cpuid < 0){
-        main_cpuid = cpuid();
-        printf("Main cpu acquired lock!?! %d\n",main_cpuid);        
-        lock_test.name= "main lock";
-
-        printf("INITING IDLE PROC In case all procs are blocked!\n");        
-        init_idle_proc();
-        
-        printf("INITING USER APP HEADERS!\n");        
-        init_proc_headers();
-
-        printf("Main NOW RELEASE!\n");        
-        // for (int i = 0; i < 1000000000; i++){}
-    } else {
-        printf("Secondary acquired lock!?! %d.. not main == %d .. name '%s'\n", cpuid(), main_cpuid, lock_test.name);        
-        // for (int i = 0; i < 1000000000; i++){}
-        printf("Secondary NOW RELEASE!\n");        
-    }
+    enable_timer_interrupts();
+    sched_yield();
 
     release(&lock_test);
-    // for (int i = 0; i < 800000000; i++){}
-    
+}
+
+void init_sched_main_cpu(void) {
+    init_cpu_info();
+    set_as_main_cpu();
+
+    lock_test.name= "main lock";
     acquire(&lock_test);
 
-    printf("Just one cpu should init sched %d == main == %d?!\n", cpuid(), main_cpuid);
+    start_secondary_cpus();
 
-    
-    struct Proc * proc_shell = create_process(APP_NAME_SHELL, DEF_SHELL_ARGS);
-    switch_proc(proc_shell);
+    printf("Just one cpu should init sched main %d?!\n", cpuid());
 
-    // init_sched_main();
+
+    #ifdef IS_RISC
+    // struct Proc * first_main_proc = create_process("infinite_loop", INF_LOOP_1_ARGS);
+    struct Proc * first_main_proc = create_process(APP_NAME_COORDINATOR, DEF_ARGV);
+    coordinator_PID = first_main_proc->pid;
+    #else
+    // struct Proc * first_main_proc = create_process("infinite_loop", INF_LOOP_1_ARGS);
+    // create_process("infinite_loop", INF_LOOP_2_ARGS);
+
+    struct Proc * first_main_proc = create_process(APP_NAME_SHELL, DEF_SHELL_ARGS);
+    #endif    
+
+    release(&lock_test);
+    enable_timer_interrupts();
+    sched_yield();
+
+    // switch_proc(first_main_proc);
+
 }

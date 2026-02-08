@@ -19,7 +19,7 @@
 
 
 void syscall_try_send_content(FullTrapFrame *tf, uintptr_t pc){
-    struct Proc * sender_proc = get_curr();
+    struct Proc * sender_proc = myproc();
     int receiver_proc_pid = SYSCALL_ARG0(tf);
     uint32_t content_addr = SYSCALL_ARG1(tf);
     int len_content = SYSCALL_ARG2(tf);
@@ -35,7 +35,7 @@ void syscall_try_send_content(FullTrapFrame *tf, uintptr_t pc){
 void syscall_try_recv_content(FullTrapFrame *tf, uintptr_t pc) {
     uint32_t content_addr = SYSCALL_ARG0(tf);
     uint32_t len_content = SYSCALL_ARG1(tf);
-    uint32_t receiver_proc_pid = get_curr()->pid;
+    uint32_t receiver_proc_pid = myproc()->pid;
     
     switch_to_kernel_tables();
 
@@ -43,14 +43,14 @@ void syscall_try_recv_content(FullTrapFrame *tf, uintptr_t pc) {
 
     SET_SYSCALL_RET0(tf, result);
 
-    switch_page_table((uint32_t *) get_curr()->pde_paddr);
+    switch_page_table((uint32_t *) myproc()->pde_paddr);
 }
 
 void syscall_recv_content(FullTrapFrame *tf, uintptr_t pc) {
 
     uint32_t content_addr = SYSCALL_ARG0(tf);
     uint32_t len_content = SYSCALL_ARG1(tf);
-    struct Proc *receiver_proc = get_curr();
+    struct Proc *receiver_proc = myproc();
     uint32_t receiver_proc_pid = receiver_proc->pid;
     
     switch_to_kernel_tables();
@@ -65,6 +65,6 @@ void syscall_recv_content(FullTrapFrame *tf, uintptr_t pc) {
 
     SET_SYSCALL_RET0(tf, result);
 
-    switch_page_table((uint32_t *) get_curr()->pde_paddr);
+    switch_page_table((uint32_t *) myproc()->pde_paddr);
 
 }

@@ -16,7 +16,7 @@ void syscall_console_put(FullTrapFrame *tf, uintptr_t pc) {
 
     uint32_t buf_vaddr = SYSCALL_ARG0(tf);
     uint32_t len = SYSCALL_ARG1(tf);
-    struct Proc *current_proc = get_curr();
+    struct Proc *current_proc = myproc();
 
     switch_to_kernel_tables();
 
@@ -35,7 +35,7 @@ void syscall_console_get(FullTrapFrame *tf, uintptr_t pc) {
 
     uint32_t buf_vaddr = SYSCALL_ARG0(tf);
     uint32_t len = SYSCALL_ARG1(tf);
-    struct Proc *receiver_proc = get_curr();
+    struct Proc *receiver_proc = myproc();
 
     switch_to_kernel_tables();
 
@@ -60,7 +60,7 @@ void syscall_console_get(FullTrapFrame *tf, uintptr_t pc) {
 
 void syscall_console_close(FullTrapFrame *tf, uintptr_t pc){
     uint32_t fd = SYSCALL_ARG0(tf);
-    uint32_t pid = get_curr()->pid;
+    uint32_t pid = myproc()->pid;
 
     int res = console_file_close(pid, fd);
 

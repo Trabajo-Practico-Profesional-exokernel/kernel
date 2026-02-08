@@ -1,2 +1,2 @@
-add-symbol-file user/build/filesystem/app.elf
+add-symbol-file user/build/infinite_loop/app.elf
 b *0x1000000

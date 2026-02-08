@@ -70,7 +70,7 @@ void notify_exited(struct ProcExitStatus* exited_status, int ret_code){
 
 void syscall_exit(FullTrapFrame *tf, uintptr_t pc){
     int exit_code = SYSCALL_ARG0(tf);
-    struct Proc * exited_proc = get_curr();
+    struct Proc * exited_proc = myproc();
     
     debug_printf("Process %u exited with code %d ", exited_proc->pid, exit_code);
 
@@ -100,7 +100,7 @@ void syscall_exit(FullTrapFrame *tf, uintptr_t pc){
 
 void syscall_wait(FullTrapFrame *tf, uintptr_t pc){
     procid_t waited_proc_pid = SYSCALL_ARG0(tf);
-    struct Proc * waiter_proc = get_curr();
+    struct Proc * waiter_proc = myproc();
     debug_printf("Process %d should wait at pc: %x(ret to %x) for %d: ",waiter_proc->pid, pc, pc+4, waited_proc_pid);
 
     struct Proc* waited_proc = get_proc(waited_proc_pid);
@@ -139,7 +139,7 @@ void syscall_wait(FullTrapFrame *tf, uintptr_t pc){
 
 void syscall_kill(FullTrapFrame *tf, uintptr_t pc){
     procid_t killed_proc_pid = SYSCALL_ARG0(tf);
-    struct Proc * killer_proc = get_curr();
+    struct Proc * killer_proc = myproc();
     printf("Process %d should kill at pc: %x(ret to %x) for %d: ",killer_proc->pid, pc, pc+4, killed_proc_pid);
 
     struct Proc* killed_proc = get_proc(killed_proc_pid);
@@ -187,7 +187,7 @@ void syscall_yield(FullTrapFrame *tf, uintptr_t pc){
 
 
 void syscall_getpid(FullTrapFrame *tf, uintptr_t pc){
-    struct Proc * curr_proc = get_curr();
+    struct Proc * curr_proc = myproc();
     int pid = curr_proc->pid;
     SET_SYSCALL_RET0(tf, pid);
 }
@@ -214,7 +214,7 @@ void syscall_virtual_copy(FullTrapFrame *tf, uintptr_t pc){
     switch_to_kernel_tables();
 
     uint32_t src_paddr = get_paddr_for((uint32_t*)get_proc(src_pid)->pde_paddr, src_vaddr);
-    uint32_t dst_paddr = get_paddr_for((uint32_t*)get_curr()->pde_paddr, dst_vaddr);
+    uint32_t dst_paddr = get_paddr_for((uint32_t*)myproc()->pde_paddr, dst_vaddr);
 
     if (src_paddr != 0 && dst_paddr != 0) {
         memcpy((void *)dst_paddr, (void *)src_paddr, len);
@@ -223,7 +223,7 @@ void syscall_virtual_copy(FullTrapFrame *tf, uintptr_t pc){
         SET_SYSCALL_RET0(tf, ERROR); 
     }
 
-    switch_page_table((uint32_t *) get_curr()->pde_paddr);
+    switch_page_table((uint32_t *) myproc()->pde_paddr);
 }
 
 

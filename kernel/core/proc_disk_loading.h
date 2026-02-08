@@ -17,7 +17,6 @@ struct  __attribute__((packed)) BinaryAppEntry {
 _Static_assert(sizeof(struct BinaryAppEntry) == APP_ENTRY_SIZE, "Bad binary app entry struct size!");
 
 
-void init_proc_headers(void);
 
 int get_app_count(void);
 struct BinaryAppEntry* get_app_from_ind(int ind);

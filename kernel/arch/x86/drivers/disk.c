@@ -23,7 +23,7 @@ syscall_disk_read(FullTrapFrame *tf, uintptr_t pc)
 	size_t sz = SYSCALL_ARG2(tf);
 
 	switch_to_kernel_tables();
-	struct Proc *caller = get_curr();
+	struct Proc *caller = myproc();
 	paddr_t buf_paddr = get_paddr_for((uint32_t *) caller->pde_paddr, buf_vaddr);
 
 	if (buf_paddr == 0) {
@@ -59,7 +59,7 @@ syscall_disk_write(FullTrapFrame *tf, uintptr_t pc)
 	size_t sz = SYSCALL_ARG2(tf);
 
 	switch_to_kernel_tables();
-	struct Proc *caller = get_curr();
+	struct Proc *caller = myproc();
 	paddr_t buf_paddr = get_paddr_for((uint32_t *) caller->pde_paddr, buf_vaddr);
 	
 	if (buf_paddr == 0) {

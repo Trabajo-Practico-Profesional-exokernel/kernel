@@ -31,9 +31,29 @@ static void cpu_init(void){
     cpu->cpu_ts = ts;
 }
 
-void notify_inited(void){
-
+void start_secondary_cpus(void){
+    // No lock needed for this set since is just 1 writer and once!
+    started = 1;
 }
+
+extern void secondary_cpu_main();
+
+void secondary_cpu_entry(){
+    
+    // Halt other cpus if not main one to init kernel.
+    // Riscv opensbi already does this, so its in theory for x86. Or just in case.
+    // IN RISCV opensbi does not guarantee that cpuid == 0 is the boot one.
+    if(cpuid() != 0){ 
+        printf("Does dis work? %d \n", cpuid());
+        while(started == 0)
+              ;
+
+        secondary_cpu_main();
+
+        PANIC("Should not reach here secondary cpu!");
+    }
+}
+
 
 void init_arch(void){
     disable_interrupts();

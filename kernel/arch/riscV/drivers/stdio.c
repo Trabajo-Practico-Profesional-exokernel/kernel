@@ -119,7 +119,7 @@ void secondary_entry(void)
     );
 }
 
-void notify_inited(void){
+void start_secondary_cpus(void){
 
     for (int i = 1; i < NCPU; i++) {
         printf("Start %d/%d \n",i, NCPU);

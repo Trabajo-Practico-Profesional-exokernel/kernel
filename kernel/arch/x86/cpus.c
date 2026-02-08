@@ -17,7 +17,7 @@ struct cpu* getcpu(int cpuid){
 }
 
 
-void init_cpus(void){
+void init_cpu_info(void){
 
     // printf("Got cpu id %d \n", get_cpu_id());
     // int id = r_mhartid();

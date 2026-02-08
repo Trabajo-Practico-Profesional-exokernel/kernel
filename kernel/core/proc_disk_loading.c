@@ -6,6 +6,7 @@
 #include "console/debug.h"
 #include "stdlib.h"
 #include "string.h"
+#include "arch/arch_init.h"
 
 
 #define APP_HEADERS_OFFSET 0

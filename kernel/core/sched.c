@@ -15,6 +15,8 @@
 #include "arch/console.h"
 #include "arch/stdio.h"
 #include "arch/clock_checks.h"
+#include "arch/spin_locks.h"
+#include "arch/cpus.h"
 
 extern void sched_finish(struct Proc * last_proc);
 #ifdef IS_TESTING
@@ -24,15 +26,16 @@ extern void on_clock_yield(uint32_t new_curr_slices);
 #define MAX_TIME_SLICES 45
 
 
-uint32_t curr_slices = 0;
+struct spinlock lock_scheduler;
+
+
 int filesystem_PID = -1;
 int coordinator_PID = -1;
 
-struct Proc *curr;
-
-struct Proc * get_curr(){
-    return curr;
+struct Proc * myproc(){
+    return mycpu()->proc;
 }
+
 
 struct Proc procs[PROCS_MAX]; // All process control structures.
 
@@ -56,9 +59,8 @@ struct Proc * get_proc(procid_t proc_pid){
     return &procs[PROCX(proc_pid)];
 }
 
-#define NUM_CPUS 4
 #define TRAMPOLINE_STACK_SIZE 4096 // 1 page essentially?
-uint8_t trampoline_stacks[NUM_CPUS][TRAMPOLINE_STACK_SIZE]; // All process control structures.
+uint8_t trampoline_stacks[NCPU][TRAMPOLINE_STACK_SIZE]; // All process control structures.
 
 
 struct Proc * get_first_free_proc(){
@@ -79,61 +81,65 @@ struct Proc * get_first_free_proc(){
 
 
 void switch_to_idle_proc(void){
-    curr = &idle_proc;
-    curr->status = PROC_RUNNING;
-    curr_slices = MAX_TIME_SLICES;
+    acquire(&lock_scheduler);
+    // printf("Switching to idle proc for cpu %d\n", cpuid());
 
-    // printf("--------------------------- SWITCH IDLE PROC %u \n", curr->pid);
+    struct cpu* cpu = mycpu();
+    int cpunum = cpuid();
+    cpu->proc = &idle_proc;
+    idle_proc.status = PROC_RUNNING;
+    cpu->slices = MAX_TIME_SLICES;
+    
+    release(&lock_scheduler);
+
+
     #ifdef IS_RISC
-    SSCRATCH_NEW_STACK(&trampoline_stacks[curr->cpunum][TRAMPOLINE_STACK_SIZE])
+    SSCRATCH_NEW_STACK(&trampoline_stacks[cpunum][TRAMPOLINE_STACK_SIZE])
     #endif
-    switch_page_table((uint32_t *)curr->pde_paddr);
-    switch_context(curr);
+    switch_page_table((uint32_t *)idle_proc.pde_paddr);
+    switch_context(&idle_proc);
 }
 
 void switch_proc(struct Proc* next) {
-    curr = next;
-    if(curr != &idle_proc){
-        curr_slices = 0; // Reset clock slices for new proc.
+    struct cpu* cpu = mycpu();
+    int cpunum = cpuid();
+    cpu->proc = next;
+
+    if(next != &idle_proc){
+        cpu->slices = 0; // Reset clock slices for new proc.
     }
-    curr->status = PROC_RUNNING;
+    next->status = PROC_RUNNING;
+    next->cpunum = cpunum;
 
-    // debug_printf("[NEXT PROC BEFORE SWITCH_CONTEXT] ");
-    // printProc(next);
-    // debug_printf("\n\n");
-    // debug_printf("[DEBUG] Target EIP: %x | Target ESP: %x\n", curr->tf.eip, curr->tf.esp);
+    release(&lock_scheduler);
 
-    debug_printf("--------------------------- SWITCH TO PROC %u \n", curr->pid);
+    // printf("Switching to proc %d for cpu %d\n", next->pid, cpuid());
 
     #ifdef IS_RISC
-    // Now we are not using kernel stack pointers of process at this point... so no need to switch stack
-    // SWITCH_TO_STACK(&trampoline_stacks[curr->cpunum][TRAMPOLINE_STACK_SIZE])
-    // SSCRATCH_STACK() // Save for next trap to use this stack pointer i.e trampoline
-    // debug_printf("----> trampoline sscratch stack top %p \n", &trampoline_stacks[curr->cpunum][TRAMPOLINE_STACK_SIZE]);
-    // BUUT you have to sscratch it for next trap since its not being restored like the end of trapentry would.
-    
-    SSCRATCH_NEW_STACK(&trampoline_stacks[curr->cpunum][TRAMPOLINE_STACK_SIZE])
+    SSCRATCH_NEW_STACK(&trampoline_stacks[next->cpunum][TRAMPOLINE_STACK_SIZE])
     #endif
     
-    switch_page_table((uint32_t *)curr->pde_paddr);
-
-    switch_context(curr);
+    switch_page_table((uint32_t *)next->pde_paddr);
+    switch_context(next);
 }
 
 // Cambia la firma y el cuerpo:
 void clock_yield(FullTrapFrame *tf, uintptr_t proc_pc) {  // Quitamos uintptr_t proc_pc
 
-    curr_slices += 1;
-    #ifdef IS_TESTING
-    on_clock_yield(curr_slices);
-    #endif
+    struct cpu* curr_cpu = mycpu();
+    curr_cpu->slices += 1;
 
+    struct Proc* curr = curr_cpu->proc;
+    
+    #ifdef IS_TESTING
+    on_clock_yield(curr_cpu->slices);
+    #endif
 
     if(curr){ // Only If there is a valid process running even If blocked.
         check_sleeping_proc();
 
-        if(curr == &idle_proc && curr_slices % MAX_TIME_SLICES == 0){
-            debug_printf("[TICK] idle time slice tot idle: %u tot ticks = %u\n",get_idle_ticks(), get_real_ticks());
+        if(curr == &idle_proc && curr_cpu->slices % MAX_TIME_SLICES == 0){
+            debug_printf("[TICK] idle time slice tot idle: %u tot ticks = %u at cpu: %d \n",get_idle_ticks(), get_real_ticks(), cpuid());
         }
 
         // NOT implemented yet
@@ -142,25 +148,29 @@ void clock_yield(FullTrapFrame *tf, uintptr_t proc_pc) {  // Quitamos uintptr_t 
         //check_ipc_locked_proc();
     }
 
-    if (curr != &idle_proc && curr_slices < MAX_TIME_SLICES){
+    if (curr != &idle_proc && curr_cpu->slices < MAX_TIME_SLICES){
         return;
     }
 
     curr->pc = proc_pc; 
     update_trapframe(curr, tf);
 
-
     sched_yield();
 }
 
 void save_curr_proc_state(FullTrapFrame *tf, uintptr_t proc_pc){
+    struct Proc* curr = myproc();
+    
     curr->pc = proc_pc;
     update_trapframe(curr, tf);    
 }
 
 
 void sched_yield(void) {
-    // #ifdef IS_RISC
+    acquire(&lock_scheduler);
+
+    struct Proc * curr = myproc();
+
     ////
     //// Round robin!
     ////
@@ -214,7 +224,11 @@ void sched_yield(void) {
     }
 
     struct Proc * last_proc = curr;
-    curr = NULL;
-    
+
+    // No current proc for cpu    
+    mycpu()->proc = NULL; 
+
+    release(&lock_scheduler);
+
     sched_finish(last_proc);
 }

@@ -43,7 +43,7 @@ int32_t buffer_write_content(struct Buffer *buf, const uint8_t *src, uint8_t len
 
 uint32_t send_content(uint32_t sender_proc_id, uint32_t receiver_proc_id, uint32_t content_virt_addr, uint32_t len){
     
-    struct Proc *sender_proc = get_curr();
+    struct Proc *sender_proc = myproc();
 
     struct Proc *receiver_proc = get_proc(receiver_proc_id);
 
@@ -65,7 +65,7 @@ uint32_t send_content(uint32_t sender_proc_id, uint32_t receiver_proc_id, uint32
 
 uint32_t recv_content(uint32_t receiver_proc_id, uint32_t content_virt_addr, uint32_t len){
     
-    struct Proc *current_proc = get_curr(); 
+    struct Proc *current_proc = myproc(); 
 
     uint32_t content_phys_addr = get_paddr_for((uint32_t*)current_proc->pde_paddr, content_virt_addr);
 

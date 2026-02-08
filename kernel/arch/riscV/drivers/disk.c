@@ -61,7 +61,7 @@ int read_disk(void *buf, int offset, int length)
 
 extern void sched_yield(void);
 extern void save_curr_proc_state(FullTrapFrame *tf, uintptr_t pc);
-extern struct Proc * get_curr(void);
+extern struct Proc * myproc(void);
 
 int check_valid_size_read(size_t len){
     if (len > SECTOR_SIZE){
@@ -104,7 +104,7 @@ void syscall_disk_read(FullTrapFrame *tf, uintptr_t pc) {
     }
     switch_to_kernel_tables();
     
-    struct Proc * caller = get_curr();
+    struct Proc * caller = myproc();
 
     // Map vaddr to paddr
     paddr_t trg_buffer_paddr = get_paddr_for(
@@ -155,7 +155,7 @@ void syscall_disk_write(FullTrapFrame *tf, uintptr_t pc) {
 
     switch_to_kernel_tables();
 
-    struct Proc * caller = get_curr();
+    struct Proc * caller = myproc();
 
     // Map vaddr to paddr
     paddr_t src_buffer_paddr = get_paddr_for(

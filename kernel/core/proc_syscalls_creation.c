@@ -22,7 +22,7 @@
 void syscall_exec(FullTrapFrame *tf, uintptr_t pc) {
 
     vaddr_t vaddr_argv_pointer = SYSCALL_ARG0(tf);
-    struct Proc* parent_proc = get_curr();
+    struct Proc* parent_proc = myproc();
     switch_to_kernel_tables();
     
     paddr_t argv_pointers[MAXARG]; 
@@ -32,8 +32,7 @@ void syscall_exec(FullTrapFrame *tf, uintptr_t pc) {
 
         if (argc< 0){
             SET_SYSCALL_RET0(tf, argc)
-            save_curr_proc_state(tf, pc + 4);    
-            sched_yield();
+            switch_page_table((uint32_t *) parent_proc->pde_paddr);
             return;
         }
     } else {
@@ -60,15 +59,14 @@ void syscall_exec(FullTrapFrame *tf, uintptr_t pc) {
             (char *) argv_pointers[0]);
 
         SET_SYSCALL_RET0(tf, -1);
-        save_curr_proc_state(tf, pc + 4);    
-        sched_yield();
+        switch_page_table((uint32_t *) parent_proc->pde_paddr);
     }
 
     // It cannot but NULL it throws panic for now but check it anyway for the future!
     if (proc == NULL){
         SET_SYSCALL_RET0(tf, DEF_ERR_CODE)
-        save_curr_proc_state(tf, pc + 4);    
-        sched_yield();
+        
+        switch_page_table((uint32_t *) parent_proc->pde_paddr);
         return;
     }
 
@@ -84,14 +82,7 @@ void syscall_exec(FullTrapFrame *tf, uintptr_t pc) {
     // Do switch to new proc? ... no?
     SET_SYSCALL_RET0(tf, proc->pid)
 
-
-    // When a new process is to be executed, you reduce response time by running it first.
-    // Save parent proc state
-    save_curr_proc_state(tf, pc + 4);
-    parent_proc->status = PROC_RUNNABLE;
-    
-    switch_proc(proc);
-
+    switch_page_table((uint32_t *) parent_proc->pde_paddr);
 }
 
 
@@ -99,7 +90,7 @@ void syscall_exec(FullTrapFrame *tf, uintptr_t pc) {
 
 void syscall_fork(FullTrapFrame *tf, uintptr_t pc) {
 
-    struct Proc* parent_proc = get_curr();
+    struct Proc* parent_proc = myproc();
     switch_to_kernel_tables();
     
     printf("Should fork program at ind %d \n", parent_proc->pid);
