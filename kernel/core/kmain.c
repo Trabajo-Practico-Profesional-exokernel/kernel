@@ -56,7 +56,8 @@ void kmain()
     // Halt other cpus if not main one to init kernel.
     // Riscv opensbi already does this, so its in theory for x86. Or just in case.
     // IN RISCV opensbi does not guarantee that cpuid == 0 is the boot one.
-    if(cpuid() != 0){ 
+   	/* 
+	if(cpuid() != 0){ 
         printf("Does dis work? %d \n", cpuid());
         while(started == 0)
               ;
@@ -65,9 +66,9 @@ void kmain()
 
         PANIC("Should not reach here secondary cpu!");
     }
-
-    disable_debug_print();
+	*/
     init_arch();
+    disable_debug_print();
     reset_std_files();
     clear();
     move_cursor(0);

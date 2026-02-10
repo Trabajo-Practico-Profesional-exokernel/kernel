@@ -31,12 +31,14 @@ int cpunum(void);
 void pic_init(void);
 
 extern paddr_t lapicaddr;
+extern uint8_t ioapicid;
+
 void lapic_init(void);
 void lapic_eoi(void);
 void lapic_startap(uint8_t apicid, uint32_t addr);
 
 void ioapic_init(void);
-
+void ioapic_enable(int irq, int cpunum);
 
 
 #endif /* !*/

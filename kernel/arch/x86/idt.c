@@ -97,7 +97,7 @@ void idt_init(void) {
 
     create_idt_gate(T_IRQ0 + IRQ_TIMER, (uint32_t)isr32); // timer
     create_idt_gate(T_IRQ0 + IRQ_KBD, (uint32_t)isr33); // keyboard
-    create_idt_gate(36, (uint32_t)isr36);
+    create_idt_gate(T_IRQ0 + IRQ_COM1, (uint32_t)isr36); // uart
     create_idt_gate(T_IRQ0 + IRQ_IDE, (uint32_t)isr46); // index: 14+32
 
     // mock proc

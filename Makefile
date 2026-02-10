@@ -33,9 +33,7 @@ ifeq ($(ARCH),x86)
 	LDFLAGS = -T kernel/arch/x86/linker/kernel.ld -melf_i386
 	QEMU    = qemu-system-i386 -kernel build/x86/kernel.elf -m 512 -no-reboot -no-shutdown -nographic -serial mon:stdio \
 	                           -drive file=$(KERNEL_DISK_PATH),index=1,media=disk,format=raw			 \
-							   -smp 1 -d int -d mmu -D qemu.log \
-							   -machine pc \
-							   -chardev socket,id=mon0,host=localhost,port=4444,server,nowait -mon chardev=mon0,mode=control,pretty=on
+							   -smp 2 
 else ifeq ($(ARCH),riscv)
 	CC      = clang
 

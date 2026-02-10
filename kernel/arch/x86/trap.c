@@ -44,12 +44,14 @@ void handle_trap(FullTrapFrame *tf) {
     switch (tf->int_no) {
         case (T_IRQ0 + IRQ_TIMER): // Timer IRQ
             // End of interrupt (solo master, IRQ0)
-            outb(0x20, 0x20);
+			lapic_eoi();
             clock_yield(tf, tf->eip);
             break;
+
         case (T_IRQ0 + IRQ_KBD):
             printf("KA");
             keyboard_handle_interrupt();
+			lapic_eoi();
             break;
 
         case (T_IRQ0 + IRQ_COM1):
@@ -63,11 +65,13 @@ void handle_trap(FullTrapFrame *tf) {
                 }
             }
 
-            pic_acknowledge(4); // Notificar al PIC (IRQ 4)
+            //pic_acknowledge(4); // Notificar al PIC (IRQ 4)
+			lapic_eoi();
             break;
 
         case (T_IRQ0 + IRQ_IDE):
-            pic_acknowledge(4); // Notificar al PIC (IRQ 4)
+            //pic_acknowledge(4); // Notificar al PIC (IRQ 4)
+			lapic_eoi();
             break;
 
         case T_PGFLT: 

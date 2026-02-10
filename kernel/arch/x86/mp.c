@@ -215,7 +215,7 @@ void init_cpus(void)
 			continue;
 		case MPBUS:
 		case MPIOAPIC:
-			printf("SMP: IOAPIC detected\n");
+    		printf("SMP: IOAPIC detected\n");
       		ioapic = (struct mpioapic*)p;
       		ioapicid = ioapic->apicno;
       		p += sizeof(struct mpioapic);
@@ -239,7 +239,7 @@ void init_cpus(void)
 		printf("SMP: configuration not found, SMP disabled\n");
 		return;
 	}
-	//printf("SMP: CPU %d found %d CPU(s)\n", bootcpu->cpu_id, ncpu);
+	printf("SMP: CPU %d found %d CPU(s)\n", bootcpu->cpu_id, ncpu);
 
 	if (mp->imcrp) {
 		// [MP 3.2.6.1] If the hardware implements PIC mode,

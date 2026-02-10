@@ -1,4 +1,6 @@
 #include "arch_inc/x86.h"
+#include "arch_inc/cpu.h"
+#include "../trap.h"
 
 #define SERIAL_COM1_PORT 0x3F8 
 // COM1 base port... definido por separado para claridad por las dudas.
@@ -12,6 +14,10 @@ void serial_init() {
     outb(SERIAL_COM1_PORT + 2, 0xC7); // Enable FIFO, clear with 14-byte threshold
     outb(SERIAL_COM1_PORT + 4, 0x0B); // IRQs enabled, RTS/DSR set
     outb(SERIAL_COM1_PORT + 1, 0x01);
+
+  	inb(SERIAL_COM1_PORT+2);
+	inb(SERIAL_COM1_PORT+0);
+	ioapic_enable(IRQ_COM1, 0);
 }
 int serial_is_transmit_ready() {
     return inb(SERIAL_COM1_PORT + 5) & 0x20;

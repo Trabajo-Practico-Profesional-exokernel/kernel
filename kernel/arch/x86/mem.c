@@ -8,9 +8,10 @@
 
 extern char __free_ram[], __free_ram_end[], __kernel_base[], __kernel_base_end[], __trampoline_end[];
 
+paddr_t next_paddr = (paddr_t) __free_ram;
+
 paddr_t alloc_pages(uint32_t n) {
     // next_paddr === last allocated mem end
-    static paddr_t next_paddr = (paddr_t) __free_ram;
     paddr_t paddr = next_paddr;
     next_paddr += n * PAGE_SIZE;
 
@@ -69,7 +70,7 @@ void mem_init(void){
     direct_map_range(kernel_pde, // Map first 4MB for booting stuff
             (paddr_t) 0x0,
             (paddr_t) (1024 * PAGE_SIZE), 
-			KERNEL_PERMISSIONS_ALL
+            KERNEL_PERMISSIONS_ALL 
     );
 
     // offset_map_range(kernel_pde, // Map first 4MB of kernel to 0xC000000 == VADDR_KERNEL_BASE
@@ -86,10 +87,15 @@ void mem_init(void){
             KERNEL_PERMISSIONS_ALL
     );
 
-
     map_page(kernel_pde, 
             (paddr_t) LAPIC_BASE,
             (paddr_t) LAPIC_BASE,
+            KERNEL_PERMISSIONS_ALL | I86_PTE_NOT_CACHEABLE | I86_PTE_WRITETHRU
+    );
+
+    map_page(kernel_pde, 
+            (paddr_t) IOAPIC_BASE,
+            (paddr_t) IOAPIC_BASE,
             KERNEL_PERMISSIONS_ALL | I86_PTE_NOT_CACHEABLE | I86_PTE_WRITETHRU
     );
 
@@ -109,9 +115,16 @@ uint32_t * init_user_pde_table(void){
             KERNEL_PERMISSIONS_ALL
     );
 
+
     map_page(pd_table, 
             (paddr_t) LAPIC_BASE,
             (paddr_t) LAPIC_BASE,
+            KERNEL_PERMISSIONS_ALL | I86_PTE_NOT_CACHEABLE | I86_PTE_WRITETHRU
+    );
+
+    map_page(pd_table, 
+            (paddr_t) IOAPIC_BASE,
+            (paddr_t) IOAPIC_BASE,
             KERNEL_PERMISSIONS_ALL | I86_PTE_NOT_CACHEABLE | I86_PTE_WRITETHRU
     );
     return pd_table;
@@ -138,7 +151,7 @@ void map_page(uint32_t *pd_table, vaddr_t vaddr, paddr_t paddr, uint32_t permiss
         // The page table is 1024 page table entries , of 32 bits each. i.e 4KB == 1 PAGE 
         paddr_t pt_paddr = alloc_pages(1);
 
-        pd_table[pd_index] = (GET_ENTRY_OFFSET(pt_paddr)) | I86_PTE_PRESENT | I86_PDE_WRITABLE;// | I86_PDE_USER;
+        pd_table[pd_index] = (I86_PDE_FRAME & pt_paddr) | I86_PTE_PRESENT | I86_PDE_WRITABLE | I86_PDE_USER;
         
         // Other options
         // pd_table[pd_index] = I86_PTE_PRESENT | I86_PDE_WRITABLE;
@@ -147,7 +160,7 @@ void map_page(uint32_t *pd_table, vaddr_t vaddr, paddr_t paddr, uint32_t permiss
         // pd_table[pd_index] = I86_PDE_FRAME & pt_paddr;
         // pd_table[pd_index] |= I86_PTE_PRESENT | I86_PDE_WRITABLE;
 
-        debug_printf("Allocated page at 0x%x for ptable pd_index %u (0x%x) == 0x%x \n", pt_paddr, pd_index, pd_index* 4, pd_table[pd_index]);
+        debug_printf("Allocated page at 0x%x for ptable pd_index %u (%x) == %x \n", pt_paddr, pd_index, pd_index* 4, pd_table[pd_index]);
     }
 
     // 
@@ -156,10 +169,9 @@ void map_page(uint32_t *pd_table, vaddr_t vaddr, paddr_t paddr, uint32_t permiss
     
     uint32_t* pt_table = (uint32_t *) (pd_table[pd_index] & I86_PDE_FRAME);
 
-    pt_table[pt_index] = (GET_ENTRY_OFFSET(vaddr)) | I86_PTE_PRESENT | permissions;
+    pt_table[pt_index] = (I86_PTE_FRAME & paddr) | I86_PTE_PRESENT | permissions;
 
-	if (vaddr == 0x7000)
-    	debug_printf("Mapping vaddr %x to paddr %x at pd_index %u (%x), pt_index %u (%x) value: %x, perm: %x\n", vaddr, paddr, pd_index, pd_index*4, pt_index, pt_index*4, pt_table[pt_index], pt_table[pt_index] & 0xfff );
+    // debug_printf("Mapping vaddr %x to paddr %x at pd_index %u (%x), pt_index %u (%x) value: %x \n", vaddr, paddr, pd_index, pd_index*4, pt_index, pt_index*4, pt_table[pt_index]);
 }
 
 

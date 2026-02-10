@@ -40,23 +40,22 @@ void notify_inited(void){
 
 }
 
-void init_arch(void){
+void
+init_arch(void)
+{
     disable_interrupts();
-	lapic_init();
-    serial_init();
     gdt_init();
-	//ioapic_init();
-    
-    //mem_init();
-    //pde_init();
-    // vmmngr_initialize();
     idt_init();
+	lapic_init();
 	pic_init();
+	ioapic_init();
+    serial_init();
     cpu_init();
+	enable_interrupts();
 }
 
 void
-init_arch_others()
+init_arch_others(void)
 {
 	switch_to_kernel_tables(); // redundant; its done in entryother.S
 	lgdt(gdt, sizeof(gdt));
@@ -67,6 +66,7 @@ init_arch_others()
 	xchg(&mycpu()->cpu_status, CPU_STARTED); // tell start_cpus() we're up
 
 	printf("CPU %d now RUNNING\n", mycpu()->cpu_id);
+	while(1);
 	//init_sched();
 }
 

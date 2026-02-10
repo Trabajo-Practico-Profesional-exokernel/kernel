@@ -41,7 +41,7 @@ start_cpus(void)
 	uint8_t *code = (paddr_t) (0x7000);
 	memmove(code, entryother_start, entryother_end - entryother_start);
 
-	for (struct cpu *c = cpus; c->cpu_id < NCPU; c++) {
+	for (struct cpu *c = cpus; c - cpus < NCPU; c++) {
 		if (c == mycpu() || c->cpu_status == CPU_UNUSED)
 			continue;
 
