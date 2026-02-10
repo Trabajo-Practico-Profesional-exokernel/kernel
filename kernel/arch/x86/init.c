@@ -23,7 +23,7 @@ extern idt_gate_t idt[IDT_NUM_ENTRIES];
 
 static void cpu_init(void){
     struct TaskState ts = { .prev_tss = 0, .esp0 = __trap_stack_top, .ss0 = GD_KD };
-	mycpu()->cpu_id = 0;
+	mycpu()->cpu_apicid = lapic_id();
 	mycpu()->cpu_status = CPU_STARTED;
 
     // TODO: hacerlo mas lindo (e investigar)
@@ -58,13 +58,15 @@ void init_arch(void){
 void
 init_arch_others()
 {
-	switch_to_kernel_tables();
+	switch_to_kernel_tables(); // redundant; its done in entryother.S
 	lgdt(gdt, sizeof(gdt));
 	lapic_init();
 	lidt(idt, sizeof(idt));
-	xchg(&(mycpu()->cpu_status), CPU_STARTED); // tell start_cpus() we're up
+	//cpu_init();
+	mycpu()->cpu_status = CPU_STARTED;
+	xchg(&mycpu()->cpu_status, CPU_STARTED); // tell start_cpus() we're up
 
 	printf("CPU %d now RUNNING\n", mycpu()->cpu_id);
-	while (1);
+	//init_sched();
 }
 

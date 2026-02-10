@@ -1,7 +1,6 @@
 #ifndef GDT_H
 #define GDT_H
 
-#include "tss.h"
 
 #define SEGSEL_KERNEL_CS 0x08
 #define SEGSEL_KERNEL_DS 0x10
@@ -70,6 +69,48 @@
 
 */
 
+// System segment type bits 
+// (see: Intel 64 and IA-32 Architectures Software Developer’s Manual; 
+//       Section 3.5 SYSTEM DESCRIPTOR TYPES)
+#define STS_T16A    0x1     // Available 16-bit TSS
+#define STS_LDT     0x2     // Local Descriptor Table
+#define STS_T16B    0x3     // Busy 16-bit TSS
+#define STS_CG16    0x4     // 16-bit Call Gate
+#define STS_TG      0x5     // Task Gate / Coum Transmitions
+#define STS_IG16    0x6     // 16-bit Interrupt Gate
+#define STS_TG16    0x7     // 16-bit Trap Gate
+#define STS_T32A    0x9     // Available 32-bit TSS
+#define STS_T32B    0xB     // Busy 32-bit TSS
+#define STS_CG32    0xC     // 32-bit Call Gate
+#define STS_IG32    0xE     // 32-bit Interrupt Gate
+#define STS_TG32    0xF     // 32-bit Trap Gate
+
+// Application segment type bits 
+// (see: Intel 64 and IA-32 Architectures Software Developer’s Manual; 
+//       Section 3.4.5.1 Code- and Data-Segment Descriptor Types)
+#define STA_X       0x8     // Executable segment
+#define STA_E       0x4     // Expand down (non-executable segments)
+#define STA_C       0x4     // Conforming code segment (executable only)
+#define STA_W       0x2     // Writeable (non-executable segments)
+#define STA_R       0x2     // Readable (executable segments)
+#define STA_A       0x1     // Accessed
+
+#ifdef __ASSEMBLER__
+
+/*
+ * Macros to build GDT entries in assembly.
+ */
+#define SEG_NULL						\
+	.word 0, 0;						\
+	.byte 0, 0, 0, 0
+
+#define SEG(type,base,lim)					\
+	.word (((lim) >> 12) & 0xffff), ((base) & 0xffff);	\
+	.byte (((base) >> 16) & 0xff), (0x90 | (type)),		\
+		(0xC0 | (((lim) >> 28) & 0xf)), (((base) >> 24) & 0xff)
+
+#else	// not __ASSEMBLER_
+
 /*  Segment descriptor as described above */
 struct Segdesc {
     unsigned int limit_15_0             : 16;
@@ -120,32 +161,9 @@ struct Segdesc {
       (unsigned) (base) >> 24 }                                   
 
 
-// System segment type bits 
-// (see: Intel 64 and IA-32 Architectures Software Developer’s Manual; 
-//       Section 3.5 SYSTEM DESCRIPTOR TYPES)
-#define STS_T16A    0x1     // Available 16-bit TSS
-#define STS_LDT     0x2     // Local Descriptor Table
-#define STS_T16B    0x3     // Busy 16-bit TSS
-#define STS_CG16    0x4     // 16-bit Call Gate
-#define STS_TG      0x5     // Task Gate / Coum Transmitions
-#define STS_IG16    0x6     // 16-bit Interrupt Gate
-#define STS_TG16    0x7     // 16-bit Trap Gate
-#define STS_T32A    0x9     // Available 32-bit TSS
-#define STS_T32B    0xB     // Busy 32-bit TSS
-#define STS_CG32    0xC     // 32-bit Call Gate
-#define STS_IG32    0xE     // 32-bit Interrupt Gate
-#define STS_TG32    0xF     // 32-bit Trap Gate
-
-// Application segment type bits 
-// (see: Intel 64 and IA-32 Architectures Software Developer’s Manual; 
-//       Section 3.4.5.1 Code- and Data-Segment Descriptor Types)
-#define STA_X       0x8     // Executable segment
-#define STA_E       0x4     // Expand down (non-executable segments)
-#define STA_C       0x4     // Conforming code segment (executable only)
-#define STA_W       0x2     // Writeable (non-executable segments)
-#define STA_R       0x2     // Readable (executable segments)
-#define STA_A       0x1     // Accessed
 
 void gdt_init();
+
+#endif /* __ASSEMBLER__ */
 
 #endif /* GDT_H */

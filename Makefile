@@ -31,9 +31,11 @@ ifeq ($(ARCH),x86)
 
 	ASFLAGS = -f elf
 	LDFLAGS = -T kernel/arch/x86/linker/kernel.ld -melf_i386
-	QEMU    = qemu-system-i386 -cdrom os.iso -m 64 -no-reboot -no-shutdown -nographic -serial mon:stdio \
+	QEMU    = qemu-system-i386 -kernel build/x86/kernel.elf -m 512 -no-reboot -no-shutdown -nographic -serial mon:stdio \
 	                           -drive file=$(KERNEL_DISK_PATH),index=1,media=disk,format=raw			 \
-							   -smp 2  
+							   -smp 1 -d int -d mmu -D qemu.log \
+							   -machine pc \
+							   -chardev socket,id=mon0,host=localhost,port=4444,server,nowait -mon chardev=mon0,mode=control,pretty=on
 else ifeq ($(ARCH),riscv)
 	CC      = clang
 
@@ -69,6 +71,7 @@ endif
 
 C_SOURCES := $(foreach dir,$(SRC_DIRS),$(wildcard $(dir)/*.c))
 S_SOURCES := $(foreach dir,$(SRC_DIRS),$(wildcard $(dir)/*.s))
+S_SOURCES += $(foreach dir,$(SRC_DIRS),$(wildcard $(dir)/*.S))
 
 
 ifeq ($(TESTING),1)
@@ -82,7 +85,7 @@ ifeq ($(TESTING),1)
 endif
 
 
-SOURCES   := $(C_SOURCES) $(S_SOURCES)
+SOURCES   := $(C_SOURCES) $(S_SOURCES) 
 
 
 
@@ -90,6 +93,7 @@ SOURCES   := $(C_SOURCES) $(S_SOURCES)
 OBJECTS := $(patsubst %,$(BUILD_DIR)/%,$(SOURCES))
 OBJECTS := $(OBJECTS:.c=.o)
 OBJECTS := $(OBJECTS:.s=.o)
+OBJECTS := $(OBJECTS:.S=.o)
 
 USER_APPS_OBJECTS :=
 USER_BUILD_FOLDER := user/build
@@ -125,6 +129,11 @@ endif
 $(BUILD_DIR)/%.o: %.c
 	mkdir -p $(dir $@)
 	echo "Compilando C: $< -> $@"
+	$(CC) $(CFLAGS) -c $< -o $@
+
+$(BUILD_DIR)/%.o: %.S
+	mkdir -p $(dir $@)
+	echo "Ensamblando: $< -> $@"
 	$(CC) $(CFLAGS) -c $< -o $@
 
 $(BUILD_DIR)/%.o: %.s

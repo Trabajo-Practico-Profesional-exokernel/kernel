@@ -1,7 +1,6 @@
 #ifndef INC_MEM_CONSTANTS
 #define INC_MEM_CONSTANTS
 
-#include "types.h"
 
 #define VADDR_KERNEL_BASE 0xC0000000
 #define LAPIC_BASE		  0xFEE00000
@@ -16,7 +15,7 @@
 
 // TODO: make the virtual memory layout
 
-#define KERNBASE        0xF0000000
+#define KERNBASE        0xF0000000 //TODO: remove
 #define KSTACKTOP       KERNBASE
 #define KSTKSIZE        (8*PAGE_SIZE)
 #define KSTKGAP         (8*PAGE_SIZE)
@@ -68,11 +67,14 @@ A page table entry is what represents a page, manages 4KB of physical mem format
     Bits 12-31 (FRAME): Frame address == physical addr
 */
 
+#ifndef __ASSEMBLER__
+#include "types.h"
+
 enum PAGE_PTE_FLAGS {
 	I86_PTE_PRESENT			=	1,  		//0000000000000000000000000000001
 	I86_PTE_WRITABLE		=	2,	    	//0000000000000000000000000000010
 	I86_PTE_USER			=	4,		    //0000000000000000000000000000100
-	I86_PTE_WRITETHOUGH		=	8,		    //0000000000000000000000000001000
+	I86_PTE_WRITETHRU		=	8,		    //0000000000000000000000000001000
 	I86_PTE_NOT_CACHEABLE   =	0x10,		//0000000000000000000000000010000
 	I86_PTE_ACCESSED		=	0x20,		//0000000000000000000000000100000
 	I86_PTE_DIRTY			=	0x40,		//0000000000000000000000001000000
@@ -159,6 +161,7 @@ enum PAGE_PDE_FLAGS {
 
 #define DTABLE_ADDR_SPACE_SIZE 0x100000000
 
+
 typedef uint32_t pt_entry;
 typedef uint32_t pd_entry;
 
@@ -167,8 +170,36 @@ typedef uint32_t pd_entry;
 typedef pt_entry* ptable_t;
 typedef pd_entry* pdirectory_t;
 
+#endif
 
 #define KERNEL_PERMISSIONS_ALL (I86_PTE_WRITABLE) // I86_PTE_PRESENT  no HACE FALTA! Ya se setea en el map_page.
 #define USER_PERMISSIONS_ALL (I86_PTE_WRITABLE | I86_PTE_USER)
+
+// Control Register flags
+#define CR0_PE		0x00000001	// Protection Enable
+#define CR0_MP		0x00000002	// Monitor coProcessor
+#define CR0_EM		0x00000004	// Emulation
+#define CR0_TS		0x00000008	// Task Switched
+#define CR0_ET		0x00000010	// Extension Type
+#define CR0_NE		0x00000020	// Numeric Errror
+#define CR0_WP		0x00010000	// Write Protect
+#define CR0_AM		0x00040000	// Alignment Mask
+#define CR0_NW		0x20000000	// Not Writethrough
+#define CR0_CD		0x40000000	// Cache Disable
+#define CR0_PG		0x80000000	// Paging
+
+#define CR4_PCE		0x00000100	// Performance counter enable
+#define CR4_MCE		0x00000040	// Machine Check Enable
+#define CR4_PSE		0x00000010	// Page Size Extensions
+#define CR4_DE		0x00000008	// Debugging Extensions
+#define CR4_TSD		0x00000004	// Time Stamp Disable
+#define CR4_PVI		0x00000002	// Protected-Mode Virtual Interrupts
+#define CR4_VME		0x00000001	// V86 Mode Extensions
+#define CR4_MCE		0x00000040	// Machine Check Enable
+#define CR4_PSE		0x00000010	// Page Size Extensions
+#define CR4_DE		0x00000008	// Debugging Extensions
+#define CR4_TSD		0x00000004	// Time Stamp Disable
+#define CR4_PVI		0x00000002	// Protected-Mode Virtual Interrupts
+#define CR4_VME		0x00000001	// V86 Mode Extensions
 
 #endif /* !*/

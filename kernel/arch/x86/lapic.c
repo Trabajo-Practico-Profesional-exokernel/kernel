@@ -4,6 +4,8 @@
 // - Chapter 8 & Appendix C of Intel processor manual volume 3.
 
 #include "trap.h"
+#include "arch_inc/x86.h"
+#include "assert.h"
 
 
 // Local APIC registers, divided by 4 for use as uint[] indices (constants tooked from xv6 kernel)
@@ -37,9 +39,8 @@
 #define TCCR    (0x0390/4)   // Timer Current Count
 #define TDCR    (0x03E0/4)   // Timer Divide Configuration
 
-paddr_t lapicaddr;
+volatile paddr_t lapicaddr;
 volatile uint32_t *lapic;
-
 
 static void
 lapicw(int index, int value)
@@ -56,13 +57,31 @@ lapic_init()
 		return;
 	lapic = lapicaddr;
 
+
+	#define IA32_APIC_BASE 0x1B
+	#define APIC_ENABLE   (1ULL << 11)
+
+	uint64_t apic_base = rdmsr(IA32_APIC_BASE);
+	printf("apic enabled: %x\n", (apic_base & APIC_ENABLE) == APIC_ENABLE);
+
+	// habilitar LAPIC si está apagado
+	if ((apic_base & APIC_ENABLE) == 0) {
+		apic_base |= APIC_ENABLE;
+		wrmsr(IA32_APIC_BASE, apic_base);
+	}
+
+	if (0xFEE00000 != apic_base & 0xFFFFF000) 
+		lapic = apic_base & 0xFFFFF000;
+
 	// enable Local APIC and set spurious interrupt 
 	lapicw(SVR, ENABLE | (T_IRQ0 + IRQ_SPURIOUS));
 
+	//assert(lapic[VER] != 0);
 	// The timer repeatedly counts down at bus frequency
 	// from lapic[TICR] and then issues an interrupt.  
 	// For precise timekeeping, calibrate TICR using external time sources.
 	lapicw(TDCR, X1);
+	assert(lapic[TDCR] == X1);
 	lapicw(TIMER, PERIODIC | (T_IRQ0 + IRQ_TIMER));
 	lapicw(TICR, 10000000);
 
@@ -72,6 +91,8 @@ lapic_init()
 
   	// Disable performance counter overflow interrupts
   	// on machines that provide that interrupt entry.
+	//if (lapic[VER] == 0)
+//		PANIC("LAPIC VER = 0");
   	if(((lapic[VER]>>16) & 0xFF) >= 4)
     	lapicw(PCINT, MASKED);
 
@@ -97,7 +118,7 @@ lapic_init()
 
 
 int
-cpunum(void)
+lapic_id(void)
 {
 	if (!lapic)
 		return 0;

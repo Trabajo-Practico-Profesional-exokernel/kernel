@@ -4,6 +4,7 @@
 #include "arch/proc.h"
 #include "constants.h"
 #include "arch/logging.h"
+#include "arch_inc/cpu.h"
 #include "trap.h"
 #include "stdio.h"
 #include "console/debug.h"
@@ -71,10 +72,11 @@ void handle_trap(FullTrapFrame *tf) {
 
         case T_PGFLT: 
             unsigned long addr_fault = get_cr2_value();
+			int cpuid = lapic_id();
             printTrapFull(tf);
             
             // EIP is not actually where it happened! Allegedly its on the stack?
-            PANIC("\n[TRAP] Pagefault at %x fault address: 0x%x \n", tf->eip, addr_fault);
+            PANIC("\n[TRAP] CPU %x: Pagefault at %x fault address: 0x%x \n", cpuid, tf->eip, addr_fault);
             break;
 
         case T_SYSCALL:

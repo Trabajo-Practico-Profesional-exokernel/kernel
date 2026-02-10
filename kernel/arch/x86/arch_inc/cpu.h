@@ -16,10 +16,11 @@ struct cpu {
 	int noff;
 	int intena;
 	
-	volatile uint8_t cpu_status;   // The status of the CPU
+	volatile unsigned cpu_status;   // The status of the CPU
 
 	// struct Proc *cpu_proc;            // The currently-running environment.
-	uint8_t cpu_id;                 // Local APIC ID; index into cpus[] below
+	uint8_t cpu_id;                 // index into cpus[] 
+	uint8_t cpu_apicid;             // Local APIC ID; index into cpus[] below
 	struct TaskState cpu_ts;        // Used by x86 to find stack for interrupt
 };
 

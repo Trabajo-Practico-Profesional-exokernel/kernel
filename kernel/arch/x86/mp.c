@@ -203,7 +203,8 @@ void init_cpus(void)
 				bootcpu = &cpus[ncpu];
 
 			if (ncpu < NCPU) {
-				cpus[ncpu].cpu_id = ncpu;
+				cpus[ncpu].cpu_apicid = proc->apicid;
+				cpus[ncpu].cpu_id = ncpu; 
 				cpus[ncpu].cpu_status = CPU_HALTED;
 				ncpu++;
 			} else {
@@ -238,7 +239,7 @@ void init_cpus(void)
 		printf("SMP: configuration not found, SMP disabled\n");
 		return;
 	}
-	printf("SMP: CPU %d found %d CPU(s)\n", bootcpu->cpu_id, ncpu);
+	//printf("SMP: CPU %d found %d CPU(s)\n", bootcpu->cpu_id, ncpu);
 
 	if (mp->imcrp) {
 		// [MP 3.2.6.1] If the hardware implements PIC mode,
