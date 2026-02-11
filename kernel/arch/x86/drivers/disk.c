@@ -8,17 +8,20 @@
 #include "console/debug.h"
 #include "ide.h"
 
+#define SECTOR_SIZE 512 
 
 extern void sched_yield(void);
 extern void save_curr_proc_state(FullTrapFrame *tf, uintptr_t pc);
 extern struct Proc * get_curr(void);
+
+int user_fs_init_sector; 
 
 
 void 
 syscall_disk_read(FullTrapFrame *tf, uintptr_t pc)
 {
     debug_printf("Got read disk\n");
-	uint32_t sector = SYSCALL_ARG0(tf);
+	uint32_t sector = SYSCALL_ARG0(tf) + user_fs_init_sector;
 	vaddr_t buf_vaddr = SYSCALL_ARG1(tf);
 	size_t sz = SYSCALL_ARG2(tf);
 
@@ -55,7 +58,7 @@ syscall_disk_write(FullTrapFrame *tf, uintptr_t pc)
     debug_printf("Got write disk\n");
 
 	vaddr_t buf_vaddr = SYSCALL_ARG0(tf);
-	uint32_t sector = SYSCALL_ARG1(tf);
+	uint32_t sector = SYSCALL_ARG1(tf) + user_fs_init_sector;
 	size_t sz = SYSCALL_ARG2(tf);
 
 	switch_to_kernel_tables();
@@ -76,6 +79,19 @@ syscall_disk_write(FullTrapFrame *tf, uintptr_t pc)
 	save_curr_proc_state(tf, pc + 4);
 	sched_yield();
 	return;
+}
+
+
+int read_disk(void *buf, int offset, int length)
+{
+    int sector = offset / SECTOR_SIZE;
+	return ide_read((void *)buf, sector, length) == -1 ? length : 0; // raaro
+}
+
+
+void set_user_fs_start(int bytes_offset){
+    user_fs_init_sector = (bytes_offset / SECTOR_SIZE) + 1;
+    // +1 to ensure its aligned/safe with sector size  
 }
 
 void

@@ -1,11 +1,11 @@
 #include "types.h"
 #include "constants.h"
 
-#include "arch/stdio.h"
-#include "drivers/io.h"
-#include "drivers/io/serial_handler.h"
+#include "serial_handler.h"
+#include "keyboard.h"
 
-#include "drivers/io/keyboard.h"
+#include "arch/stdio.h"
+#include "arch_inc/x86.h"
 
 
 /* The I/O ports */

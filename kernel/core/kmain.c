@@ -38,10 +38,11 @@ void sched_finish(struct Proc * last_proc){
 // Riscv would jump straight to this, because entry point does not jump to kmain
 // on secondary cpus
 void secondary_cpu_main(){
-
     // Secondary cpus also need to init trap and clock interrupts.. this init trap
     // Does not leave clock interrupts enabled, so we can control when to enable it on secondary cpus
+	#ifdef IS_RISC 
     init_trap(); 
+   	#endif
    
     init_sched_secondary_cpu();
     for (;;)
@@ -56,7 +57,9 @@ void kmain()
 {
 
     disable_debug_print();
+    mem_init(); // first of all set up paging
     init_arch();
+    disable_debug_print();
     reset_std_files();
     clear();
     move_cursor(0);
@@ -66,10 +69,15 @@ void kmain()
     init_trap();
 
     init_disk(); 
-    //Doing it after init_trap just to be able to see a trap/panic if something fails!
-    // Mem init for riscv == setup pagetable for kernel.
-    mem_init();   
 
+
+
+    #ifdef IS_RISC
+    // Why not ... maybe not full needed at first but works.
+    switch_to_kernel_tables();
+    #endif
+    
+    // main_tests();
 
     init_syscalls_ipc();
     init_syscalls_proc();
@@ -99,3 +107,5 @@ void kmain()
         // __asm__ __volatile__("wfi");
     }
 }
+
+

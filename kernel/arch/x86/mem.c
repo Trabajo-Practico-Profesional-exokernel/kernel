@@ -22,6 +22,9 @@ paddr_t alloc_pages(uint32_t n) {
     return paddr;
 }
 
+int get_free_ram_memory(){
+    return (int)(__free_ram_end - next_paddr);
+}
 
 paddr_t get_paddr_page_ind(uint32_t ind){
     return ((paddr_t) __free_ram) + (PAGE_SIZE * ind);
@@ -70,7 +73,7 @@ void mem_init(void){
     direct_map_range(kernel_pde, // Map first 4MB for booting stuff
             (paddr_t) 0x0,
             (paddr_t) (1024 * PAGE_SIZE), 
-            0
+            KERNEL_PERMISSIONS_ALL 
     );
 
     // offset_map_range(kernel_pde, // Map first 4MB of kernel to 0xC000000 == VADDR_KERNEL_BASE
@@ -87,7 +90,17 @@ void mem_init(void){
             KERNEL_PERMISSIONS_ALL
     );
 
+    map_page(kernel_pde, 
+            (paddr_t) LAPIC_BASE,
+            (paddr_t) LAPIC_BASE,
+            KERNEL_PERMISSIONS_ALL | I86_PTE_NOT_CACHEABLE | I86_PTE_WRITETHRU
+    );
 
+    map_page(kernel_pde, 
+            (paddr_t) IOAPIC_BASE,
+            (paddr_t) IOAPIC_BASE,
+            KERNEL_PERMISSIONS_ALL | I86_PTE_NOT_CACHEABLE | I86_PTE_WRITETHRU
+    );
 
     switch_page_table(kernel_pde);
 
@@ -105,6 +118,18 @@ uint32_t * init_user_pde_table(void){
             KERNEL_PERMISSIONS_ALL
     );
 
+
+    map_page(pd_table, 
+            (paddr_t) LAPIC_BASE,
+            (paddr_t) LAPIC_BASE,
+            KERNEL_PERMISSIONS_ALL | I86_PTE_NOT_CACHEABLE | I86_PTE_WRITETHRU
+    );
+
+    map_page(pd_table, 
+            (paddr_t) IOAPIC_BASE,
+            (paddr_t) IOAPIC_BASE,
+            KERNEL_PERMISSIONS_ALL | I86_PTE_NOT_CACHEABLE | I86_PTE_WRITETHRU
+    );
     return pd_table;
 }
 

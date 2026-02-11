@@ -1,4 +1,4 @@
-ENTRY(loader)                /* the name of the entry label */
+ENTRY(entry)                /* the name of the entry label */
 
 SECTIONS {
     . = 0x00100000;          /* the code should be loaded at 1 MB */
@@ -9,6 +9,7 @@ SECTIONS {
         *(.multiboot)
         *(.text)             /* all text sections from all files */
     }
+    
 
     .rodata ALIGN (0x1000) : /* align at 4 KB */
     {

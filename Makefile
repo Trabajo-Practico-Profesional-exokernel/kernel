@@ -24,16 +24,17 @@ KERNEL_MAIN := kernel/core/kmain.c
 ifeq ($(ARCH),x86)
 	CC      = gcc
 	AS      = nasm
-	CFLAGS  = $(DEF_INCS) -Ikernel/arch/x86 -Ikernel/arch/x86/drivers -m32 -nostdlib -nostdinc -fno-builtin -fno-stack-protector \
-	           -nostartfiles -nodefaultlibs -Wall -Wextra -c -g -DIS_X86 -march=i386 -mtune=i386\
-	                   -DNCPU=$(NCPU)
+	CFLAGS  = $(DEF_INCS) -Imeta/gen -Ikernel/arch/x86 -Ikernel/arch/x86/drivers -m32 -nostdlib -nostdinc -fno-builtin -fno-stack-protector \
+	           -nostartfiles -nodefaultlibs -Wall -Wextra -c -g -DIS_X86 -march=i386 -mtune=i386 	\
+	           -DNCPU=$(NCPU)
 	TEST_DIRS := test/core test/x86
 	TEST_INCS := -Itest/core -Itest/x86
 
 	ASFLAGS = -f elf
-	LDFLAGS = -T kernel/arch/x86/drivers/linker/link.ld -melf_i386
-	QEMU    = qemu-system-i386 -cdrom os.iso  -m 64 -no-reboot -no-shutdown -nographic -serial mon:stdio \
-	                                                        -drive file=$(KERNEL_DISK_PATH),index=1,media=disk,format=raw
+	LDFLAGS = -T kernel/arch/x86/linker/kernel.ld -melf_i386
+	QEMU    = qemu-system-i386 -kernel build/x86/kernel.elf -m 512 -no-reboot -no-shutdown -nographic -serial mon:stdio \
+	                           -drive file=$(KERNEL_DISK_PATH),index=1,media=disk,format=raw			 \
+							   -smp 2 
 else ifeq ($(ARCH),riscv)
 	CC      = clang
 
@@ -57,7 +58,7 @@ else ifeq ($(ARCH),riscv)
 endif
 
 # ============================
-# Directorios fuente
+# Directorios fuente 	
 # ============================
 
 # CAMBIO: Reemplazado 'kernel' por 'kernel/core' en ambas arquitecturas
@@ -69,6 +70,7 @@ endif
 
 C_SOURCES := $(foreach dir,$(SRC_DIRS),$(wildcard $(dir)/*.c))
 S_SOURCES := $(foreach dir,$(SRC_DIRS),$(wildcard $(dir)/*.s))
+S_SOURCES += $(foreach dir,$(SRC_DIRS),$(wildcard $(dir)/*.S))
 
 
 ifeq ($(TESTING),1)
@@ -83,7 +85,7 @@ ifeq ($(TESTING),1)
 endif
 
 
-SOURCES   := $(C_SOURCES) $(S_SOURCES)
+SOURCES   := $(C_SOURCES) $(S_SOURCES) 
 
 
 
@@ -91,6 +93,7 @@ SOURCES   := $(C_SOURCES) $(S_SOURCES)
 OBJECTS := $(patsubst %,$(BUILD_DIR)/%,$(SOURCES))
 OBJECTS := $(OBJECTS:.c=.o)
 OBJECTS := $(OBJECTS:.s=.o)
+OBJECTS := $(OBJECTS:.S=.o)
 
 USER_APPS_OBJECTS :=
 USER_BUILD_FOLDER := user/build
@@ -126,6 +129,11 @@ endif
 $(BUILD_DIR)/%.o: %.c
 	mkdir -p $(dir $@)
 	echo "Compilando C: $< -> $@"
+	$(CC) $(CFLAGS) -c $< -o $@
+
+$(BUILD_DIR)/%.o: %.S
+	mkdir -p $(dir $@)
+	echo "Ensamblando: $< -> $@"
 	$(CC) $(CFLAGS) -c $< -o $@
 
 $(BUILD_DIR)/%.o: %.s
