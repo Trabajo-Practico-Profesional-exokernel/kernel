@@ -57,7 +57,10 @@ void kmain()
 {
 
     disable_debug_print();
+    #ifdef IS_RISC
+    #else
     mem_init(); // first of all set up paging
+    #endif
     init_arch();
     disable_debug_print();
     reset_std_files();
@@ -73,8 +76,7 @@ void kmain()
 
 
     #ifdef IS_RISC
-    // Why not ... maybe not full needed at first but works.
-    switch_to_kernel_tables();
+    mem_init(); // first of all set up paging
     #endif
     
     // main_tests();
