@@ -85,7 +85,23 @@ syscall_disk_write(FullTrapFrame *tf, uintptr_t pc)
 int read_disk(void *buf, int offset, int length)
 {
     int sector = offset / SECTOR_SIZE;
-	return ide_read((void *)buf, sector, length) == -1 ? length : 0; // raaro
+	char tmp[SECTOR_SIZE];	
+	int r = 0;
+
+	while (r < length) {
+		if (ide_read(tmp, sector, SECTOR_SIZE) < 0) 
+			return length;
+
+		if (r == 0) {
+			int local_offset = offset - sector * SECTOR_SIZE;
+			memcpy(buf + r, tmp + local_offset, SECTOR_SIZE - local_offset);
+			r += SECTOR_SIZE - local_offset;
+		} else {
+			memcpy(buf + r, tmp, SECTOR_SIZE);
+			r += SECTOR_SIZE;
+		}
+	}
+	return 0;
 }
 
 

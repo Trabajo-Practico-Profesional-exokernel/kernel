@@ -57,8 +57,7 @@ void kmain()
 {
 
     disable_debug_print();
-    #ifdef IS_RISC
-    #else
+    #ifdef IS_X86
     mem_init(); // first of all set up paging
     #endif
     init_arch();
