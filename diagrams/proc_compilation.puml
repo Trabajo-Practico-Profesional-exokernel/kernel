@@ -1,0 +1,23 @@
+@startuml
+title Makefile Phase — App Discovery & Compilation
+
+participant "User Make" as Make
+participant "Wildcards" as Discover
+participant "Metadata generator" as Meta
+participant "Compiler scripts" as Compile
+participant "build/ folder" as BuildDir
+participant "PY image Builder" as PyBuilder
+
+Make -> Discover : Evaluate directory structure\n(user/apps, user/servers)
+Discover --> Make : META_APP_NAMES (sorted list)
+
+Make -> Meta : generate_apps_meta.sh default_apps <app names>
+Meta --> Make : Created app_names.c
+
+loop For each app in META_APP_NAMES
+    Make -> Compile : compile_file_apps.sh\nor compile_dir_apps.sh
+    Compile -> BuildDir : create build/<app>/app.bin
+end
+Make -> PyBuilder : python3 disk_image_builder.py build/ base.img size
+PyBuilder --> Make : Image complete
+@enduml

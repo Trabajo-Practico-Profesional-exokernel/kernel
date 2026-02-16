@@ -1,0 +1,44 @@
+@startuml
+title Python Phase — Disk Image Construction
+
+actor Make
+participant "PY image Builder" as PyBuilder
+participant "build/ folder" as BuildDir
+participant "output file" as Img
+
+Make -> PyBuilder : python3 disk_image_builder.py build/ base.img size
+
+== Discovery Phase ==
+
+PyBuilder -> PyBuilder : scan app directories build/<app>/
+PyBuilder --> PyBuilder : sort apps alphabetically
+
+loop For each directory in build/
+    PyBuilder -> PyBuilder: check valid app
+end
+
+== Header Creation ==
+
+PyBuilder -> Img : write MAGIC_NUMBER
+PyBuilder -> Img : write app_count
+PyBuilder -> Img : reserve entries table
+
+== Binary Appending ==
+
+loop For each discovered app
+    PyBuilder -> PyBuilder : read app.bin binary content
+    PyBuilder -> Img : append binary
+    PyBuilder --> PyBuilder : record offset + size
+end
+
+== Finalize Entry headers ==
+
+PyBuilder -> Img : seek back to entries table
+loop For each app
+    PyBuilder -> Img : write (name, offset, size)
+end
+
+PyBuilder -> Img : add extra padding, user FS size
+PyBuilder --> Make : Image complete
+
+@enduml
