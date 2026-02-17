@@ -192,6 +192,7 @@ ide_write(void *buf, uint32_t sector, size_t sz)
 
 	// send command
 	outb(P_CMD, nsecs > 1 ? IDE_CMD_WRMUL : IDE_CMD_WR);
+	char trash[SECTOR_SIZE] = { 0 };
 	
 	// fill the buffer	
 	for (uint8_t i = 0; i < nsecs; i++, buf+=SECTOR_SIZE) {
@@ -199,7 +200,6 @@ ide_write(void *buf, uint32_t sector, size_t sz)
 			return -1;
 
 		if (i == nsecs - 1) {
-			char trash[SECTOR_SIZE] = { 0 };
 			outs(P_DATA, buf, sz - i * SECTOR_SIZE);
 			outs(P_DATA, trash, nsecs * SECTOR_SIZE - sz); // must write exactly nsecs
 		} else {
