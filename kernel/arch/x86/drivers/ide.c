@@ -31,7 +31,7 @@
 #define P_STATUS	  0x1F7
 #define P_CMD   	  0x1F7
 
-#define MAX_SECT_OP	  255	 // max batch size operation
+#define MAX_SECT_OP	  256	 // max batch size operation
 
 #define B2SEC(bsz) (((bsz) + SECTOR_SIZE - 1) / SECTOR_SIZE)
 
@@ -115,14 +115,9 @@ outs(uint16_t port, void *buf, uint32_t bsz)
 }
 
 int
-ide_read(void *buf, uint32_t sector, size_t sz)
+ide_read(void *buf, uint32_t sector, size_t nsecs)
 {
-	if (!sz)
-		return 0;
-
-	size_t nsecs = B2SEC(sz);
-
-	if (nsecs > MAX_SECT_OP)
+	if (nsecs < 0 || nsecs >= MAX_SECT_OP)
 		return -1;
 		
 	ide_wait(0, 0);
@@ -143,19 +138,13 @@ ide_read(void *buf, uint32_t sector, size_t sz)
 
 	// send command
 	outb(P_CMD, nsecs > 1 ? IDE_CMD_RDMUL : IDE_CMD_RD);
-	char trash[SECTOR_SIZE] = { 0 };
 	
 	// fill the buffer	
-	for (int i = 0; i < nsecs; i++, buf += SECTOR_SIZE) {
-		if (ide_wait(1, 1) < 0)
+	for (; nsecs > 0; nsecs--, buf+=SECTOR_SIZE) {
+		if (ide_wait(1, 0) < 0)
 			return -1;
-	
-		if (i == nsecs - 1) {
-			ins(P_DATA, buf, sz - i * SECTOR_SIZE);
-			ins(P_DATA, trash, nsecs * SECTOR_SIZE - sz); // must read exactly nsecs
-		} else {
-			ins(P_DATA, buf, SECTOR_SIZE);	
-		}
+
+		insl(P_DATA, buf, SECTOR_SIZE / 4);	
 	}
 	return 0;
 }
@@ -164,14 +153,9 @@ ide_read(void *buf, uint32_t sector, size_t sz)
 //  Always writes sector aligned. The remaining bytes are filled with zeroes.
 //  e.g. sz = 600B  -> sector 1 = buf[0...512];  sector 2 = buf[512...599] + 424 zeroes
 int
-ide_write(void *buf, uint32_t sector, size_t sz)
+ide_write(void *buf, uint32_t sector, size_t nsecs)
 {
-	if (!sz)
-		return 0;
-
-	size_t nsecs = B2SEC(sz);
-
-	if (nsecs > MAX_SECT_OP)
+	if (nsecs < 0 || nsecs >= MAX_SECT_OP)
 		return -1;
 		
 	ide_wait(0, 0);
@@ -192,19 +176,13 @@ ide_write(void *buf, uint32_t sector, size_t sz)
 
 	// send command
 	outb(P_CMD, nsecs > 1 ? IDE_CMD_WRMUL : IDE_CMD_WR);
-	char trash[SECTOR_SIZE] = { 0 };
 	
 	// fill the buffer	
-	for (uint8_t i = 0; i < nsecs; i++, buf+=SECTOR_SIZE) {
-		if (ide_wait(1, 1) < 0)
+	for (; nsecs > 0; nsecs--, buf+=SECTOR_SIZE) {
+		if (ide_wait(1, 0) < 0)
 			return -1;
 
-		if (i == nsecs - 1) {
-			outs(P_DATA, buf, sz - i * SECTOR_SIZE);
-			outs(P_DATA, trash, nsecs * SECTOR_SIZE - sz); // must write exactly nsecs
-		} else {
-			outs(P_DATA, buf, SECTOR_SIZE);	
-		}
+		outsl(P_DATA, buf, SECTOR_SIZE / 4);	
 	}
 	return 0;
 }

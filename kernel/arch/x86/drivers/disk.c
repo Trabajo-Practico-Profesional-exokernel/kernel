@@ -26,6 +26,15 @@ syscall_disk_read(FullTrapFrame *tf, uintptr_t pc)
 	vaddr_t buf_vaddr = SYSCALL_ARG1(tf);
 	size_t sz = SYSCALL_ARG2(tf);
 
+	if (sz % SECTOR_SIZE) {
+        debug_printf("Invalid size to read: %d", sz);
+        SET_SYSCALL_RET0(tf, -1);
+        save_curr_proc_state(tf, pc + 4); // Skip this ins that called syscall
+        sched_yield();
+		return;
+	}
+	size_t nsecs = sz / SECTOR_SIZE;
+
 	switch_to_kernel_tables();
 	struct Proc *caller = myproc();
 	paddr_t buf_paddr = get_paddr_for((uint32_t *) caller->pde_paddr, buf_vaddr);
@@ -45,7 +54,7 @@ syscall_disk_read(FullTrapFrame *tf, uintptr_t pc)
 			caller->pid
 	);
 
-	int r = ide_read((void *)buf_paddr, sector, sz);
+	int r = ide_read((void *)buf_paddr, sector, nsecs);
 	SET_SYSCALL_RET0(tf, !r ? sz : -1);
 	save_curr_proc_state(tf, pc + 4);
 	sched_yield();
@@ -62,6 +71,15 @@ syscall_disk_write(FullTrapFrame *tf, uintptr_t pc)
 	uint32_t sector = SYSCALL_ARG1(tf) + user_fs_init_sector;
 	size_t sz = SYSCALL_ARG2(tf);
 
+	if (sz % SECTOR_SIZE) {
+        debug_printf("Invalid size to read: %d", sz);
+        SET_SYSCALL_RET0(tf, -1);
+        save_curr_proc_state(tf, pc + 4); // Skip this ins that called syscall
+        sched_yield();
+		return;
+	}
+	size_t nsecs = sz / SECTOR_SIZE;
+
 	switch_to_kernel_tables();
 	struct Proc *caller = myproc();
 	paddr_t buf_paddr = get_paddr_for((uint32_t *) caller->pde_paddr, buf_vaddr);
@@ -75,7 +93,7 @@ syscall_disk_write(FullTrapFrame *tf, uintptr_t pc)
 	}
     debug_printf("Got write buffer at %x to disk sector: %u len: %u \n", buf_paddr, sector, sz);
 
-	int w = ide_write((void *)buf_paddr, sector, sz);
+	int w = ide_write((void *)buf_paddr, sector, nsecs);
 	SET_SYSCALL_RET0(tf, !w ? sz : -1);
 	save_curr_proc_state(tf, pc + 4);
 	sched_yield();
@@ -92,7 +110,7 @@ int read_disk(void *buf, int offset, int length)
 	char tmp[SECTOR_SIZE];	
 
     while (remaining > 0) {
-		int err = ide_read((void *)tmp, sector, SECTOR_SIZE);
+		int err = ide_read((void *)tmp, sector, 1);
 
         if (err != 0) {
             return remaining;   // or return -1;
