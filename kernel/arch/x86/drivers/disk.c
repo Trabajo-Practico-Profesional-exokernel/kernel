@@ -9,6 +9,7 @@
 #include "ide.h"
 
 #define SECTOR_SIZE 512 
+#define B2SEC(bsz) (((bsz) + SECTOR_SIZE - 1) / SECTOR_SIZE)
 
 extern void sched_yield(void);
 extern void save_curr_proc_state(FullTrapFrame *tf, uintptr_t pc);
@@ -84,26 +85,35 @@ syscall_disk_write(FullTrapFrame *tf, uintptr_t pc)
 
 int read_disk(void *buf, int offset, int length)
 {
+    int remaining = length;
     int sector = offset / SECTOR_SIZE;
+    int sector_offset = offset % SECTOR_SIZE;
+    char *dst = (char *)buf;
 	char tmp[SECTOR_SIZE];	
-	int r = 0;
 
-	while (r < length) {
-		if (ide_read(tmp, sector, SECTOR_SIZE) < 0) 
-			return length;
+    while (remaining > 0) {
+		int err = ide_read((void *)tmp, sector, SECTOR_SIZE);
 
-		if (r == 0) {
-			int local_offset = offset - sector * SECTOR_SIZE;
-			memcpy(buf + r, tmp + local_offset, SECTOR_SIZE - local_offset);
-			r += SECTOR_SIZE - local_offset;
-		} else {
-			memcpy(buf + r, tmp, SECTOR_SIZE);
-			r += SECTOR_SIZE;
-		}
-	}
-	return 0;
+        if (err != 0) {
+            return remaining;   // or return -1;
+        }
+
+        int to_copy = SECTOR_SIZE - sector_offset;
+        if (to_copy > remaining)
+            to_copy = remaining;
+
+        memcpy(dst,
+               &tmp[sector_offset],
+               to_copy);
+
+        dst += to_copy;
+        remaining -= to_copy;
+
+        sector++;
+        sector_offset = 0;  // only first sector has an offset
+    }
+    return 0;
 }
-
 
 void set_user_fs_start(int bytes_offset){
     user_fs_init_sector = (bytes_offset / SECTOR_SIZE) + 1;

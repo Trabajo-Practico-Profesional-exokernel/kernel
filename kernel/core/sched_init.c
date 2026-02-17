@@ -23,12 +23,12 @@ char *INF_LOOP_2_ARGS[] = { "infinite_loop", "LOG 2", 0 };
 
 char*APP_NAME_SHELL = "shell";
 
-char*APP_NAME_FILESYSTEM = "filesystem";
-char*APP_NAME_COORDINATOR = "coordinator";
-char*APP_NAME_SIMPLE_FRK = "simple_fork";
+char *APP_NAME_FILESYSTEM = "filesystem";
+char *APP_NAME_COORDINATOR = "coordinator";
+char *APP_NAME_SIMPLE_FRK = "simple_fork";
 
-char*APP_NAME_PROC_A = "proc_a";
-char*APP_NAME_PERIODIC_YIELD = "periodic_yield";
+char *APP_NAME_PROC_A = "proc_a";
+char *APP_NAME_PERIODIC_YIELD = "periodic_yield";
 
 
 
@@ -94,7 +94,8 @@ void init_sched_main_cpu(void) {
     // struct Proc * first_main_proc = create_process("infinite_loop", INF_LOOP_1_ARGS);
     // create_process("infinite_loop", INF_LOOP_2_ARGS);
 
-    struct Proc * first_main_proc = create_process(APP_NAME_SHELL, DEF_SHELL_ARGS);
+    struct Proc * first_main_proc = create_process(APP_NAME_COORDINATOR, DEF_ARGV);
+    coordinator_PID = first_main_proc->pid;
     #endif    
 
     release(&lock_test);

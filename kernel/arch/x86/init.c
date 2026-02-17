@@ -50,7 +50,7 @@ init_arch(void)
 	ioapic_init();
     serial_init();
     cpu_init();
-	enable_interrupts();
+//	enable_interrupts();
 }
 
 void

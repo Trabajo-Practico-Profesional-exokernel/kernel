@@ -62,7 +62,6 @@ void init_proc_headers(void){
         printf("App %u: name %s, offset %u, size %u\n", i, _binary_user_apps[i].name, 
             _binary_user_apps[i].start, _binary_user_apps[i].size);
     }
-
 }
 
 int get_app_count(void){
@@ -128,7 +127,7 @@ int load_app_code_to_user_mem(const struct BinaryAppEntry* app_info,
         map_page(pde_table, *curr_vaddr, curr_page_paddr,
                  USER_PERMISSIONS_ALL);
         
-        *curr_vaddr+= PAGE_SIZE;
+        *curr_vaddr += PAGE_SIZE;
     }    
     return 0;
 }
