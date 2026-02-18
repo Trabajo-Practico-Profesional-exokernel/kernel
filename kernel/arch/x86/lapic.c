@@ -136,7 +136,7 @@ lapic_eoi(void)
 
 // Spin for a given number of microseconds.
 // On real hardware would want to tune this dynamically.
-static void
+void
 microdelay(int us)
 {
 }

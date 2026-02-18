@@ -6,6 +6,7 @@
 #include "../trap.h"
 #include "arch/console.h"
 #include "arch_inc/cpu.h"
+#include "arch_inc/x86.h"
 
 /*
 Hardware facts (x86 PS/2)

@@ -42,6 +42,12 @@ unsigned long get_cr2_value(void) {
 //No toca sti (eso se hace en el stub después del iret)
 void handle_trap(FullTrapFrame *tf) {
     switch (tf->int_no) {
+		case (T_IRQ0 + 7):
+		case (T_IRQ0 + IRQ_SPURIOUS):
+			//printf("Spurious interrupt on irq 7\n");
+            //printTrapFull(tf);
+			break;
+
         case (T_IRQ0 + IRQ_TIMER): // Timer IRQ
             // End of interrupt (solo master, IRQ0)
 			lapic_eoi();
@@ -49,7 +55,7 @@ void handle_trap(FullTrapFrame *tf) {
             break;
 
         case (T_IRQ0 + IRQ_KBD):
-            printf("KA");
+            //printf("KA");
             keyboard_handle_interrupt();
 			lapic_eoi();
             break;
@@ -65,7 +71,6 @@ void handle_trap(FullTrapFrame *tf) {
                 }
             }
 
-            //pic_acknowledge(4); // Notificar al PIC (IRQ 4)
 			lapic_eoi();
             break;
 
@@ -74,13 +79,16 @@ void handle_trap(FullTrapFrame *tf) {
 			lapic_eoi();
             break;
 
+		case (T_IRQ0 + IRQ_IDE+1):
+			break;
+
         case T_PGFLT: 
             unsigned long addr_fault = get_cr2_value();
 			int cpuid = lapic_id();
             printTrapFull(tf);
             
             // EIP is not actually where it happened! Allegedly its on the stack?
-            PANIC("\n[TRAP] CPU %x: Pagefault at %x fault address: 0x%x \n", cpuid, tf->eip, addr_fault);
+            PANIC("\n[TRAP] CPU %x: Pagefault at %x fault address: 0x%x \n", cpuid, get_paddr_for(rcr3(), tf->eip), addr_fault);
             break;
 
         case T_SYSCALL:
@@ -90,7 +98,7 @@ void handle_trap(FullTrapFrame *tf) {
 
         default:
             printTrapFull(tf);
-            PANIC("\n[TRAP] Unhandled trap %u \n", tf->int_no);
+            PANIC("\n[TRAP] Unhandled trap %u; eip: %x\n", tf->int_no, get_paddr_for(rcr3(), tf->eip));
             break;
     }
 }

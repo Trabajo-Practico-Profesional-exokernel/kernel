@@ -3,6 +3,7 @@
 
 #include "arch_inc/mem_constants.h"
 #include "arch_inc/trap_constants.h"
+#include "arch_inc/x86.h"
  
 #include "arch/cpus.h"
 #include "assert.h"

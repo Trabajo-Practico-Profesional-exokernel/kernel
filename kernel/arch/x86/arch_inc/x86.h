@@ -202,6 +202,16 @@ outsb(uint16_t port, const void *addr, uint32_t cnt)
 // IDT (Interrupt Descriptor Table)
 // -------------------------------
 
+static inline uint32_t rcr3(void)
+{
+    uint32_t val;
+    __asm__ volatile ("mov %%cr3, %0"
+                      : "=r"(val)
+                      :
+                      : );
+    return val;
+}
+
 
 // Carga la IDT en el registro IDTR
 static inline void

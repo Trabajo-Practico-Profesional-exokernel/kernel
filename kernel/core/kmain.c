@@ -23,9 +23,8 @@ void sched_finish(struct Proc * last_proc){
         switch_to_idle_proc();        
     }
     printf("[INFO] tot idle ticks: %u tot ticks = %u\n",get_idle_ticks(), get_real_ticks());
-    enable_interrupts();
     enable_timer_interrupts();
-
+    enable_interrupts();
     switch_to_idle_proc();
 }
 

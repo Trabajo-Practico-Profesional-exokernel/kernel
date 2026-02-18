@@ -11,13 +11,16 @@ void serial_init() {
     outb(SERIAL_COM1_PORT + 0, 0x03); // Set divisor to 3 (38400 baud)
     outb(SERIAL_COM1_PORT + 1, 0x00);
     outb(SERIAL_COM1_PORT + 3, 0x03); // 8 bits, no parity, one stop bit
-    outb(SERIAL_COM1_PORT + 2, 0xC7); // Enable FIFO, clear with 14-byte threshold
-    outb(SERIAL_COM1_PORT + 4, 0x0B); // IRQs enabled, RTS/DSR set
+    //outb(SERIAL_COM1_PORT + 2, 0xC7); // Enable FIFO, clear with 14-byte threshold
+    outb(SERIAL_COM1_PORT + 4, 0x00); // IRQs enabled, RTS/DSR set
     outb(SERIAL_COM1_PORT + 1, 0x01);
 
   	inb(SERIAL_COM1_PORT+2);
 	inb(SERIAL_COM1_PORT+0);
 	ioapic_enable(IRQ_COM1, 0);
+	
+	for (char *p="PASTAFROLA...\n"; *p; p++)
+		serial_putchar(*p);
 }
 int serial_is_transmit_ready() {
     return inb(SERIAL_COM1_PORT + 5) & 0x20;
@@ -28,5 +31,7 @@ void wait_serial_init(){
 }
 
 void serial_putchar(char c) {
+  	for(char i = 0; i < 128 && !(inb(SERIAL_COM1_PORT+5) & 0x20); i++)
+    	microdelay(10);
     outb(SERIAL_COM1_PORT, c);
 }

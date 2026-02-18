@@ -54,14 +54,16 @@ void init_proc_headers(void){
         PANIC("Failed to read app headers from disk remaining %d not read!", remaining);
     }
 
-    set_user_fs_start(curr_offset + headers_size);
-
+	size_t total_bin_sz = 0;
     _binary_app_count = headers_info.app_count;
     printf("App headers loaded to memory at %x\n", _binary_user_apps);
     for(uint32_t i=0; i<_binary_app_count; i++){
         printf("App %u: name %s, offset %u, size %u\n", i, _binary_user_apps[i].name, 
             _binary_user_apps[i].start, _binary_user_apps[i].size);
+		total_bin_sz += _binary_user_apps[i].size;
+		
     }
+    set_user_fs_start(curr_offset + headers_size + total_bin_sz);
 }
 
 int get_app_count(void){

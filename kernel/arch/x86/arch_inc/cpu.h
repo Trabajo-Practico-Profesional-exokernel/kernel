@@ -37,6 +37,7 @@ extern uint8_t ioapicid;
 void lapic_init(void);
 void lapic_eoi(void);
 void lapic_startap(uint8_t apicid, uint32_t addr);
+void microdelay(int us);
 
 void ioapic_init(void);
 void ioapic_enable(int irq, int cpunum);
