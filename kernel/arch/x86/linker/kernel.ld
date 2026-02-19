@@ -39,6 +39,7 @@ SECTIONS {
 
 
     /* Space for idle proc in case nothing to be executed but still there is a non free process */
+    . = ALIGN(4096); /* align to page size */
     __idle_proc_start = .;
 
     .idle_proc : ALIGN(4096) {

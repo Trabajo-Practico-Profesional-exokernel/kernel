@@ -50,7 +50,8 @@ else ifeq ($(ARCH),riscv)
 	LDFLAGS = -T kernel/arch/riscV/linker/link.ld \
 	  -Wl,--defsym=NCPU=$(NCPU) \
 	  -Wl,--defsym=CPU_STACK_PAGES=$(CPU_STACK_PAGES) \
-	  -Wl,--defsym=CPU_TRAP_STACK_PAGES=$(CPU_TRAP_STACK_PAGES)
+	  -Wl,--defsym=CPU_TRAP_STACK_PAGES=$(CPU_TRAP_STACK_PAGES) \
+	  -fuse-ld=lld
 
 	QEMU    = qemu-system-riscv32 -machine virt -bios default -nographic -serial mon:stdio --no-reboot -kernel $(BUILD_DIR)/kernel.elf \
 	                                                        -smp $(NCPU) -drive id=drive0,file=$(KERNEL_DISK_PATH),format=raw,if=none \

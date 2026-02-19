@@ -15,8 +15,6 @@
 
 // When nothing more to be executed on shell!
 void sched_finish(struct Proc * last_proc){
-
-    
     if(last_proc){
         // Just printf
         // printf("++++++++ Current is blocked and no other ready proc.. waiting..\n"); 
