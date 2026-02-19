@@ -55,11 +55,6 @@ void enable_paging(void) {
 }
 
 
-int get_free_ram_memory(){
-    return (int)(__free_ram_end - next_paddr);
-}
-
-
 pd_entry* kernel_pde; // Physical address for Page Directory table
 
 // NO HACE FALTA!
