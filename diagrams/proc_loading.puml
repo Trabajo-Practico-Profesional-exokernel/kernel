@@ -1,0 +1,42 @@
+@startuml
+title Process Creation — High Level Flow
+
+actor "exec syscall" as Scheduler
+participant "Process Manager" as PM
+participant "ARCH layer" as MMU
+participant "Disk Driver Layer" as Disk
+
+Scheduler -> PM : load_create_process_user(proc, app_info, argv)
+
+== Page Table Setup ==
+
+PM -> MMU : init_user_pde_table()
+MMU --> PM : pde_paddr
+
+PM -> MMU : map_page(pde, self-map)
+PM -> MMU : direct_map_range(kernel code)
+
+== Load User Binary ==
+
+PM -> Disk : load_app_code_to_user_mem()
+Disk --> PM : pages filled
+PM -> MMU : map_page() per page
+
+== User Stack & Heap Init ==
+
+PM -> MMU : alloc_pages(USER_STACK)
+PM -> MMU : offset_map_range(user stack)
+
+== Argument Passing ==
+
+PM -> PM : set_init_parameters_for_proc()
+
+== Trapframe Setup ==
+
+PM -> MMU : init_trapframe()
+PM -> MMU : SET_SYSCALL_RET0(argc)
+PM -> MMU : SET_SYSCALL_RET1(argv_ptr)
+
+PM --> Scheduler : PROC_RUNNABLE
+
+@enduml

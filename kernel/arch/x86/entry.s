@@ -1,4 +1,4 @@
-global loader                   ; the entry symbol for ELF
+global entry ; the entry symbol for ELF
 extern kmain
 extern __stack_top
 
@@ -15,7 +15,7 @@ align 4                         ; the code must be 4 byte aligned
 
 
 section .text:                  ; start of the text (code) section
-loader:                         ; the loader label (defined as entry point in linker script)
+entry:                         ; the entry label (defined as entry point in linker script)
     mov esp, __stack_top
     call kmain
 

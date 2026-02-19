@@ -64,6 +64,7 @@ void mem_init(void){
 
     map_page(page_table, VIRTIO_BLK_PADDR, VIRTIO_BLK_PADDR, PAGE_R | PAGE_W); 
 
+    switch_to_kernel_tables();
 }
 
 uint32_t * init_user_pde_table(void) {

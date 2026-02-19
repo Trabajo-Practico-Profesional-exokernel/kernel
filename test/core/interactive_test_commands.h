@@ -7,6 +7,8 @@ void wait_cpus_started(void);
 void add_start_cpu(void);
 
 
+
+void load_processes_headers(void);
 void start_shell(void);
 void run_tests(void);
 

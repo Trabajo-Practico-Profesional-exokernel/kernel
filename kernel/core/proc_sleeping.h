@@ -10,4 +10,6 @@ void syscall_uptime(FullTrapFrame *tf, uintptr_t pc);
 void reset_proc_uptime(struct Proc*  proc);
 void init_proc_uptime(struct Proc*  proc);
 
+int count_processes(void);
+
 #endif

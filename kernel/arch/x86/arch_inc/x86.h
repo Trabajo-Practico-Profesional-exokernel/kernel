@@ -2,7 +2,6 @@
 #define X86_H
 
 #include "types.h"
-#include "../gdt.h"
 
 // -------------------------------
 // Control de interrupciones
@@ -25,7 +24,7 @@ static inline void hlt(void) {
 }
 
 static inline void
-lgdt(struct Segdesc *p, uint32_t size)
+lgdt(void *p, uint32_t size)
 {
   volatile uint16_t pd[3];
 
@@ -58,6 +57,40 @@ static inline void lseg(void) {
     );
 }
 
+static inline uint32_t
+xchg(volatile uint32_t *addr, uint32_t newval)
+{
+  uint32_t result;
+
+  // The + in "+m" denotes a read-modify-write operand.
+  asm volatile("lock; xchgl %0, %1" :
+               "+m" (*addr), "=a" (result) :
+               "1" (newval) :
+               "cc");
+  return result;
+}
+
+static inline uint64_t rdmsr(uint32_t msr)
+{
+    uint32_t lo, hi;
+    __asm__ volatile (
+        "rdmsr"
+        : "=a"(lo), "=d"(hi)
+        : "c"(msr)
+    );
+    return ((uint64_t)hi << 32) | lo;
+}
+
+static inline void wrmsr(uint32_t msr, uint64_t val)
+{
+    uint32_t lo = (uint32_t)val;
+    uint32_t hi = (uint32_t)(val >> 32);
+    __asm__ volatile (
+        "wrmsr"
+        :
+        : "c"(msr), "a"(lo), "d"(hi)
+    );
+}
 
 // -------------------------------
 // E/S de puertos (in/out)
@@ -169,10 +202,28 @@ outsb(uint16_t port, const void *addr, uint32_t cnt)
 // IDT (Interrupt Descriptor Table)
 // -------------------------------
 
+static inline uint32_t rcr3(void)
+{
+    uint32_t val;
+    __asm__ volatile ("mov %%cr3, %0"
+                      : "=r"(val)
+                      :
+                      : );
+    return val;
+}
+
 
 // Carga la IDT en el registro IDTR
-static inline void lidt(struct IDTPointer* idt_ptr) {
-    __asm__ __volatile__("lidtl (%0)" : : "r"(idt_ptr));
+static inline void
+lidt(void *p, uint32_t size)
+{
+  volatile uint16_t pd[3];
+
+  pd[0] = size-1;
+  pd[1] = (uint32_t)p;
+  pd[2] = (uint32_t)p >> 16;
+
+  asm volatile("lidt (%0)" : : "r" (pd));
 }
 
 // -------------------------------

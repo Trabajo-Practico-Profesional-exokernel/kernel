@@ -300,7 +300,7 @@ vaddr_t get_vaddr_user_heap_page(size_t ind){
 ///
 void syscall_sbrk(FullTrapFrame *tf, uintptr_t pc) {
     int page_count = SYSCALL_ARG0(tf);
-    struct Proc* caller_proc = get_curr();
+    struct Proc* caller_proc = myproc();
 
     debug_printf("Should alloc page count %d for %u\n", page_count, caller_proc->pid);
     // Switch to kernel pages to be able to alloc pages

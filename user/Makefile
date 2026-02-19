@@ -7,6 +7,14 @@ SERVERS_FOLDER := $(USER_FOLDER)/servers
 BUILD_FOLDER   := $(USER_FOLDER)/build
 APP_OUT        := $(BUILD_FOLDER)
 
+TRG_DISK ?= $(ROOT)/.kernel_disk/disk.img
+
+
+# 20MB
+TRG_DISK_SIZE = $(shell echo $$((20 * 1024 * 1024)))
+
+TRG_BASE_DISK ?= $(ROOT)/.kernel_disk/disk_base.img
+
 # ----------------------------
 # App discovery
 # ----------------------------
@@ -35,7 +43,10 @@ META_APP_NAMES := \
 	$(GENERAL_C_NAMES) \
 	$(GENERAL_DIR_NAMES)
 
-META_APP_NAMES += shell tests_shell
+
+MAIN_APP_NAMES := shell
+
+META_APP_NAMES += $(MAIN_APP_NAMES)
 META_APP_NAMES := $(sort $(META_APP_NAMES))
 
 DEF_EXECUTABLES := touch rm stat cat
@@ -69,8 +80,10 @@ ALL_BINS := \
 
 all: $(APP_OUT) metadata $(ALL_BINS)
 	@echo "Building main apps (shell)"
-	@./compile_dir_apps.sh $(ARCH) -add_meta shell tests_shell
+	@./compile_dir_apps.sh $(ARCH) -add_meta $(MAIN_APP_NAMES)
 
+	@python3 disk_image_builder.py $(BUILD_FOLDER) $(TRG_BASE_DISK) $(TRG_DISK_SIZE)
+	cp $(TRG_BASE_DISK) $(TRG_DISK) 
 apps:
 	@echo $(META_APP_NAMES)
 

@@ -12,23 +12,17 @@
 #include "stdlib.h"
 
 #include "stdio.h"
-#include "meta/apps_info.h" // Include auto generated app_info and indexs for apps  
 #include "console/debug.h"
 #include "arch/ipc.h"
 #include "console_files.h"
 
-extern struct AppBinaryInfo _binary_apps[];
+//extern struct AppBinaryInfo _binary_apps[];
+#include "proc_disk_loading.h"
 
 void syscall_exec(FullTrapFrame *tf, uintptr_t pc) {
 
-    int prog_ind = SYSCALL_ARG0(tf);
-    if (prog_ind < 0 || prog_ind>= APP_COUNT){
-        debug_printf("Invalid exec call ind %d \n", prog_ind);
-        SET_SYSCALL_RET0(tf, DEF_ERR_CODE)        
-        return;
-    }
-    vaddr_t vaddr_argv_pointer = SYSCALL_ARG1(tf);
-    struct Proc* parent_proc = get_curr();
+    vaddr_t vaddr_argv_pointer = SYSCALL_ARG0(tf);
+    struct Proc* parent_proc = myproc();
     switch_to_kernel_tables();
     
     paddr_t argv_pointers[MAXARG]; 
@@ -38,49 +32,57 @@ void syscall_exec(FullTrapFrame *tf, uintptr_t pc) {
 
         if (argc< 0){
             SET_SYSCALL_RET0(tf, argc)
-            save_curr_proc_state(tf, pc + 4);    
-            sched_yield();
+            switch_page_table((uint32_t *) parent_proc->pde_paddr);
             return;
         }
     } else {
         debug_printf("NO proc params exec\n");
         argv_pointers[0] = 0;
     }
-
-    debug_printf("Should run program at ind %d \n", prog_ind);
-
-    //int set_init_parameters_for_proc(struct Proc * proc, char ** argv, paddr_t* sp_out);
     
+    
+    printf("EXEC should run program with name '%s' \n", (char *) argv_pointers[0]);
+
+
     struct Proc* proc= get_first_free_proc();
-    strcpy(proc->proc_name, "unknown");
+
+
+    int prog_ind = get_app_from_name((char *) argv_pointers[0]);
+    struct BinaryAppEntry* app = NULL;
+
+    if(prog_ind >= 0){
+        app = get_app_from_ind(prog_ind);
+    }
+
+    if(app == NULL){
+        printf("Invalid app ind %d to exec process from '%s'!\n", prog_ind,
+            (char *) argv_pointers[0]);
+
+        SET_SYSCALL_RET0(tf, -1);
+        switch_page_table((uint32_t *) parent_proc->pde_paddr);
+    }
 
     // It cannot but NULL it throws panic for now but check it anyway for the future!
     if (proc == NULL){
         SET_SYSCALL_RET0(tf, DEF_ERR_CODE)
-        save_curr_proc_state(tf, pc + 4);    
-        sched_yield();
+        
+        switch_page_table((uint32_t *) parent_proc->pde_paddr);
         return;
     }
 
-    debug_printf("Should run free proc %p binary: %p \n", proc, &_binary_apps[prog_ind]);
+    printf("Should run free proc %p binary: %s at off: %u \n", proc, app->name, app->start);
 
-    load_create_process_user(proc, &_binary_apps[prog_ind], (char **) &argv_pointers[0]);
+    load_create_process_user(proc, app, (char **) &argv_pointers[0]);
 
-    debug_printf("Loaded proc\n");
+    debug_printf("Loaded proc '%s'\n", app->name);
     reset_exit_status(get_exit_status(proc->pid));
     init_proc_std_files(proc->pid);
+    strcpy(proc->proc_name, app->name);
 
     // Do switch to new proc? ... no?
     SET_SYSCALL_RET0(tf, proc->pid)
 
-
-    // When a new process is to be executed, you reduce response time by running it first.
-    // Save parent proc state
-    save_curr_proc_state(tf, pc + 4);
-    parent_proc->status = PROC_RUNNABLE;
-    
-    switch_proc(proc);
-
+    switch_page_table((uint32_t *) parent_proc->pde_paddr);
 }
 
 
@@ -88,7 +90,7 @@ void syscall_exec(FullTrapFrame *tf, uintptr_t pc) {
 
 void syscall_fork(FullTrapFrame *tf, uintptr_t pc) {
 
-    struct Proc* parent_proc = get_curr();
+    struct Proc* parent_proc = myproc();
     switch_to_kernel_tables();
     
     printf("Should fork program at ind %d \n", parent_proc->pid);

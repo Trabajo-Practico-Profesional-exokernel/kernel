@@ -1,9 +1,12 @@
 #include "types.h"
-#include "../../idt.h"
+#include "../idt.h"
 #include "vnode.h"
 #include "constants.h"
-#include "../../interrupt.h"
+#include "../interrupt.h"
+#include "../trap.h"
 #include "arch/console.h"
+#include "arch_inc/cpu.h"
+#include "arch_inc/x86.h"
 
 /*
 Hardware facts (x86 PS/2)
@@ -256,6 +259,7 @@ uint32_t kbd_init(void)
     kbd_vnode.v_op = &kbd_vnodeops;
     kbd_vnode.v_data = 0;
 
+	ioapic_enable(IRQ_KBD, 0);
     return 0;
 }
 

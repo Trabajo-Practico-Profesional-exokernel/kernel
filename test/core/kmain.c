@@ -13,6 +13,7 @@
 
 #include "interactive_test_interpreter.h"
 #include "interactive_test_commands.h"
+#include "proc_fs.h"
 
 //
 // void *mboot, unsigned int magic_number
@@ -29,6 +30,10 @@ void sched_finish(struct Proc * last_proc){
 // Riscv would jump straight to this, because entry point does not jump to kmain
 // on secondary cpus
 void secondary_cpu_main(){
+    init_trap(); 
+
+    wait_start_cpus();
+    
     add_start_cpu();
     for (;;)
     {
@@ -39,21 +44,7 @@ void secondary_cpu_main(){
 void kmain()
 {
 
-    init_cpus(); // First init cpus, here we set the cpuid
-
-    #ifdef IS_RISC
-    #else
-    // Halt other cpus if not main one to init kernel.
-    // Riscv opensbi already does this, so its in theory for x86. Or just in case.
-    // IN RISCV opensbi does not guarantee that cpuid == 0 is the boot one.
-    if(cpuid() != 0){ 
-        wait_start_cpus();
-                
-        secondary_cpu_main();
-
-        PANIC("Should not reach here secondary cpu!");
-    }
-    #endif
+    init_cpu_info(); // First init cpus, here we set the cpuid
 
     disable_debug_print();
     init_arch();
@@ -70,17 +61,12 @@ void kmain()
     printf("==>TEST INIT MEM!\n");
     mem_init();
 
-    #ifdef IS_RISC
-    // Why not ... maybe not full needed at first but works.
-    switch_to_kernel_tables();
-    #endif
-    
-
     printf("==>TEST INIT SYSCALLS!\n");
     // init_files();
     init_syscalls_ipc();
     init_syscalls_proc();
-    init_user_pages_alloc();
+    init_proc_mem_management();
+    init_system_info();
 
     #ifdef IS_RISC
     #else

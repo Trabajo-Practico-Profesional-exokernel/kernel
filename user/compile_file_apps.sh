@@ -34,7 +34,7 @@ if [[ "$ARCH" == "x86" ]]; then
     OBJFLAGS="-Oelf32-i386 -B i386"
 else
     ARCH_FOLDER=$ROOT/kernel/arch/riscV
-    CFLAGS="-std=c11 -O2 -g3 -Wall -Wextra --target=riscv32-unknown-elf -fno-stack-protector -ffreestanding -nostdlib -fno-pic -fno-pie -mcmodel=medany"
+    CFLAGS="-std=c11 -O2 -g3 -Wall -Wextra --target=riscv32-unknown-elf -fno-stack-protector -ffreestanding -nostdlib -fno-pic -fno-pie -mcmodel=medany -fuse-ld=lld"
     OBJFLAGS="-Oelf32-littleriscv -B riscv"
 fi
 

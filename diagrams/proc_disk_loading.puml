@@ -1,0 +1,49 @@
+@startuml
+title Process Initialization - Loading App Headers from Disk
+
+actor Kernel
+
+participant "Kernel" as Kernel
+participant "Kernel ARCH Layer" as ReadDisk
+participant "Physical Memory Allocator" as Alloc
+
+== Read App Header Metadata ==
+activate Kernel
+Kernel -> Kernel : init_proc_headers()
+activate Kernel
+
+Kernel -> ReadDisk : read_disk(&headers_info, offset=0, len=8)
+ReadDisk --> Kernel : headers_info
+
+== Validate Magic and Allocate Memory ==
+Kernel->Kernel : calculate_pages_needed()
+
+Kernel -> Alloc : alloc_pages(pages_for_headers)
+Alloc --> Kernel : _binary_user_apps (paddr)
+
+== Read Full Headers Table ==
+
+Kernel -> ReadDisk : read_disk(_binary_user_apps, offset=8, headers_size)
+
+
+ReadDisk --> Kernel : headers loaded
+
+Kernel -> Kernel : initialize_metadata();
+Kernel --> Kernel :
+deactivate Kernel
+
+== Proc code loading ==
+
+loop While remaining > 0
+
+    Kernel -> Alloc : user_alloc_pages(1)
+    Alloc --> Kernel : physical_page
+
+    Kernel -> ReadDisk : read_disk(paddr, offset, size)
+    ReadDisk --> Kernel : binary data copied
+
+    Kernel -> ReadDisk : map_page(pde, vaddr, paddr,\nUSER_PERMISSIONS)
+    Kernel --> Kernel : vaddr += PAGE_SIZE
+end
+
+@enduml

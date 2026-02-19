@@ -11,9 +11,9 @@ void free_process_pde(struct Proc* proc);
 void free_process(struct Proc * proc);
 
 
-#include "meta/apps_info.h" // Includes auto generated app_info and indexs for apps  
+#include "proc_disk_loading.h"
 
-void load_create_process_user(struct Proc * proc, const struct AppBinaryInfo * app_info, char ** argv);
+void load_create_process_user(struct Proc * proc, const struct BinaryAppEntry * app_info, char ** argv);
 void load_create_process_kernel(struct Proc * proc, uint32_t proc_entry);
 
 int load_create_forked(struct Proc* parent, struct Proc* child);

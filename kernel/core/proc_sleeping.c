@@ -3,9 +3,11 @@
 #include "arch/clock_checks.h"
 #include "console/debug.h"
 #include "proc_fs.h"
+#include "arch/cpus.h"
+
 
 volatile uint64_t ticks = 0;
-
+int count_procs = 0;
 
 struct ProcTimingInfo {
     uint32_t uptime_ticks;
@@ -23,10 +25,16 @@ void reset_proc_uptime(struct Proc*  proc){
     info->uptime_ticks = 0;
     info->locked_until_ticks = 0;
     info->free = true;
+    count_procs-=1;
 }
 
 void init_proc_uptime(struct Proc*  proc){
     procs_timing_info[proc->pid].free = false;
+    count_procs+=1;
+}
+
+int count_processes(void){
+    return count_procs;
 }
 
 uint32_t get_total_active_ticks(void) {
@@ -41,16 +49,21 @@ uint32_t get_total_active_ticks(void) {
 
 
 void check_sleeping_proc(void){
-    ticks+=1; // Only on this core! should increment/check on main core!
-    int real_ticks = get_total_active_ticks();
-
-    update_system_info(ticks, real_ticks);
-    struct Proc * curr_proc = get_curr(); 
+    struct Proc * curr_proc = myproc(); 
 
     if(curr_proc->status == PROC_RUNNING){
         struct ProcTimingInfo* curr_info = &procs_timing_info[curr_proc->pid];
         curr_info->uptime_ticks+=1;
     }
+
+    if(!is_main_cpu()){
+        return; // Only main cpu should check sleeping procs and update ticks! 
+    }
+
+    ticks+=1; // Only on this core! should increment/check on main core!
+
+    int real_ticks = get_total_active_ticks();
+    update_system_info(ticks, real_ticks);
 
     int pid;
     for (pid = 0; pid < PROCS_MAX; pid++) {
@@ -61,8 +74,6 @@ void check_sleeping_proc(void){
         if (procs_timing_info[pid].locked_until_ticks == ticks){
             struct Proc * sleeping_proc= get_proc(pid);
             sleeping_proc->status = PROC_RUNNABLE;
-            // printf("---> AWAKENED PROC %d status is runnable? %u \n", pid, 
-            //     sleeping_proc->status == PROC_RUNNABLE? 1: 0);
         } 
     }
 }
@@ -75,7 +86,7 @@ void check_sleeping_proc(void){
 
 void syscall_sleep(FullTrapFrame *tf, uintptr_t pc){
     uint32_t ticks_to_sleep = SYSCALL_ARG0(tf);
-    struct Proc * curr_proc = get_curr();
+    struct Proc * curr_proc = myproc();
     struct ProcTimingInfo* info = &procs_timing_info[curr_proc->pid];
     info->locked_until_ticks = ticks + ticks_to_sleep;
     // printf("[Sleep] proc %d, should awake at %u now at: %u\n", curr_proc->pid, info->locked_until_ticks,ticks);
@@ -86,7 +97,7 @@ void syscall_sleep(FullTrapFrame *tf, uintptr_t pc){
 }
 
 void syscall_uptime(FullTrapFrame *tf, uintptr_t pc){
-    struct Proc * curr_proc = get_curr();
+    struct Proc * curr_proc = myproc();
     struct ProcTimingInfo* info = &procs_timing_info[curr_proc->pid];
 
     SET_SYSCALL_RET0(tf, info->uptime_ticks);

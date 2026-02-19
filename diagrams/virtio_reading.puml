@@ -1,0 +1,44 @@
+@startuml
+title RISC-V Blocking VirtIO Read (Full Flow)
+
+participant "Riscv ARCH Layer" as ReadDisk
+participant "Virtio Driver" as RW
+participant "Virtqueue" as VQ
+participant "VirtIO MMIO" as MMIO
+participant "VirtIO Device" as Device
+
+== Read App Header ==
+    ReadDisk -> RW : read_write_disk(buffer, sector, READ)
+
+    == Build Request ==
+    RW -> RW : blk_req->sector = sector
+    RW -> RW : blk_req->type = VIRTIO_BLK_T_IN
+
+    == Build Descriptor Chain ==
+    RW -> VQ : desc[0] = header
+    RW -> VQ : desc[1] = data buffer
+    RW -> VQ : desc[2] = status byte
+
+    == Submit to Device ==
+    RW -> VQ : virtq_kick(desc_index=0)
+    VQ -> MMIO : QUEUE_NOTIFY
+    MMIO -> Device : interrupt device
+
+    == Blocking Poll ==
+    loop while busy
+        RW -> VQ : virtq_is_busy()
+    end
+
+    == Completion ==
+    Device --> VQ : update used.index
+    RW -> RW : check blk_req->status
+
+    alt error
+        RW --> ReadDisk : error
+    else success
+        RW -> RW : memcpy(buf, blk_req->data)
+    end
+
+    RW --> ReadDisk : sector data
+
+@enduml

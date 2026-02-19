@@ -43,32 +43,10 @@ ignore trap illegal ins scause=00000002, stval=30651073, sepc=8020008e csrw mcou
 void init_trap(){
 
     WRITE_CSR(stvec, (uint32_t) trap_entry); // riscv5 , set in case of interruption trap entry to be exec 
-
-    debug_printf("Initing superviser mode/enable clock?! \n");
-    //uint32_t mcount = READ_CSR(mideleg);
-    //printf("mideleg vl %u \n", mcount);
-
-    WRITE_CSR(sie, READ_CSR(sie) | SIE_STIE);
-    WRITE_CSR(sstatus, READ_CSR(sstatus) | (1 << 1)); // SSTATUS_SIE
     
+    enable_interrupts();
     SET_NEXT_INTERRUPT(DELAY_INTERRUPT);
-
-
-    /*
-    // For baremetal bootloader in M-Mode , for the future!
-    // enable supervisor-mode timer interrupts.
-    WRITE_CSR(mie, READ_CSR(mie) | MIE_STIE);
-
-    // enable the sstc extension (i.e. stimecmp).
-    w_menvcfg(r_menvcfg() | (1L << 63)); 
-      
-    // allow supervisor to use stimecmp and time.
-    w_mcounteren(r_mcounteren() | 2);
-      
-    // ask for the very first timer interrupt.
-    w_stimecmp(r_time() + 1000000);
-    */
-
+    disable_timer_interrupts(); // Just in case, to control when to enable it
 }
 
 /*

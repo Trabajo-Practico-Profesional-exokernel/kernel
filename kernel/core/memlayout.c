@@ -79,45 +79,21 @@ void init_process_pde(struct Proc * proc){
 }
 
 
-void load_create_process_user(struct Proc * proc, const struct AppBinaryInfo * app_info, char ** argv) {    
+void load_create_process_user(struct Proc * proc, const struct BinaryAppEntry * app_info, char ** argv) {    
     init_process_pde(proc);
 
     proc->pc = VADDR_USER_BASE; // Entry point is setted to the vaddr, here it could be the trampoline but for now is the code of prog   
 
     // Map the code of the user program/binary... loading it from memory
     vaddr_t curr_vaddr = VADDR_USER_BASE;
-    for (uint32_t off = 0; off < app_info->size; off += PAGE_SIZE) {
-        paddr_t curr_page_paddr = alloc_pages(1); // Alloc pages throws PANIC ALREADY!
-
-        // paddr_t curr_page_paddr;
-        // if(try_alloc_user_page(&curr_page_paddr) < 0){
-        //     PANIC("Failed alloc user page in load code for process!\n");
-        //     // debug_printf("Failed alloc user page in load code for process!\n");
-        //     return;
-        // }
-        
-        if(off == 0){
-            debug_printf("PADDR START OF PROCESS 0x%x\n",curr_page_paddr);
-        }
-
-        // Handle the case where the data to be copied is smaller than the page size.
-        size_t remaining = app_info->size - off;
-        size_t copy_size = (PAGE_SIZE <= remaining) ? PAGE_SIZE : remaining;
-
-        // Copiar los datos a la página física recién asignada
-        // A futuro... no muy lejano.... esto no seria con memcpy, sino accediendo a disco, asi no se carga a memoria todos los programas.
-        memcpy((void *) curr_page_paddr, app_info->start + off, copy_size);
-
-        // Map the loaded code to the VADDR of the user programs
-        map_page((uint32_t*) proc->pde_paddr, curr_vaddr, curr_page_paddr,
-                 USER_PERMISSIONS_ALL);
-        
-        curr_vaddr+= PAGE_SIZE;
+    
+    int err = load_app_code_to_user_mem(app_info, &curr_vaddr, (uint32_t*) proc->pde_paddr);
+    if(err < 0){
+        PANIC("Failed to load app code to memory for proc %u err: %d\n", proc->pid, err);
     }
-
+    
     // curr_vaddr is the first page not to be used by the process! i.e if it is 0x160000 then this could be the stack start.. for now ignored.
     printf("Process %u uses up to vaddr: 0x%x\n",proc->pid, curr_vaddr);
-    
 
     init_proc_pages(proc);
 

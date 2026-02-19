@@ -3,5 +3,4 @@ global idle_entry
 
 idle_entry:
 .loop:
-    pause
     jmp .loop

@@ -11,11 +11,57 @@
 #include "arch_inc/virtio.h"
 #include "console/debug.h"
 
-extern void sched_yield(void);
-extern void save_curr_proc_state(FullTrapFrame *tf, uintptr_t pc);
-extern struct Proc * get_curr(void);
+#include "arch/disk.h"
+
+
+// By default it allows to access from sector 0
+uint32_t user_fs_init_sector = 0;
 
 char disk_request_content_buffer[SECTOR_SIZE];
+
+void set_user_fs_start(int bytes_offset){
+    user_fs_init_sector = (bytes_offset / SECTOR_SIZE) + 1;
+    // +1 to ensure its aligned/safe with sector size  
+}
+
+int read_disk(void *buf, int offset, int length)
+{
+    int remaining = length;
+    int sector = offset / SECTOR_SIZE;
+    int sector_offset = offset % SECTOR_SIZE;
+    char *dst = (char *)buf;
+
+    while (remaining > 0) {
+        int err = read_write_disk(
+            &disk_request_content_buffer[0],
+            sector,
+            false /* read */
+        );
+        if (err != 0) {
+            return remaining;   // or return -1;
+        }
+
+        int to_copy = SECTOR_SIZE - sector_offset;
+        if (to_copy > remaining)
+            to_copy = remaining;
+
+        memcpy(dst,
+               &disk_request_content_buffer[sector_offset],
+               to_copy);
+
+        dst += to_copy;
+        remaining -= to_copy;
+
+        sector++;
+        sector_offset = 0;  // only first sector has an offset
+    }
+
+    return 0;
+}
+
+extern void sched_yield(void);
+extern void save_curr_proc_state(FullTrapFrame *tf, uintptr_t pc);
+extern struct Proc * myproc(void);
 
 int check_valid_size_read(size_t len){
     if (len > SECTOR_SIZE){
@@ -47,7 +93,7 @@ int check_valid_size_write(size_t len){
 
 void syscall_disk_read(FullTrapFrame *tf, uintptr_t pc) {
     
-    virt_blk_sector_t src_disk_sector = SYSCALL_ARG0(tf);
+    virt_blk_sector_t src_disk_sector = ((uint32_t) SYSCALL_ARG0(tf)) + user_fs_init_sector;
     vaddr_t trg_buffer_vaddr = SYSCALL_ARG1(tf);
     size_t read_len = SYSCALL_ARG2(tf);
 
@@ -58,7 +104,7 @@ void syscall_disk_read(FullTrapFrame *tf, uintptr_t pc) {
     }
     switch_to_kernel_tables();
     
-    struct Proc * caller = get_curr();
+    struct Proc * caller = myproc();
 
     // Map vaddr to paddr
     paddr_t trg_buffer_paddr = get_paddr_for(
@@ -98,7 +144,7 @@ void syscall_disk_read(FullTrapFrame *tf, uintptr_t pc) {
 
 void syscall_disk_write(FullTrapFrame *tf, uintptr_t pc) {
     vaddr_t src_buffer_vaddr = SYSCALL_ARG0(tf);
-    paddr_t trg_disk_sector = SYSCALL_ARG1(tf);
+    paddr_t trg_disk_sector = ((uint32_t) SYSCALL_ARG1(tf)) + user_fs_init_sector;
     size_t write_len = SYSCALL_ARG2(tf);
 
     int err = check_valid_size_write(write_len);
@@ -109,7 +155,7 @@ void syscall_disk_write(FullTrapFrame *tf, uintptr_t pc) {
 
     switch_to_kernel_tables();
 
-    struct Proc * caller = get_curr();
+    struct Proc * caller = myproc();
 
     // Map vaddr to paddr
     paddr_t src_buffer_paddr = get_paddr_for(

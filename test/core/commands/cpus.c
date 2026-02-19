@@ -19,7 +19,7 @@ void wait_start_cpus(void){
 
 void start_cpus(void){
 	cpus_lock.name = "STARTED CPUS LOCK";	
-	notify_inited();
+	start_secondary_cpus();
 	started = 1;
 }
 

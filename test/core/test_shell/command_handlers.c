@@ -49,6 +49,11 @@ int handle_sched_yield(char *args){
     return 0;
 }
 
+int handle_load_processes_headers(char *args){
+    load_processes_headers();
+    return 0;
+}
+
 
 
 int test_help_man(char* args);
@@ -80,6 +85,11 @@ struct CommandEntry commands[] = {
     { "add_proc", handle_create_proc,
     "Con parametros '<program_name> <args>' Agrega al scheduler un proceso para ser ejecutado"
     },
+
+    {"load_procs", handle_load_processes_headers, 
+    "Carga los headers de los procesos para que puedan ser corridos por el scheduler"
+    },
+    
     { "help", test_help_man, "Da informacion general de comandos"}
     
 };

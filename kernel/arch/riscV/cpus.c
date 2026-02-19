@@ -4,13 +4,15 @@
 
 
 struct cpu cpus[NCPU];
+int main_cpuid = -1;
 
 int cpuid() {
   return get_cpu_id();
 }
 
-struct cpu* mycpu(void){
-  return &cpus[cpuid()];
+
+struct cpu* mycpu(){
+  return &cpus[get_cpu_id()];
 }
 
 struct cpu* getcpu(int cpuid){
@@ -18,10 +20,18 @@ struct cpu* getcpu(int cpuid){
 }
 
 
-void init_cpus(void){
+void init_cpu_info(void){
 
     // printf("Got cpu id %d \n", get_cpu_id());
     // int id = r_mhartid();
     // set_cpuid(id);
+}
+
+void set_as_main_cpu(void){
+  main_cpuid = get_cpu_id();
+}
+
+bool is_main_cpu(void){
+  return main_cpuid == get_cpu_id();
 }
 

@@ -21,9 +21,7 @@ void switch_proc(struct Proc * proc);
 
 void init_cpu(int cpunum);
 
-void init_sched(void);
-
-struct Proc * get_curr();
+struct Proc * myproc();
 struct Proc * get_proc_by_pid(int receiver_pid);
 
 struct Proc * get_idle_proc();
