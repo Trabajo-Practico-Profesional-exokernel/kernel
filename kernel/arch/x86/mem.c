@@ -55,8 +55,6 @@ void enable_paging(void) {
 }
 
 
-
-
 pd_entry* kernel_pde; // Physical address for Page Directory table
 
 // NO HACE FALTA!
