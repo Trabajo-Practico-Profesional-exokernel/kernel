@@ -89,39 +89,6 @@ void switch_context(struct Proc *next) {
     );
 }
 
-// LEGACY
-__attribute__((naked))
-void switch_context_kernel(struct Proc *next) {
-    __asm__ __volatile__ (        
-        "pop %ecx\n"        // return address (ignore)
-        "pop %eax\n"        // eax = struct Proc* next -> tf
-
-        // === Cambiar CR3 ===
-        "mov 56(%eax), %edx\n"  // edx = next->pde_paddr
-        "mov %edx, %cr3\n"      // Cargar el nuevo CR3
-
-        // === Cambiar stack ===
-        "mov 36(%eax), %esp\n"
-        "mov 8(%eax),%ebp\n" // Restore ebp from user?
-
-        // === Restaurar eip y registros ===
-        "mov 32(%eax),%ecx\n"      // load next eip on ecx
-        "push %ecx\n"// push next eip as return address
-
-        // Restaurar registros del TrapFrame, apartir del eax.. no esp por que 
-        // No deberiamos tocar esp.
-        "mov 0(%eax),%edi\n"       // edi
-        "mov 4(%eax),%esi\n"       // esi
-        // "mov 12(%eax),%ebx\n"      // ebx (saltamos oesp)
-        "mov 16(%eax),%ebx\n"      // ebx 
-        "mov 20(%eax),%edx\n"      // edx
-        "mov 24(%eax),%ecx\n"      // ecx
-        "mov 28(%eax),%eax\n"      // eax
-
-        "sti\n"
-        "ret\n"           // eip = tf->eip
-    );
-}
 
 /*
  * En x86, 'sleep' es igual de simple: hace busy-wait.
