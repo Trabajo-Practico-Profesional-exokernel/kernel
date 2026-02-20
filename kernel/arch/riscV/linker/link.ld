@@ -39,17 +39,6 @@ SECTIONS {
 
     . = ALIGN(4096);
 
-    /* Space for idle proc in case nothing to be executed but still there is a non free process */
-    __idle_proc_start = .;
-
-    .idle_proc : ALIGN(4096) {
-        *(.idle_proc .idle_proc.*)
-    }
-
-    . = ALIGN(4096); /* align to page size */
-    __idle_proc_end = .;
-
-
     __free_ram = .; /* add heap ram, hardcoded... its the same as base end but more descriptive? */
     . += 8 * 1024 * 1024; /* 8MB */
     __free_ram_end = .;
