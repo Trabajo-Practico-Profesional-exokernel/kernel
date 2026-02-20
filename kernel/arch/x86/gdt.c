@@ -8,7 +8,7 @@
 #define SEGMENT_LIMIT   0xFFFFF
 
 
-struct Segdesc gdt[GDT_NUM_ENTRIES] = {
+struct Segdesc gdt[NCPU + GDT_NUM_ENTRIES] = {
 	/* SEGNULL */
 	[0] = {0},
 
@@ -17,9 +17,9 @@ struct Segdesc gdt[GDT_NUM_ENTRIES] = {
 	[SEG_KD] = SEG(STA_W		, SEGMENT_BASE, SEGMENT_LIMIT, PL0),
 	[SEG_UT] = SEG(STA_X | STA_R, SEGMENT_BASE, SEGMENT_LIMIT, PL3),
 	[SEG_UD] = SEG(STA_W        , SEGMENT_BASE, SEGMENT_LIMIT, PL3),
-	[SEG_TSS] = {0}
+	[SEG_TSS0] = {0}
 };
-
+extern uint32_t percpu_kstacks[NCPU];
 
 void gdt_init()
 {
@@ -29,10 +29,15 @@ void gdt_init()
 	// TODO: ver si se mete dentro de estructura proc, entonces se puede acceder a kstack
     // cpu->cpu_ts.esp0 = KSTACKTOPCPU(0);
 	// cpu->cpu_ts.ss0 = GD_TSS;
-	mycpu()->cpu_ts.iomap_base = sizeof(struct TaskState);
+	struct cpu *thiscpu = mycpu();
+	int cpu_id = cpuid();
 
-    gdt[SEG_TSS] = SEG16(STS_T32A, (uint32_t) (&(mycpu()->cpu_ts)), sizeof(struct TaskState) - 1, PL0);
-	gdt[SEG_TSS].s = 0; // set system segment
-	ltr(GD_TSS);	
+	thiscpu->cpu_ts.esp0 = percpu_kstacks[cpu_id];
+	thiscpu->cpu_ts.ss0 = GD_KD;
+	thiscpu->cpu_ts.iomap_base = sizeof(struct TaskState);
+
+    gdt[SEG_TSS0 + cpu_id] = SEG16(STS_T32A, (uint32_t) (&(thiscpu->cpu_ts)), sizeof(struct TaskState) - 1, PL0);
+	gdt[SEG_TSS0 + cpu_id].s = 0; // set system segment
+	ltr(GD_TSS0 + (cpu_id << 3));	
 }
 

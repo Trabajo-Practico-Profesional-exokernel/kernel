@@ -10,18 +10,18 @@
 #define GD_KD  0x10 // kernel data 
 #define GD_UT  0x18 // user code/text 
 #define GD_UD  0x20 // user data 
-#define GD_TSS 0x28 // task state 
+#define GD_TSS0 0x28 // task state 
 
 #define SEG_KT  (GD_KT >> 3)  // segment kernel code
 #define SEG_KD  (GD_KD >> 3)  // kernel data+stack
 #define SEG_UT  (GD_UT >> 3)  // kernel code/text 
 #define SEG_UD  (GD_UD >> 3)  // kernel data+stack
-#define SEG_TSS (GD_TSS >> 3) // current process task state 
+#define SEG_TSS0 (GD_TSS0 >> 3) // cpu0 task state 
 
 #define PL0 0x0
 #define PL3 0x3
 
-#define GDT_NUM_ENTRIES 6
+#define GDT_NUM_ENTRIES 5
 
 /*
     segment descriptor is 8 byte (64 bit) long:

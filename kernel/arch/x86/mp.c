@@ -16,8 +16,6 @@ int ismp;  				// true if mp detected
 int ncpu;
 uint8_t ioapicid;
 
-uint8_t percpu_kstacks[NCPU][KSTKSIZE]
-__attribute__ ((aligned(PAGE_SIZE)));
 
 
 // See MultiProcessor Specification Version 1.[14]

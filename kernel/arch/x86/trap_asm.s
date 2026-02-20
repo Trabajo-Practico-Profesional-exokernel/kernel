@@ -41,5 +41,6 @@ trap_entry:
     pop ds
     popa
     add esp, 8          ; pop int_no + err_code
-;   sti                 ;TODO:check
+
     iret
+

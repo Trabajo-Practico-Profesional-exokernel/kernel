@@ -26,6 +26,7 @@ SECTIONS {
         *(COMMON)            /* all COMMON sections from all files */
         *(.bss)              /* all bss sections from all files */
     }
+    /* TODO: almost sure that is unneeded */
     . = ALIGN(4); /* Align */
     . += 128 * 1024; /* add stack, 128KB */
     __stack_top = .; /* where the stack ends */

@@ -5,12 +5,17 @@
 #include "constants.h"
 #include "arch/logging.h"
 #include "arch_inc/cpu.h"
+#include "arch/cpus.h"
 #include "trap.h"
 #include "stdio.h"
 #include "console/debug.h"
+#include "assert.h"
 
 extern void isr32(void);
 void clock_yield(FullTrapFrame *tf, uintptr_t proc_pc);
+void sched_yield(void); 
+void switch_proc(struct Proc *);
+
 #include "arch/trap_handling.h"
 
 
@@ -41,6 +46,8 @@ unsigned long get_cr2_value(void) {
 
 //No toca sti (eso se hace en el stub después del iret)
 void handle_trap(FullTrapFrame *tf) {
+	assert(!(read_eflags() & FL_IF));
+
     switch (tf->int_no) {
 		case (T_IRQ0 + 7):
 		case (T_IRQ0 + IRQ_SPURIOUS):

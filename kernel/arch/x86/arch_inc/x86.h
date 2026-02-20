@@ -58,6 +58,14 @@ static inline void lseg(void) {
 }
 
 static inline uint32_t
+read_eflags(void)
+{
+	uint32_t eflags;
+	asm volatile("pushfl; popl %0" : "=r" (eflags));
+	return eflags;
+}
+
+static inline uint32_t
 xchg(volatile uint32_t *addr, uint32_t newval)
 {
   uint32_t result;

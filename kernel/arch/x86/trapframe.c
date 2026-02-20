@@ -32,7 +32,7 @@
 
 // HAY UN POSIBLE ERROR EN SWITCH CONTEXT (EL VALOR DE EBP SE CORROMPE)
 
-
+/*
 __attribute__((naked))
 void switch_context(struct Proc *next) {
     __asm__ __volatile__ (
@@ -88,7 +88,7 @@ void switch_context(struct Proc *next) {
         "iret\n"
     );
 }
-
+*/
 
 /*
  * En x86, 'sleep' es igual de simple: hace busy-wait.

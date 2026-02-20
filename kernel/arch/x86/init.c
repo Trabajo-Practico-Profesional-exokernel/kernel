@@ -16,31 +16,39 @@
 //struct CpuInfo cpus[NCPU];
 #define GD_KD  0x10
 
+uint32_t percpu_kstacks[NCPU];
+__attribute__((__aligned__(PAGE_SIZE)));
+
 extern char __trap_stack_top[];
 extern pd_entry *kernel_pde;
-extern struct Segdesc gdt[GDT_NUM_ENTRIES];
 extern idt_gate_t idt[IDT_NUM_ENTRIES];
 extern void secondary_cpu_main(void);
 
-static void cpu_init(void){
+static void tss_init(void){
     struct TaskState ts = { .prev_tss = 0, .esp0 = __trap_stack_top, .ss0 = GD_KD };
 	mycpu()->cpu_apicid = lapic_id();
 	mycpu()->cpu_status = CPU_STARTED;
 
     // TODO: hacerlo mas lindo (e investigar)
-    ts.cs = 0x0b;
-	ts.ss = 0x13;
-	ts.es = 0x13;
-	ts.ds = 0x13;
-	ts.fs = 0x13;
-	ts.gs = 0x13;
-
-    mycpu()->cpu_ts = ts;
 }
+
+
+void
+kstack_alloc()
+{
+	for (int i = 0; i < NCPU; i++) {
+		// alloc KSTKSIZE + 1 guard page
+		percpu_kstacks[i] = alloc_pages(KSTKSIZE/PAGE_SIZE + 1);
+		if (percpu_kstacks[i] == NULL)
+			PANIC("kernel stack allocation failed");
+	}
+}
+
 
 void
 init_arch(void)
 {
+	kstack_alloc();
 	init_cpus();
     disable_interrupts();
     gdt_init();
@@ -49,18 +57,16 @@ init_arch(void)
 	pic_init();
 	ioapic_init();
     serial_init();
-    cpu_init();
-//	enable_interrupts();
+	//enable_interrupts();
 }
 
 void
 init_arch_others(void)
 {
 	switch_to_kernel_tables(); // redundant; its done in entryother.S
-	lgdt(gdt, sizeof(gdt));
-	lapic_init();
+	gdt_init();
 	lidt(idt, sizeof(idt));
-	//cpu_init();
+	lapic_init();
 	mycpu()->cpu_status = CPU_STARTED;
 	xchg(&mycpu()->cpu_status, CPU_STARTED); // tell start_cpus() we're up
 
@@ -68,4 +74,5 @@ init_arch_others(void)
 	while(1);
 	secondary_cpu_main();
 }
+
 
