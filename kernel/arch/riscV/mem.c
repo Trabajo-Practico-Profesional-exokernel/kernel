@@ -71,6 +71,10 @@ uint32_t * init_user_pde_table(void) {
     return (uint32_t *)alloc_pages(1);
 }
 
+uint32_t * get_kernel_pde(void){
+    return (uint32_t *) kernel_page_table;
+}
+
 void switch_to_kernel_tables(void){
     // debug_printf("SHOULD SWITCH TO KERNEL PAGES? IS THAT IT? %x\n", (uint32_t *) kernel_page_table);
 

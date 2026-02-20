@@ -47,15 +47,19 @@ uint32_t get_total_active_ticks(void) {
     return total;
 }
 
+void add_uptime_to_proc(struct Proc * curr_proc){
+    struct ProcTimingInfo* curr_info = &procs_timing_info[curr_proc->pid];
+    curr_info->uptime_ticks+=1;
+}
+
+void add_idle_time(struct Proc * curr_proc){
+    struct ProcTimingInfo* curr_info = &procs_timing_info[curr_proc->pid];
+    curr_info->uptime_ticks+=1;
+    // Add extra info to cpu or so.
+}
+
 
 void check_sleeping_proc(void){
-    struct Proc * curr_proc = myproc(); 
-
-    if(curr_proc->status == PROC_RUNNING){
-        struct ProcTimingInfo* curr_info = &procs_timing_info[curr_proc->pid];
-        curr_info->uptime_ticks+=1;
-    }
-
     if(!is_main_cpu()){
         return; // Only main cpu should check sleeping procs and update ticks! 
     }

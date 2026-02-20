@@ -27,7 +27,8 @@ struct Proc * get_proc_by_pid(int receiver_pid);
 struct Proc * get_idle_proc();
 void init_idle_proc(void);
 
-void switch_to_idle_proc();
+void switch_to_idle_proc(void);
+void idle_main(void);
 
 uint64_t get_real_ticks(void);
 uint32_t get_idle_ticks(void);

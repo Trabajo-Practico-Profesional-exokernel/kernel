@@ -131,6 +131,11 @@ uint32_t * init_user_pde_table(void){
     return pd_table;
 }
 
+
+uint32_t * get_kernel_pde(void){
+    return (uint32_t *) kernel_pde;
+}
+
 void switch_to_kernel_tables(void){
     switch_page_table((uint32_t *) kernel_pde);
 }

@@ -23,9 +23,11 @@ paddr_t get_paddr_for(uint32_t *table1, vaddr_t vaddr);
 
 
 uint32_t * init_user_pde_table(void);
+uint32_t * get_kernel_pde(void);
 
 void switch_page_table(uint32_t *table_next);
 void switch_to_kernel_tables(void);
+
 
 
 paddr_t direct_map_range(paddr_t *table1, paddr_t range_start, paddr_t range_end, uint32_t flags);

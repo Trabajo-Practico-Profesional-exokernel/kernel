@@ -5,6 +5,7 @@
 #include "types.h"
  
 #include "arch_inc/cpu.h"
+#include "arch_inc/idle.h"
 #include "arch_inc/x86.h"
 #include "arch_inc/mem_constants.h"
 #include "idt.h"
@@ -76,3 +77,6 @@ init_arch_others(void)
 }
 
 
+void polling_checks(void){
+	// No polling for x86?
+}

@@ -23,14 +23,9 @@ extern char __idle_proc_start[], __idle_proc_end[];
 void init_idle_proc(void){
     struct Proc * sched_idle_proc = get_idle_proc();
     sched_idle_proc->pid = PROCS_MAX;
-    init_process_pde(sched_idle_proc);
-
-    sched_idle_proc->pc = VADDR_USER_BASE;
-    map_page((uint32_t*) sched_idle_proc->pde_paddr, VADDR_USER_BASE, (paddr_t) __idle_proc_start,
-             USER_PERMISSIONS_ALL); 
-    
-    init_proc_stack(sched_idle_proc);
-    init_trapframe(sched_idle_proc, VADDR_USER_STACK_HARD_END); 
+    sched_idle_proc->pde_paddr = (paddr_t) get_kernel_pde();
+    sched_idle_proc->pc = (vaddr_t) &idle_main;
+    init_trapframe(sched_idle_proc, (vaddr_t) __idle_proc_end); 
 }
 
 

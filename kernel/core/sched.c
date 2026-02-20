@@ -18,6 +18,10 @@
 #include "arch/spin_locks.h"
 #include "arch/cpus.h"
 
+#include "arch_inc/trap_constants.h"
+#include "arch_inc/idle.h"
+
+
 extern void sched_finish(struct Proc * last_proc);
 #ifdef IS_TESTING
 extern void on_clock_yield(uint32_t new_curr_slices);
@@ -80,24 +84,35 @@ struct Proc * get_first_free_proc(){
 }
 
 
+// Called from kernel for cpu when no process is runnable.
+// It does the whole setup for a user proc. But it does not switch off 
 void switch_to_idle_proc(void){
     acquire(&lock_scheduler);
     // printf("Switching to idle proc for cpu %d\n", cpuid());
 
     struct cpu* cpu = mycpu();
-    int cpunum = cpuid();
-    cpu->proc = &idle_proc;
-    idle_proc.status = PROC_RUNNING;
-    cpu->slices = MAX_TIME_SLICES;
-    
+    if(cpu->proc != &idle_proc){
+        cpu->proc = &idle_proc;
+        idle_proc.status = PROC_NOT_RUNNABLE; // Just in case
+        cpu->slices = 0;
+        switch_page_table((uint32_t *)idle_proc.pde_paddr);
+    }
+    #ifdef IS_RISC
+    SSCRATCH_NEW_STACK(&trampoline_stacks[cpuid()][TRAMPOLINE_STACK_SIZE])
+    #endif
     release(&lock_scheduler);
 
-
-    #ifdef IS_RISC
-    SSCRATCH_NEW_STACK(&trampoline_stacks[cpunum][TRAMPOLINE_STACK_SIZE])
-    #endif
-    switch_page_table((uint32_t *)idle_proc.pde_paddr);
-    switch_context(&idle_proc);
+    debug_printf("CPU %d entered IDLE\n", cpuid());
+    enable_interrupts();
+    enable_timer_interrupts();
+    idle_main();
+}
+void idle_main(void){
+    while(1){
+        // Check/poll for unblock processes
+        polling_checks();
+        sched_yield();
+    }    
 }
 
 void switch_proc(struct Proc* next) {
@@ -138,17 +153,21 @@ void clock_yield(FullTrapFrame *tf, uintptr_t proc_pc) {  // Quitamos uintptr_t 
     if(curr){ // Only If there is a valid process running even If blocked.
         check_sleeping_proc();
 
-        if(curr == &idle_proc && curr_cpu->slices % MAX_TIME_SLICES == 0){
-            debug_printf("[TICK] idle time slice tot idle: %u tot ticks = %u at cpu: %d \n",get_idle_ticks(), get_real_ticks(), cpuid());
-        }
+        if(curr == &idle_proc){
+            add_idle_time(&idle_proc);
 
-        // NOT implemented yet
-        //check_io_locked_proc();
-        //check_stdin_locked_proc();
-        //check_ipc_locked_proc();
+            if(curr_cpu->slices % MAX_TIME_SLICES == 0){
+                debug_printf("[TICK] idle time slice tot idle: %u tot ticks = %u at cpu: %d \n",get_idle_ticks(), get_real_ticks(), cpuid());
+            }
+            return; // Go back.
+        } else {
+            add_uptime_to_proc(curr);
+            // Check/poll for IO, Disk, etc. Drivers
+            // polling_checks(); 
+        }
     }
 
-    if (curr != &idle_proc && curr_cpu->slices < MAX_TIME_SLICES){
+    if (curr_cpu->slices < MAX_TIME_SLICES){
         return;
     }
 
@@ -223,12 +242,16 @@ void sched_yield(void) {
         }
     }
 
+    if(curr == &idle_proc){
+        release(&lock_scheduler);
+        return;    
+    }
+
     struct Proc * last_proc = curr;
 
-    // No current proc for cpu    
+    // No current proc for cpu, wether it will be setted to idle or not, depends on sched_finish    
     mycpu()->proc = NULL; 
 
     release(&lock_scheduler);
-
     sched_finish(last_proc);
 }
