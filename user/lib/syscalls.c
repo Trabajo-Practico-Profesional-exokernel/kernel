@@ -248,3 +248,18 @@ int dup(int prev_fd){
     if (res == ERROR) return ERROR;
     return app_receive_parameter(OP_DUP);
 }
+int dup2(int prev_fd, int trg_fd){
+    printf("NOT IMPLEMENTED YET ATTEMPT TO DUP2 %d to %d\n", prev_fd, trg_fd);
+}
+
+int sys_execv(char* new_prog_name, char ** argv){
+    printf("SHOULD ATTEMPT TO EXECV %s\n", new_prog_name);
+    printf("GOT ARGS:\n");
+    int curr= 0;
+    for(curr = 0; argv[curr]; curr++) {
+        printf("Prog got arg pointer argv[%d]: %x ", curr, argv[curr]);    
+        printf("=> '%s'\n", argv[curr]);
+    }
+    return syscall(SYS_PROC_EXECV,(int)(new_prog_name),(int)(argv), 0, 0);
+}
+

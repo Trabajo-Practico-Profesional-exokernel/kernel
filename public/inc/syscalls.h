@@ -30,6 +30,9 @@
 
 #define SYS_PROC_LS 21
 
+#define SYS_PROC_DUP2 22
+#define SYS_PROC_EXECV 23
+
 #define DEF_ERR_CODE -1
 
 

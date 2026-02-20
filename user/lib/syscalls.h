@@ -6,6 +6,9 @@
 
 
 int sys_exec(char ** args);
+int sys_execv(char* new_prog_name, char ** argv);
+
+
 int wait(int pid);
 int sys_kill(int pid);
 
@@ -50,6 +53,7 @@ int chmod(const char *pathname, uint32_t mode);
 
 int pipe(int fds[2]);
 int dup(int prev_fd);
+int dup2(int prev_fd, int trg_fd);
 
 int console_read(char *buf, int len);
 int console_write(char *buf, int len);
