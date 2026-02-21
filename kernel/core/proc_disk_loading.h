@@ -24,4 +24,9 @@ int get_app_from_name(char* name);
 
 int load_app_code_to_user_mem(const struct BinaryAppEntry* app_info, 
             vaddr_t* curr_vaddr, uint32_t* pde_table);
+
+
+int reload_app_code_to_user_mem(const struct BinaryAppEntry* app_info, 
+            vaddr_t* curr_vaddr, uint32_t* pde_table);
+
 #endif

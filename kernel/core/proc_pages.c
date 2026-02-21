@@ -140,6 +140,66 @@ int copy_mem_pages(struct Proc* src_proc, struct Proc* trg_proc){
     return 0;
 }
 
+
+void reset_proc_range(struct Proc* proc, vaddr_t start, vaddr_t end){
+    printf("=>Freeing process vaddr range 0x%x to 0x%x!\n", start, end);
+    vaddr_t _vaddr = start;
+    
+    WALK_MEM_PAGES(
+        proc->pde_paddr,
+        start , end,
+        /* ON_MISSING_PDE */
+        {
+            printf("Missing PDE for vaddr in range 0x%x\n", _vaddr);
+            break;
+        },
+
+        /* ON_MISSING_PTE */
+        {
+            printf("Missing PTE for vaddr in range 0x%x\n", _vaddr);
+            break;
+        },
+
+        /* BODY */
+        {
+            printf("Should free page  %u paddr: 0x%x vaddr: 0x%x\n", proc->pid, _paddr, _vaddr);
+            _vaddr+=PAGE_SIZE;
+            free_user_page(_paddr);
+            reset_map_page((uint32_t *) proc->pde_paddr, _curr_pde, _curr_pte);
+        }
+    );      
+}
+
+
+void reset_proc_heap(struct Proc* proc){
+    struct UserProcPages* proc_pages = &procs_pages[proc->pid];
+    printf("=>Freeing process heap!\n");
+    vaddr_t _vaddr = VADDR_USER_HEAP_START;
+    WALK_MEM_PAGES(
+        proc->pde_paddr,
+        VADDR_USER_HEAP_START , proc_pages->vaddr_proc_heap_end,
+        /* ON_MISSING_PDE */
+        {
+            printf("Missing PDE for proc heap vaddr 0x%x\n", _vaddr);
+            break;
+        },
+
+        /* ON_MISSING_PTE */
+        {
+            printf("Missing PTE for proc heap vaddr 0x%x\n", _vaddr);
+            break;
+        },
+
+        /* BODY */
+        {
+            printf("Should free proc heap page  %u paddr: 0x%x vaddr: 0x%x\n", proc->pid, _paddr, _vaddr);
+            _vaddr+=PAGE_SIZE;
+            free_user_page(_paddr);
+            reset_map_page((uint32_t *) proc->pde_paddr, _curr_pde, _curr_pte);
+        }
+    );      
+    proc_pages->vaddr_proc_heap_end = VADDR_USER_HEAP_START;
+}
 void free_proc_pages(struct Proc* proc){   
     struct UserProcPages* proc_page_info = &procs_pages[proc->pid];
 
@@ -166,7 +226,7 @@ void free_proc_pages(struct Proc* proc){
         {
             printf("Should free user code page  %u paddr: 0x%x vaddr: 0x%x\n", proc->pid, _paddr, _vaddr);
             _vaddr+=PAGE_SIZE;
-
+            // free_user_page(_paddr);
         }
     );    
 
@@ -194,7 +254,7 @@ void free_proc_pages(struct Proc* proc){
         {
             printf("Should free proc stack page  %u paddr: 0x%x vaddr: 0x%x\n", proc->pid, _paddr, _vaddr);
             _vaddr+=PAGE_SIZE;
-
+            // free_user_page(_paddr);
         }
     );    
 
@@ -223,6 +283,10 @@ void free_proc_pages(struct Proc* proc){
         {
             printf("Should free proc heap page  %u paddr: 0x%x vaddr: 0x%x\n", proc->pid, _paddr, _vaddr);
             _vaddr+=PAGE_SIZE;
+            free_user_page(_paddr);
+
+            // Reset also does free pages used for pde!
+            reset_map_page((uint32_t *) proc->pde_paddr, _curr_pde, _curr_pte);
         }
     );    
     

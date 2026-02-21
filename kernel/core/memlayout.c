@@ -122,6 +122,8 @@ void load_create_process_user(struct Proc * proc, const struct BinaryAppEntry * 
     SET_SYSCALL_RET0(proc_tf, argc);
     SET_SYSCALL_RET1(proc_tf, params_vaddr);
 
+
+    // Uptime and more info
     init_proc_uptime(proc);
     add_proc_info(proc);
     int actual_memory = get_free_ram_memory();
@@ -134,6 +136,49 @@ void load_create_process_kernel(struct Proc * proc, uint32_t proc_entry){
 } 
 
 
+
+
+
+int reload_process_user(struct Proc * proc, const struct BinaryAppEntry * app_info, char ** argv) {
+    // Free heap pages
+    reset_proc_heap(proc);
+    
+    vaddr_t curr_vaddr = VADDR_USER_BASE;
+    
+    int err = reload_app_code_to_user_mem(app_info, &curr_vaddr, (uint32_t*) proc->pde_paddr);
+    if(err < 0){
+        PANIC("Failed to reload app code to memory for proc %u err: %d\n", proc->pid, err);
+    }    
+    reset_proc_range(proc, curr_vaddr, VADDR_USER_HARD_END);
+    
+    proc->pc = VADDR_USER_BASE; // Entry point is setted to the vaddr, here it could be the trampoline but for now is the code of prog   
+    
+    //
+    // ARGV/init parameters passing (keep the same stack)
+    //
+
+    paddr_t final_user_sp_top;
+    int argc= set_init_parameters_for_proc(proc, argv, &final_user_sp_top);
+    if (argc < 0){
+        PANIC("ERROR When allocating params for proc!");
+    }
+    
+    paddr_t paddr_sp_end = proc->user_sp_start + USER_STACK_PAGE_COUNT * PAGE_SIZE;
+    paddr_t params_total_len = paddr_sp_end - final_user_sp_top; // How many bytes does this ocuppy
+    // Sets on the trapframe th pc to the right vl
+
+    vaddr_t params_vaddr = VADDR_USER_STACK_HARD_END - params_total_len;
+    debug_printf("Proc has sp top 0x%x after params at: 0x%x, len: %u so vaddr 0x%x\n", paddr_sp_end, final_user_sp_top, params_total_len, params_vaddr);
+
+    // Sets sp to the virtual stack end - len of params.. params start vaddr, so that it does not use it for the proc
+    init_trapframe(proc, params_vaddr); 
+    
+    struct TrapFrame * proc_tf = &proc->tf;
+
+    SET_SYSCALL_RET0(proc_tf, argc);
+    SET_SYSCALL_RET1(proc_tf, params_vaddr);
+    return 0;
+}
 
 int load_create_forked(struct Proc* parent, struct Proc* child){
     init_process_pde(child);
