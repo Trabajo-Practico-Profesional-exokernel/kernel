@@ -1,0 +1,1 @@
+#define SAMPLE_IND 2

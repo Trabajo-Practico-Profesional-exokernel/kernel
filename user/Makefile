@@ -3,6 +3,7 @@ USER_FOLDER := $(ROOT)/user
 ARCH        ?= riscv                        # or x86
 
 APPS_FOLDER    := $(USER_FOLDER)/apps
+DIR_APPS_FOLDER    := $(USER_FOLDER)/dir_apps
 SERVERS_FOLDER := $(USER_FOLDER)/servers
 BUILD_FOLDER   := $(USER_FOLDER)/build
 APP_OUT        := $(BUILD_FOLDER)
@@ -23,14 +24,20 @@ TRG_BASE_DISK ?= $(ROOT)/.kernel_disk/disk_base.img
 SERVERS_DIRS := $(filter-out $(SERVERS_FOLDER)/build/, \
 	$(wildcard $(SERVERS_FOLDER)/*/))
 
-# General single-file apps
-GENERAL_C := $(wildcard $(APPS_FOLDER)/*.c)
+# General single-file apps (including those in subdirectories)
+GENERAL_C := $(wildcard $(APPS_FOLDER)/**/*.c) $(wildcard $(APPS_FOLDER)/*.c)
+
+# Extract relative paths from APPS_FOLDER (e.g., "utils/ls" from "apps/utils/ls.c")
+GENERAL_C_REL := $(patsubst $(APPS_FOLDER)/%,%,$(GENERAL_C))
+
+# Get target names by removing .c extension
+GENERAL_C_NAMES := $(GENERAL_C_REL:.c=)
 
 # General multi-file apps
-GENERAL_DIRS := $(filter-out $(APPS_FOLDER)/build/, \
-	$(wildcard $(APPS_FOLDER)/*/))
+GENERAL_DIRS := $(filter-out $(DIR_APPS_FOLDER)/build/, \
+	$(wildcard $(DIR_APPS_FOLDER)/*/))
 
-GENERAL_C_NAMES   := $(basename $(notdir $(GENERAL_C)))
+
 GENERAL_DIR_NAMES := $(notdir $(patsubst %/,%,$(GENERAL_DIRS)))
 SERVERS_DIR_NAMES := $(notdir $(patsubst %/,%,$(SERVERS_DIRS)))
 
@@ -98,13 +105,14 @@ metadata:
 # Pattern rules (the important part)
 # ----------------------------
 
-# Single-file apps
+# Single-file apps (including those in subdirectories)
 $(APP_OUT)/%: $(APPS_FOLDER)/%.c | $(APP_OUT)
+	@mkdir -p $(dir $@)
 	@echo "Compiling single-file app: $*"
 	@./compile_file_apps.sh $(ARCH) $<
 
 # Multi-file general apps
-$(APP_OUT)/%: $(APPS_FOLDER)/%/ | $(APP_OUT)
+$(APP_OUT)/%: $(DIR_APPS_FOLDER)/%/ | $(APP_OUT)
 	@echo "Compiling dir app: $*"
 	@./compile_dir_apps.sh $(ARCH) $<
 

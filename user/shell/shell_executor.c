@@ -58,7 +58,8 @@ static int apply_redirections(command_t *cmd) {
     return 0;
 }
 
-// Helper: check if command is a built-in
+// Helper: check if command is a built-in (must run in shell process)
+// Only cd, pwd, exit, clear, smile, procls are truly built-in
 static int is_builtin(const char *cmd) {
     const char *builtins[] = {
         "cd", "pwd", "exit", "clear", "smile", "procls", NULL
