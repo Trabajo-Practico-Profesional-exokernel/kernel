@@ -61,8 +61,6 @@ void kmain()
     clear();
     move_cursor(0);
 
-    debug_printf("HOLIS\n");
-
     init_trap();
 
     init_disk(); 
@@ -87,13 +85,12 @@ void kmain()
     #endif
     
     disable_debug_print();
-    debug_printf("\n\nHello World!\n");
-    
+   
 
-    printf("INITING IDLE PROC In case all procs are blocked!\n");        
+    printf("===INITING IDLE PROC In case all procs are blocked!\n");        
     init_idle_proc();
     
-    printf("INITING USER APP HEADERS!\n");        
+    printf("===INITING USER APP HEADERS!\n");        
     init_proc_headers();
 
     init_sched_main_cpu();

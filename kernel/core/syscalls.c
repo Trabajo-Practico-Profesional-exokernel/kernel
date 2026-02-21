@@ -91,13 +91,9 @@ uintptr_t handle_syscall(FullTrapFrame *tf, uintptr_t pc) {
     unsigned sysno = SYSCALL_SYSNO(tf);
 
     if (sysno >= MAX_SYSCALLS || syscall_table[sysno] == NULL) {
-        printf("unexpected syscall sysno=%u max sysno: %x at pc: %x\n", sysno, MAX_SYSCALLS, pc);
+        VERBOSE_PRINTF("unexpected syscall sysno=%u max sysno: %x at pc: %x\n", sysno, MAX_SYSCALLS, pc);
         printTrapFull(tf);
     } else {
-        // #if IS_RISC
-        // #else
-        // debug_printf("Asked to exec syscall sysno=%u max sysno: %x at pc: %x\n", sysno, MAX_SYSCALLS, pc);
-        // #endif
         syscall_table[sysno](tf, pc);
     }
 

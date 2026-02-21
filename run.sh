@@ -9,16 +9,18 @@ trg=riscv
 testing=0
 only_build=0
 disk=
+level=-1
 
 while [[ $# -gt 0 ]]; do
 	case "$1" in
 	        -c) clean_build=1; shift ;;
 	        -v) verbose=1; shift ;;
 	        -d) debug=1; shift ;;
-	        -build_users) clean_user_apps=1; shift ;;
-	        -tests) testing=1; shift ;;
-	        -only_build) only_build=1; shift ;;
+	        -users) clean_user_apps=1; shift ;;
+	        -t) testing=1; shift ;;
+	        -b) only_build=1; shift ;;
 			-disk) disk=$2; shift 2 ;;
+			-level) level=$2; shift 2 ;;
 	        #-*) echo "Got flag $1 after - :${1#-}" ; shift;;  	
 	*) trg=$1 ; shift ;;
 	esac
@@ -73,9 +75,13 @@ if [[ $clean_user_apps -eq 1 ]]; then
 		echo "Failed compile user program! $?"
 		exit
 	fi
-
-	clean_build=1 # Ensure no issues with vars
 	cd ..
+	
+	if [[ $only_build -eq 1 ]]; then
+		echo "Built user apps. Finishing..."
+		exit
+	fi		
+	clean_build=1 # Ensure no issues with vars
 fi
 
 if [[ "$trg" == "c" ]]; then
@@ -117,5 +123,5 @@ if [[ -n "$disk" ]]; then
 	DISK_ARG="KERNEL_DISK_PATH=$disk"
 fi
 
-echo "Running: make ARCH=$trg NCPU=$NCPU TESTING=$testing $trg_action"
-make ARCH=$trg $DISK_ARG NCPU=$NCPU TESTING=$testing $trg_action
+echo "Running: make ARCH=$trg NCPU=$NCPU TESTING=$testing $trg_action VERBOSE=$verbose DEBUG_LEVEL=$level"
+make ARCH=$trg $DISK_ARG NCPU=$NCPU TESTING=$testing $trg_action VERBOSE=$verbose DEBUG_LEVEL=$level

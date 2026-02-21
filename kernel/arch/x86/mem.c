@@ -51,7 +51,7 @@ void enable_paging(void) {
     asm volatile("mov %%cr0, %0" : "=r"(cr0));
     cr0 |= 0x80000000; // bit PG (bit 31)
     asm volatile("mov %0, %%cr0" :: "r"(cr0));
-    debug_printf("PG=1\n");
+    VERBOSE_DEBUG_PRINTF("PG=1\n");
 }
 
 
@@ -104,7 +104,7 @@ void mem_init(void){
 
     enable_paging();
 
-    debug_printf("---> ENABLED PAGING ALL OK\n");
+    VERBOSE_DEBUG_PRINTF("---> ENABLED PAGING ALL OK\n");
 }
 
 uint32_t * init_user_pde_table(void){
@@ -166,7 +166,7 @@ void map_page(uint32_t *pd_table, vaddr_t vaddr, paddr_t paddr, uint32_t permiss
         // pd_table[pd_index] = I86_PDE_FRAME & pt_paddr;
         // pd_table[pd_index] |= I86_PTE_PRESENT | I86_PDE_WRITABLE;
 
-        debug_printf("Allocated page at 0x%x for ptable pd_index %u (%x) == %x \n", pt_paddr, pd_index, pd_index* 4, pd_table[pd_index]);
+        VERBOSE_DEBUG_PRINTF("Allocated page at 0x%x for ptable pd_index %u (%x) == %x \n", pt_paddr, pd_index, pd_index* 4, pd_table[pd_index]);
     }
 
     // 
@@ -176,8 +176,6 @@ void map_page(uint32_t *pd_table, vaddr_t vaddr, paddr_t paddr, uint32_t permiss
     uint32_t* pt_table = (uint32_t *) (pd_table[pd_index] & I86_PDE_FRAME);
 
     pt_table[pt_index] = (I86_PTE_FRAME & paddr) | I86_PTE_PRESENT | permissions;
-
-    // debug_printf("Mapping vaddr %x to paddr %x at pd_index %u (%x), pt_index %u (%x) value: %x \n", vaddr, paddr, pd_index, pd_index*4, pt_index, pt_index*4, pt_table[pt_index]);
 }
 
 void reset_map_page(uint32_t *pd_table, size_t pde_ind, size_t pte_ind){
@@ -220,12 +218,11 @@ paddr_t get_paddr_for(uint32_t *pd_table, vaddr_t vaddr) {
     uint32_t pt_offset = GET_VADDR_OFFSET(vaddr);  // bits 20 to 31
     
 
-    // printf("Getting paddr for vaddr %x at pd_index %u (%x), pt_index %u (%x) offset: %x\n", vaddr, pd_index, pd_index*4, pt_index, pt_index*4, pt_offset);
     uint32_t page_table_config = pd_table[pd_index];
     
     // Directory page not mapped
     if (IS_NOT_PRESENT(page_table_config)) { 
-        printf("Error: Page directory entry not present for vaddr %x\n", vaddr);
+        VERBOSE_PRINTF("Error: Page directory entry not present for vaddr %x\n", vaddr);
         return 0; // or PANIC / page fault
     }
     
@@ -233,7 +230,7 @@ paddr_t get_paddr_for(uint32_t *pd_table, vaddr_t vaddr) {
 
     uint32_t pte_config = pt_table[pt_index];
     if (IS_NOT_PRESENT(pte_config)) { // Not mapped! second level page
-        printf("Error: Page table entry not present for vaddr %x value: %x\n", vaddr, pte_config);
+        VERBOSE_PRINTF("Error: Page table entry not present for vaddr %x value: %x\n", vaddr, pte_config);
         return 0; // page fault
     }
     
@@ -249,7 +246,6 @@ paddr_t get_paddr_for(uint32_t *pd_table, vaddr_t vaddr) {
 paddr_t direct_map_range(uint32_t *pde_table, paddr_t range_start, paddr_t range_end, uint32_t permissions){
     paddr_t paddr = range_start;
     while (paddr < range_end){
-        // debug_printf("MAPPING PAGE %x < %x\n", paddr, range_end);
         map_page(pde_table, paddr, paddr, permissions); // Direct map        
         paddr += PAGE_SIZE;
     }

@@ -72,14 +72,14 @@ void syscall_exit(FullTrapFrame *tf, uintptr_t pc){
     int exit_code = SYSCALL_ARG0(tf);
     struct Proc * exited_proc = myproc();
     
-    debug_printf("Process %u exited with code %d ", exited_proc->pid, exit_code);
+    VERBOSE_DEBUG_PRINTF("Process %u exited with code %d ", exited_proc->pid, exit_code);
 
     switch_to_kernel_tables();
     
     struct ProcExitStatus* exit_status = &exit_statuses[PROCX(exited_proc->pid)];
 
     if (exit_status->waiters_head == NULL){
-        debug_printf("had no waiters.. orphan process until awaited\n");
+        VERBOSE_DEBUG_PRINTF("had no waiters.. orphan process until awaited\n");
         // No waiter means, orphan proc until somebody waits it?
         exited_proc->status = PROC_DYING;
         exit_status->ret_code = exit_code;
@@ -87,7 +87,7 @@ void syscall_exit(FullTrapFrame *tf, uintptr_t pc){
         sched_yield();
         return; // Not reachable but for clarity
     }
-    debug_printf("had waiters.. notified and free\n");
+    VERBOSE_DEBUG_PRINTF("had waiters.. notified and free\n");
 
     notify_exited(exit_status, exit_code);
 
@@ -101,19 +101,19 @@ void syscall_exit(FullTrapFrame *tf, uintptr_t pc){
 void syscall_wait(FullTrapFrame *tf, uintptr_t pc){
     procid_t waited_proc_pid = SYSCALL_ARG0(tf);
     struct Proc * waiter_proc = myproc();
-    debug_printf("Process %d should wait at pc: %x(ret to %x) for %d: ",waiter_proc->pid, pc, pc+4, waited_proc_pid);
+    VERBOSE_DEBUG_PRINTF("Process %d should wait at pc: %x(ret to %x) for %d: ",waiter_proc->pid, pc, pc+4, waited_proc_pid);
 
     struct Proc* waited_proc = get_proc(waited_proc_pid);
 
     if(waited_proc == NULL || waited_proc->status == PROC_FREE){
-        debug_printf("Error waited proc was non valid, or was on a invalid state\n");
+        VERBOSE_DEBUG_PRINTF("Error waited proc was non valid, or was on a invalid state\n");
         SET_SYSCALL_RET0(tf, -1) // Error
         return;
     }
     struct ProcExitStatus* waited_exit_status = &exit_statuses[PROCX(waited_proc_pid)];
     
     if(waited_proc->status == PROC_DYING){
-        debug_printf("already exited, cleaning orphan and returning to waiter!\n");
+        VERBOSE_DEBUG_PRINTF("already exited, cleaning orphan and returning to waiter!\n");
         
         switch_to_kernel_tables();
         // Already finished! So notify directly and return to curr process? no need for sched yield
@@ -128,7 +128,7 @@ void syscall_wait(FullTrapFrame *tf, uintptr_t pc){
     }
 
     struct ProcExitStatus* waiter_exit_status = &exit_statuses[PROCX(waiter_proc->pid)];
-    debug_printf("not exited yet, wait blocked!\n");
+    VERBOSE_DEBUG_PRINTF("not exited yet, wait blocked!\n");
 
     waiter_proc->status = PROC_NOT_RUNNABLE;
     add_waiter_for(waited_exit_status, waiter_exit_status);
@@ -140,19 +140,19 @@ void syscall_wait(FullTrapFrame *tf, uintptr_t pc){
 void syscall_kill(FullTrapFrame *tf, uintptr_t pc){
     procid_t killed_proc_pid = SYSCALL_ARG0(tf);
     struct Proc * killer_proc = myproc();
-    printf("Process %d should kill at pc: %x(ret to %x) for %d: ",killer_proc->pid, pc, pc+4, killed_proc_pid);
+    VERBOSE_DEBUG_PRINTF("Process %d should kill at pc: %x(ret to %x) for %d: ",killer_proc->pid, pc, pc+4, killed_proc_pid);
 
     struct Proc* killed_proc = get_proc(killed_proc_pid);
 
     if(killed_proc == NULL || killed_proc->status == PROC_FREE){
-        printf("Error waited proc was non valid, or was on a invalid state\n");
+        VERBOSE_PRINTF("Error waited proc was non valid, or was on a invalid state\n");
         SET_SYSCALL_RET0(tf, -1) // Error
         return;
     }
     struct ProcExitStatus* killed_exit_status = &exit_statuses[PROCX(killed_proc_pid)];
     
     if(killed_proc->status == PROC_DYING){
-        printf(" already exited, cleaning orphan and returning to waiter!\n");
+        VERBOSE_DEBUG_PRINTF(" already exited, cleaning orphan and returning to waiter!\n");
         
         switch_to_kernel_tables();
         // Already finished! So notify directly and return to curr process? no need for sched yield
@@ -165,7 +165,7 @@ void syscall_kill(FullTrapFrame *tf, uintptr_t pc){
         
         return;
     }
-    printf(" did not exit... cleanup/forcefully!\n");
+    VERBOSE_DEBUG_PRINTF(" did not exit... cleanup/forcefully!\n");
     notify_exited(killed_exit_status, -3); // Code for forcefully exited?
     
     switch_to_kernel_tables();

@@ -44,10 +44,10 @@ void syscall_execv(FullTrapFrame *tf, uintptr_t pc) {
             return;
         }
     } else {
-        debug_printf("NO proc params execv\n");
+        VERBOSE_DEBUG_PRINTF("NO proc params execv\n");
         argv_pointers[0] = 0;
     }
-    printf("EXECV should replace program with name '%s' for '%s' \n", caller_proc->proc_name, trg_proc_name);
+    VERBOSE_DEBUG_PRINTF("EXECV should replace program with name '%s' for '%s' \n", caller_proc->proc_name, trg_proc_name);
 
 
     int prog_ind = get_app_from_name(trg_proc_name);
@@ -58,11 +58,12 @@ void syscall_execv(FullTrapFrame *tf, uintptr_t pc) {
     }
 
     if(app == NULL){
-        printf("Invalid app ind %d to exec process from '%s'!\n", prog_ind,
+        VERBOSE_PRINTF("Invalid app ind %d to exec process from '%s'!\n", prog_ind,
             (char *) argv_pointers[0]);
 
         SET_SYSCALL_RET0(tf, -1);
         switch_page_table((uint32_t *) caller_proc->pde_paddr);
+        return;
     }
 
     int ret = reload_process_user(caller_proc, app, (char **) &argv_pointers[0]);
@@ -95,13 +96,13 @@ void syscall_exec(FullTrapFrame *tf, uintptr_t pc) {
             return;
         }
     } else {
-        debug_printf("NO proc params exec\n");
+        VERBOSE_PRINTF("Err: NO proc params exec\n");
         SET_SYSCALL_RET0(tf, -1)
         switch_page_table((uint32_t *) parent_proc->pde_paddr);
         return;
     }
     
-    printf("EXEC should run program with name '%s' \n", (char *) argv_pointers[0]);
+    VERBOSE_DEBUG_PRINTF("EXEC should run program with name '%s' \n", (char *) argv_pointers[0]);
 
     int prog_ind = get_app_from_name((char *) argv_pointers[0]);
     struct BinaryAppEntry* app = NULL;
@@ -111,11 +112,12 @@ void syscall_exec(FullTrapFrame *tf, uintptr_t pc) {
     }
 
     if(app == NULL){
-        printf("Invalid app ind %d to exec process from '%s'!\n", prog_ind,
+        VERBOSE_PRINTF("Invalid app ind %d to exec process from '%s'!\n", prog_ind,
             (char *) argv_pointers[0]);
 
         SET_SYSCALL_RET0(tf, -1);
         switch_page_table((uint32_t *) parent_proc->pde_paddr);
+        return;
     }
     struct Proc* proc= get_first_free_proc();
 
@@ -127,11 +129,11 @@ void syscall_exec(FullTrapFrame *tf, uintptr_t pc) {
         return;
     }
 
-    printf("Should run free proc %p binary: %s at off: %u \n", proc, app->name, app->start);
+    VERBOSE_DEBUG_PRINTF("Should run free proc %p binary: %s at off: %u \n", proc, app->name, app->start);
 
     load_create_process_user(proc, app, (char **) &argv_pointers[0]);
 
-    debug_printf("Loaded proc '%s'\n", app->name);
+    VERBOSE_DEBUG_PRINTF("Loaded proc '%s'\n", app->name);
     reset_exit_status(get_exit_status(proc->pid));
     init_proc_std_files(proc->pid);
     strcpy(proc->proc_name, app->name);
@@ -150,7 +152,7 @@ void syscall_fork(FullTrapFrame *tf, uintptr_t pc) {
     struct Proc* parent_proc = myproc();
     switch_to_kernel_tables();
     
-    printf("Should fork program at ind %d \n", parent_proc->pid);
+    VERBOSE_DEBUG_PRINTF("Should fork program at ind %d \n", parent_proc->pid);
     
     struct Proc* child_proc= get_first_free_proc();
 

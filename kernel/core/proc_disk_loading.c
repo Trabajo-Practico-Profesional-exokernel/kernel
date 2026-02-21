@@ -43,7 +43,7 @@ void init_proc_headers(void){
 
     int pages = align_up(headers_size, PAGE_SIZE) / PAGE_SIZE;
 
-    printf("App headers info: magic num %x, app count %d, total headers size %d, pages to alloc %d\n", 
+    VERBOSE_PRINTF("App headers info: magic num %x, app count %d, total headers size %d, pages to alloc %d\n", 
         headers_info.magic_num, headers_info.app_count, headers_size, pages);
         
     _binary_user_apps = (struct BinaryAppEntry*) alloc_pages(pages);
@@ -56,9 +56,9 @@ void init_proc_headers(void){
 
 	size_t total_bin_sz = 0;
     _binary_app_count = headers_info.app_count;
-    printf("App headers loaded to memory at %x\n", _binary_user_apps);
+    VERBOSE_PRINTF("App headers loaded to memory at %x\n", _binary_user_apps);
     for(uint32_t i=0; i<_binary_app_count; i++){
-        printf("App %u: name %s, offset %u, size %u\n", i, _binary_user_apps[i].name, 
+        VERBOSE_PRINTF("App %u: name %s, offset %u, size %u\n", i, _binary_user_apps[i].name, 
             _binary_user_apps[i].start, _binary_user_apps[i].size);
 		total_bin_sz += _binary_user_apps[i].size;
 		
@@ -107,7 +107,7 @@ int load_app_code_to_user_mem(const struct BinaryAppEntry* app_info,
  
         
         if(curr_offset == app_info->start){
-            printf("PADDR START OF PROCESS '%s' 0x%x\n", app_info->name, curr_page_paddr);
+            VERBOSE_DEBUG_PRINTF("PADDR START OF PROCESS '%s' 0x%x\n", app_info->name, curr_page_paddr);
         }
 
         // Handle the case where the data to be copied is smaller than the page size.
@@ -118,7 +118,7 @@ int load_app_code_to_user_mem(const struct BinaryAppEntry* app_info,
             curr_offset, copy_size);
 
         if(not_written > 0){
-            printf("Failed to read app '%s' content from disk remaining %d not written!\n", app_info->name,not_written);
+            VERBOSE_PRINTF("Failed to read app '%s' content from disk remaining %d not written!\n", app_info->name,not_written);
             return -1;
         }
 
@@ -157,7 +157,7 @@ int reload_app_code_to_user_mem(const struct BinaryAppEntry* app_info,
         }
         
         if(curr_offset == app_info->start){
-            printf("PADDR START OF PROCESS '%s' 0x%x\n", app_info->name, curr_page_paddr);
+            VERBOSE_DEBUG_PRINTF("PADDR START OF PROCESS '%s' 0x%x\n", app_info->name, curr_page_paddr);
         }
 
         // Handle the case where the data to be copied is smaller than the page size.
@@ -168,7 +168,7 @@ int reload_app_code_to_user_mem(const struct BinaryAppEntry* app_info,
             curr_offset, copy_size);
 
         if(not_written > 0){
-            printf("Failed to read app '%s' content from disk remaining %d not written!\n", app_info->name,not_written);
+            VERBOSE_PRINTF("Failed to read app '%s' content from disk remaining %d not written!\n", app_info->name,not_written);
             return -1;
         }
 

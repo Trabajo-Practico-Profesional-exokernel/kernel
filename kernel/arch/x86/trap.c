@@ -26,7 +26,7 @@ void init_trap(void) {
     //pic_remap();
 
     __asm__ __volatile__("sti"); // CHECK: if doesn't need to be here, only in switch_context
-    debug_printf("[TRAP] Interrupts enabled\n");
+    VERBOSE_PRINTF("[TRAP] Interrupts enabled\n");
 }
 
 

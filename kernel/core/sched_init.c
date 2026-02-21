@@ -63,10 +63,10 @@ struct spinlock lock_test;
 
 void init_sched_secondary_cpu(void){
     init_cpu_info();
-    printf("Secondary cpu %d should init sched secondary\n", cpuid());
+    VERBOSE_PRINTF("Secondary cpu %d should init sched secondary\n", cpuid());
     acquire(&lock_test);
 
-    printf("Secondary CPU inited!! %d \n", cpuid());
+    VERBOSE_PRINTF("Secondary CPU inited!! %d \n", cpuid());
     
     enable_timer_interrupts();
     sched_yield();
@@ -83,7 +83,7 @@ void init_sched_main_cpu(void) {
 
     start_secondary_cpus();
 
-    printf("Just one cpu should init sched main %d?!\n", cpuid());
+    VERBOSE_PRINTF("Just one cpu should init sched main %d?!\n", cpuid());
 
 
     #ifdef IS_RISC

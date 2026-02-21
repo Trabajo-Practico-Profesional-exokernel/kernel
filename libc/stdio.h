@@ -11,4 +11,20 @@ int32_t vsnprintf(uint8_t *buf, size_t size, const uint8_t *fmt, va_list args);
 
 void printf(const char *fmt, ...);
 
+
+#ifdef IS_VERBOSE
+#define VERBOSE_PRINTF(fmt, ...) printf(fmt, ##__VA_ARGS__)
+#else
+#define VERBOSE_PRINTF(fmt, ...) do {} while(0)
+#endif
+
+
+#ifdef IS_TESTING
+#define TESTING_PRINTF(fmt, ...) printf(fmt, ##__VA_ARGS__)
+#else
+#define TESTING_PRINTF(fmt, ...) do {} while(0)
+#endif
+
+
+
 #endif /* _LIBC_STDIO_H */

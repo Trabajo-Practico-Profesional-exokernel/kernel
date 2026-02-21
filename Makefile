@@ -13,6 +13,8 @@ NCPU ?= 1
 CPU_STACK_PAGES = 32
 CPU_TRAP_STACK_PAGES = 32
 TESTING ?= 0
+VERBOSE ?= 0
+DEBUG_LEVEL ?= -1
 
 KERNEL_MAIN := kernel/core/kmain.c
 
@@ -26,7 +28,7 @@ ifeq ($(ARCH),x86)
 	AS      = nasm
 	CFLAGS  = $(DEF_INCS) -Imeta/gen -Ikernel/arch/x86 -Ikernel/arch/x86/drivers -m32 -nostdlib -nostdinc -fno-builtin -fno-stack-protector \
 	           -nostartfiles -nodefaultlibs -Wall -Wextra -c -g -DIS_X86 -march=i386 -mtune=i386 	\
-	           -DNCPU=1
+	           -DNCPU=1 -DDEBUG_LEVEL=$(DEBUG_LEVEL)
 	TEST_DIRS := test/core test/x86
 	TEST_INCS := -Itest/core -Itest/x86
 
@@ -46,6 +48,7 @@ else ifeq ($(ARCH),riscv)
 	                           -DNCPU=$(NCPU) \
 	                           -DCPU_STACK_PAGES=$(CPU_STACK_PAGES) \
 	                           -DCPU_TRAP_STACK_PAGES=$(CPU_TRAP_STACK_PAGES) \
+							   -DDEBUG_LEVEL=$(DEBUG_LEVEL) \
 
 	LDFLAGS = -T kernel/arch/riscV/linker/link.ld \
 	  -Wl,--defsym=NCPU=$(NCPU) \
@@ -73,6 +76,11 @@ C_SOURCES := $(foreach dir,$(SRC_DIRS),$(wildcard $(dir)/*.c))
 S_SOURCES := $(foreach dir,$(SRC_DIRS),$(wildcard $(dir)/*.s))
 S_SOURCES += $(foreach dir,$(SRC_DIRS),$(wildcard $(dir)/*.S))
 
+
+
+ifeq ($(TESTING),1)
+	CFLAGS += -DIS_VERBOSE
+endif
 
 ifeq ($(TESTING),1)
 	# Remove real kernel main

@@ -88,7 +88,7 @@ struct Proc * get_first_free_proc(){
 // It does the whole setup for a user proc. But it does not switch off 
 void switch_to_idle_proc(void){
     acquire(&lock_scheduler);
-    // printf("Switching to idle proc for cpu %d\n", cpuid());
+    VERBOSE_DEBUG_PRINTF_LV(1, "Switching to idle proc for cpu %d\n", cpuid());
 
     struct cpu* cpu = mycpu();
     if(cpu->proc != &idle_proc){
@@ -102,7 +102,7 @@ void switch_to_idle_proc(void){
     #endif
     release(&lock_scheduler);
 
-    debug_printf("CPU %d entered IDLE\n", cpuid());
+    VERBOSE_DEBUG_PRINTF_LV(1, "CPU %d entered IDLE\n", cpuid());
     enable_interrupts();
     enable_timer_interrupts();
     idle_main();
@@ -128,7 +128,7 @@ void switch_proc(struct Proc* next) {
 
     release(&lock_scheduler);
 
-    // printf("Switching to proc %d for cpu %d\n", next->pid, cpuid());
+    VERBOSE_DEBUG_PRINTF_LV(2,"Switching to proc %d for cpu %d\n", next->pid, cpuid());
 
     #ifdef IS_RISC
     SSCRATCH_NEW_STACK(&trampoline_stacks[next->cpunum][TRAMPOLINE_STACK_SIZE])
@@ -157,7 +157,7 @@ void clock_yield(FullTrapFrame *tf, uintptr_t proc_pc) {  // Quitamos uintptr_t 
             add_idle_time(&idle_proc);
 
             if(curr_cpu->slices % MAX_TIME_SLICES == 0){
-                debug_printf("[TICK] idle time slice tot idle: %u tot ticks = %u at cpu: %d \n",get_idle_ticks(), get_real_ticks(), cpuid());
+                VERBOSE_DEBUG_PRINTF_LV(2, "[TICK] idle time slice tot idle: %u tot ticks = %u at cpu: %d \n",get_idle_ticks(), get_real_ticks(), cpuid());
             }
             return; // Go back.
         } else {

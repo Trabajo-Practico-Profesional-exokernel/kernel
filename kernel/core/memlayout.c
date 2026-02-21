@@ -41,7 +41,7 @@ void init_process_pde(struct Proc * proc){
     proc->pde_paddr = (paddr_t)init_user_pde_table();
     uint32_t *pde_table = (uint32_t *) proc->pde_paddr;
     
-    debug_printf("FOR PROC %u MAP PAGETABLE %x\n", proc->pid, proc->pde_paddr);
+    VERBOSE_DEBUG_PRINTF("FOR PROC %u MAP PAGETABLE %x\n", proc->pid, proc->pde_paddr);
 
     // First map page for page table as direct map
     map_page(pde_table, proc->pde_paddr, proc->pde_paddr, KERNEL_PERMISSIONS_ALL);
@@ -51,7 +51,7 @@ void init_process_pde(struct Proc * proc){
     //
 
     // Map the code of the kernel so that when a syscall/trap happens there is no page fault. No permission for user. Direct map.
-    debug_printf("FOR PROC %u MAP KERNEL CODE %x to %x\n", proc->pid, get_paddr_kernel_start(), get_paddr_kernel_end());
+    VERBOSE_DEBUG_PRINTF("FOR PROC %u MAP KERNEL CODE %x to %x\n", proc->pid, get_paddr_kernel_start(), get_paddr_kernel_end());
     direct_map_range(pde_table, 
             get_paddr_kernel_start(),
             get_paddr_kernel_end(),
@@ -91,7 +91,7 @@ void load_create_process_user(struct Proc * proc, const struct BinaryAppEntry * 
     }
     
     // curr_vaddr is the first page not to be used by the process! i.e if it is 0x160000 then this could be the stack start.. for now ignored.
-    printf("Process %u uses up to vaddr: 0x%x\n",proc->pid, curr_vaddr);
+    VERBOSE_PRINTF("Process %u uses up to vaddr: 0x%x\n",proc->pid, curr_vaddr);
 
     init_proc_pages(proc);
 
@@ -112,7 +112,7 @@ void load_create_process_user(struct Proc * proc, const struct BinaryAppEntry * 
     // Sets on the trapframe th pc to the right vl
 
     vaddr_t params_vaddr = VADDR_USER_STACK_HARD_END - params_total_len;
-    debug_printf("Proc has sp top 0x%x after params at: 0x%x, len: %u so vaddr 0x%x\n", paddr_sp_end, final_user_sp_top, params_total_len, params_vaddr);
+    VERBOSE_PRINTF("Proc has sp top 0x%x after params at: 0x%x, len: %u so vaddr 0x%x\n", paddr_sp_end, final_user_sp_top, params_total_len, params_vaddr);
 
     // Sets sp to the virtual stack end - len of params.. params start vaddr, so that it does not use it for the proc
     init_trapframe(proc, params_vaddr); 
@@ -169,7 +169,7 @@ int reload_process_user(struct Proc * proc, const struct BinaryAppEntry * app_in
     // Sets on the trapframe th pc to the right vl
 
     vaddr_t params_vaddr = VADDR_USER_STACK_HARD_END - params_total_len;
-    debug_printf("Proc has sp top 0x%x after params at: 0x%x, len: %u so vaddr 0x%x\n", paddr_sp_end, final_user_sp_top, params_total_len, params_vaddr);
+    VERBOSE_PRINTF("Proc has sp top 0x%x after params at: 0x%x, len: %u so vaddr 0x%x\n", paddr_sp_end, final_user_sp_top, params_total_len, params_vaddr);
 
     // Sets sp to the virtual stack end - len of params.. params start vaddr, so that it does not use it for the proc
     init_trapframe(proc, params_vaddr); 

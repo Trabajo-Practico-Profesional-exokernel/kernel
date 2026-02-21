@@ -4,7 +4,7 @@
 #include "arch/mem_layout.h"
 #include "string.h"
 #include "stdlib.h"
-#include "stdio.h"
+#include "console/debug.h"
 
 #include "user_pages_alloc.h"
 #include "proc.h"
@@ -24,13 +24,13 @@ int load_paddr_stack_pages(struct Proc* proc, paddr_t * pages_arr){
 
         /* ON_MISSING_PDE */
         {
-            printf("Missing PDE for stack vaddr %x\n", (VADDR_USER_HARD_END + curr_page_ind* PAGE_SIZE));
+            VERBOSE_DEBUG_PRINTF_LV(1, "Missing PDE for stack vaddr %x\n", (VADDR_USER_HARD_END + curr_page_ind* PAGE_SIZE));
             return -1;
         },
 
         /* ON_MISSING_PTE */
         {
-            printf("Missing PTE for stack vaddr %x\n", (VADDR_USER_HARD_END + curr_page_ind* PAGE_SIZE));
+            VERBOSE_DEBUG_PRINTF_LV(1, "Missing PTE for stack vaddr %x\n", (VADDR_USER_HARD_END + curr_page_ind* PAGE_SIZE));
             return -2;            
         },
 
@@ -56,24 +56,24 @@ vaddr_t copy_pages_code_segment(struct Proc* proc_src, struct Proc* proc_trg){
 
         /* ON_MISSING_PDE */
         {
-            printf("Missing PDE for user code vaddr %x\n", _vaddr);
+            VERBOSE_DEBUG_PRINTF_LV(1, "Missing PDE for user code vaddr %x\n", _vaddr);
             break;
         },
 
         /* ON_MISSING_PTE */
         {
-            printf("Missing PTE for user code vaddr %x\n", _vaddr);
+            VERBOSE_DEBUG_PRINTF_LV(1,"Missing PTE for user code vaddr %x\n", _vaddr);
             break;            
         },
 
         /* BODY */
         {
-            printf("Should map _vaddr= 0x%x to _paddr=0x%x\n",_vaddr, _paddr);
+            VERBOSE_DEBUG_PRINTF_LV(1,"Should map _vaddr= 0x%x to _paddr=0x%x\n",_vaddr, _paddr);
             _vaddr+=PAGE_SIZE;
         }
     );
 
-    printf("Finished in vaddr 0x%x\n", _vaddr);
+    VERBOSE_DEBUG_PRINTF_LV(1,"Finished in vaddr 0x%x\n", _vaddr);
 
     return _vaddr;
 }

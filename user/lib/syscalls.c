@@ -253,17 +253,6 @@ int dup2(int prev_fd, int trg_fd){
 }
 
 int sys_execv(char* new_prog_name, char ** argv){
-    printf("SHOULD ATTEMPT TO EXECV %s\n", new_prog_name);
-    if(argv != NULL){
-        printf("GOT ARGS:\n");
-        
-        int curr= 0;
-
-        for(curr = 0; argv[curr]; curr++) {
-            printf("Prog got arg pointer argv[%d]: %x ", curr, argv[curr]);    
-            printf("=> '%s'\n", argv[curr]);
-        }
-    }
     return syscall(SYS_PROC_EXECV,(int)(new_prog_name),(int)(argv), 0, 0);
 }
 

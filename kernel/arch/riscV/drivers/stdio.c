@@ -122,7 +122,7 @@ void secondary_entry(void)
 void start_secondary_cpus(void){
 
     for (int i = 1; i < NCPU; i++) {
-        printf("Start %d/%d \n",i, NCPU);
+        VERBOSE_PRINTF("Start %d/%d \n",i, NCPU);
         sbi_hart_start(i, (unsigned long) secondary_entry, 0);
     }    
 }

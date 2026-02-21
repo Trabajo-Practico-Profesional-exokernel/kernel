@@ -21,7 +21,7 @@ struct UserProcPages procs_pages[PROCS_MAX];
 ///
 
 int copy_mem_pages(struct Proc* src_proc, struct Proc* trg_proc){
-    printf("=>Copying process code segment!\n");
+    VERBOSE_DEBUG_PRINTF_LV(1, "=>Copying process code segment!\n");
     struct UserProcPages* src_proc_pages_info = &procs_pages[src_proc->pid];
     uint32_t * trg_pde = (uint32_t *) trg_proc->pde_paddr;
 
@@ -33,13 +33,13 @@ int copy_mem_pages(struct Proc* src_proc, struct Proc* trg_proc){
         VADDR_USER_BASE , VADDR_USER_HARD_END,
         /* ON_MISSING_PDE */
         {
-            printf("Missing PDE for user code vaddr %x\n", _vaddr);
+            VERBOSE_DEBUG_PRINTF_LV(1, "Missing PDE for user code vaddr %x\n", _vaddr);
             break;
         },
 
         /* ON_MISSING_PTE */
         {
-            printf("Missing PTE for user code vaddr %x\n", _vaddr);
+            VERBOSE_DEBUG_PRINTF_LV(1, "Missing PTE for user code vaddr %x\n", _vaddr);
             break;
         },
 
@@ -50,7 +50,7 @@ int copy_mem_pages(struct Proc* src_proc, struct Proc* trg_proc){
             if(copy_page_paddr == 0){
                 return -1;
             }
-            // printf("Should copy user code page  %u src_paddr: 0x%x trg paddr: 0x%x vaddr: 0x%x\n", src_proc->pid, _paddr, copy_page_paddr, _vaddr);
+            // VERBOSE_DEBUG_PRINTF_LV(1, "Should copy user code page  %u src_paddr: 0x%x trg paddr: 0x%x vaddr: 0x%x\n", src_proc->pid, _paddr, copy_page_paddr, _vaddr);
 
             memcpy((void *) copy_page_paddr, (void *) _paddr, PAGE_SIZE);
             map_page(trg_pde , _vaddr, copy_page_paddr,
@@ -64,20 +64,20 @@ int copy_mem_pages(struct Proc* src_proc, struct Proc* trg_proc){
     // If it was dynamic then stack page would be not needed to set to hardlimit!
     _vaddr = VADDR_USER_HARD_END;
 
-    printf("=>Copying process stack!\n");
+    VERBOSE_DEBUG_PRINTF_LV(1, "=>Copying process stack!\n");
     paddr_t curr_paddr_stack = 0;
     WALK_MEM_PAGES(
         src_proc->pde_paddr,
         VADDR_USER_HARD_END , VADDR_USER_STACK_HARD_END,
         /* ON_MISSING_PDE */
         {
-            printf("Missing PDE for proc stack vaddr 0x%x\n", _vaddr);
+            VERBOSE_DEBUG_PRINTF_LV(1, "Missing PDE for proc stack vaddr 0x%x\n", _vaddr);
             break;
         },
 
         /* ON_MISSING_PTE */
         {
-            printf("Missing PTE for proc stack vaddr 0x%x\n", _vaddr);
+            VERBOSE_DEBUG_PRINTF_LV(1, "Missing PTE for proc stack vaddr 0x%x\n", _vaddr);
             break;
         },
 
@@ -87,7 +87,7 @@ int copy_mem_pages(struct Proc* src_proc, struct Proc* trg_proc){
             if(curr_paddr_stack == 0){
                 return -1;
             }
-            // printf("Should copy user stack page  %u src_paddr: 0x%x trg paddr: 0x%x vaddr: 0x%x\n", src_proc->pid, _paddr, curr_paddr_stack, _vaddr);
+            // VERBOSE_DEBUG_PRINTF_LV(1, "Should copy user stack page  %u src_paddr: 0x%x trg paddr: 0x%x vaddr: 0x%x\n", src_proc->pid, _paddr, curr_paddr_stack, _vaddr);
 
             memcpy((void *) curr_paddr_stack, (void *) _paddr, PAGE_SIZE);
             map_page(trg_pde , _vaddr, curr_paddr_stack,
@@ -101,7 +101,7 @@ int copy_mem_pages(struct Proc* src_proc, struct Proc* trg_proc){
     // If it was dynamic then it would be not needed to set to hardlimit!
     _vaddr = VADDR_USER_HEAP_START;
 
-    printf("=>Copying process heap!\n");
+    VERBOSE_DEBUG_PRINTF_LV(1, "=>Copying process heap!\n");
     
 
     WALK_MEM_PAGES(
@@ -109,13 +109,13 @@ int copy_mem_pages(struct Proc* src_proc, struct Proc* trg_proc){
         VADDR_USER_HEAP_START , src_proc_pages_info->vaddr_proc_heap_end,
         /* ON_MISSING_PDE */
         {
-            printf("Missing PDE for proc heap vaddr 0x%x\n", _vaddr);
+            VERBOSE_DEBUG_PRINTF_LV(1, "Missing PDE for proc heap vaddr 0x%x\n", _vaddr);
             break;
         },
 
         /* ON_MISSING_PTE */
         {
-            printf("Missing PTE for proc heap vaddr 0x%x\n", _vaddr);
+            VERBOSE_DEBUG_PRINTF_LV(1, "Missing PTE for proc heap vaddr 0x%x\n", _vaddr);
             break;
         },
 
@@ -125,7 +125,7 @@ int copy_mem_pages(struct Proc* src_proc, struct Proc* trg_proc){
             if(copy_page_paddr == 0){
                 return -1;
             }
-            printf("Should copy user heap page  %u src_paddr: 0x%x trg paddr: 0x%x vaddr: 0x%x\n", src_proc->pid, _paddr, copy_page_paddr, _vaddr);
+            VERBOSE_DEBUG_PRINTF_LV(1, "Should copy user heap page  %u src_paddr: 0x%x trg paddr: 0x%x vaddr: 0x%x\n", src_proc->pid, _paddr, copy_page_paddr, _vaddr);
 
             memcpy((void *) copy_page_paddr, (void *) _paddr, PAGE_SIZE);
             map_page(trg_pde , _vaddr, copy_page_paddr,
@@ -142,7 +142,7 @@ int copy_mem_pages(struct Proc* src_proc, struct Proc* trg_proc){
 
 
 void reset_proc_range(struct Proc* proc, vaddr_t start, vaddr_t end){
-    printf("=>Freeing process vaddr range 0x%x to 0x%x!\n", start, end);
+    VERBOSE_DEBUG_PRINTF_LV(1, "=>Freeing process vaddr range 0x%x to 0x%x!\n", start, end);
     vaddr_t _vaddr = start;
     
     WALK_MEM_PAGES(
@@ -150,19 +150,19 @@ void reset_proc_range(struct Proc* proc, vaddr_t start, vaddr_t end){
         start , end,
         /* ON_MISSING_PDE */
         {
-            printf("Missing PDE for vaddr in range 0x%x\n", _vaddr);
+            VERBOSE_DEBUG_PRINTF_LV(1, "Missing PDE for vaddr in range 0x%x\n", _vaddr);
             break;
         },
 
         /* ON_MISSING_PTE */
         {
-            printf("Missing PTE for vaddr in range 0x%x\n", _vaddr);
+            VERBOSE_DEBUG_PRINTF_LV(1, "Missing PTE for vaddr in range 0x%x\n", _vaddr);
             break;
         },
 
         /* BODY */
         {
-            printf("Should free page  %u paddr: 0x%x vaddr: 0x%x\n", proc->pid, _paddr, _vaddr);
+            VERBOSE_DEBUG_PRINTF_LV(1, "Should free page  %u paddr: 0x%x vaddr: 0x%x\n", proc->pid, _paddr, _vaddr);
             _vaddr+=PAGE_SIZE;
             free_user_page(_paddr);
             reset_map_page((uint32_t *) proc->pde_paddr, _curr_pde, _curr_pte);
@@ -173,26 +173,26 @@ void reset_proc_range(struct Proc* proc, vaddr_t start, vaddr_t end){
 
 void reset_proc_heap(struct Proc* proc){
     struct UserProcPages* proc_pages = &procs_pages[proc->pid];
-    printf("=>Freeing process heap!\n");
+    VERBOSE_DEBUG_PRINTF_LV(1, "=>Freeing process heap!\n");
     vaddr_t _vaddr = VADDR_USER_HEAP_START;
     WALK_MEM_PAGES(
         proc->pde_paddr,
         VADDR_USER_HEAP_START , proc_pages->vaddr_proc_heap_end,
         /* ON_MISSING_PDE */
         {
-            printf("Missing PDE for proc heap vaddr 0x%x\n", _vaddr);
+            VERBOSE_DEBUG_PRINTF_LV(1, "Missing PDE for proc heap vaddr 0x%x\n", _vaddr);
             break;
         },
 
         /* ON_MISSING_PTE */
         {
-            printf("Missing PTE for proc heap vaddr 0x%x\n", _vaddr);
+            VERBOSE_DEBUG_PRINTF_LV(1, "Missing PTE for proc heap vaddr 0x%x\n", _vaddr);
             break;
         },
 
         /* BODY */
         {
-            printf("Should free proc heap page  %u paddr: 0x%x vaddr: 0x%x\n", proc->pid, _paddr, _vaddr);
+            VERBOSE_DEBUG_PRINTF_LV(1, "Should free proc heap page  %u paddr: 0x%x vaddr: 0x%x\n", proc->pid, _paddr, _vaddr);
             _vaddr+=PAGE_SIZE;
             free_user_page(_paddr);
             reset_map_page((uint32_t *) proc->pde_paddr, _curr_pde, _curr_pte);
@@ -206,25 +206,25 @@ void free_proc_pages(struct Proc* proc){
     // First free user code segment
     vaddr_t _vaddr = VADDR_USER_BASE;
 
-    printf("=>Freeing process code segment!\n");
+    VERBOSE_DEBUG_PRINTF_LV(1, "=>Freeing process code segment!\n");
     WALK_MEM_PAGES(
         proc->pde_paddr,
         VADDR_USER_BASE , VADDR_USER_HARD_END,
         /* ON_MISSING_PDE */
         {
-            printf("Missing PDE for user code vaddr %x\n", _vaddr);
+            VERBOSE_DEBUG_PRINTF_LV(1, "Missing PDE for user code vaddr %x\n", _vaddr);
             break;
         },
 
         /* ON_MISSING_PTE */
         {
-            printf("Missing PTE for user code vaddr %x\n", _vaddr);
+            VERBOSE_DEBUG_PRINTF_LV(1, "Missing PTE for user code vaddr %x\n", _vaddr);
             break;
         },
 
         /* BODY */
         {
-            printf("Should free user code page  %u paddr: 0x%x vaddr: 0x%x\n", proc->pid, _paddr, _vaddr);
+            VERBOSE_DEBUG_PRINTF_LV(1, "Should free user code page  %u paddr: 0x%x vaddr: 0x%x\n", proc->pid, _paddr, _vaddr);
             _vaddr+=PAGE_SIZE;
             // free_user_page(_paddr);
         }
@@ -233,26 +233,26 @@ void free_proc_pages(struct Proc* proc){
     // If it was dynamic then stack page would be not needed to set to hardlimit!
     _vaddr = VADDR_USER_HARD_END;
 
-    printf("=>Freeing process stack!\n");
+    VERBOSE_DEBUG_PRINTF_LV(1, "=>Freeing process stack!\n");
     
     WALK_MEM_PAGES(
         proc->pde_paddr,
         VADDR_USER_HARD_END , VADDR_USER_STACK_HARD_END,
         /* ON_MISSING_PDE */
         {
-            printf("Missing PDE for proc stack vaddr 0x%x\n", _vaddr);
+            VERBOSE_DEBUG_PRINTF_LV(1, "Missing PDE for proc stack vaddr 0x%x\n", _vaddr);
             break;
         },
 
         /* ON_MISSING_PTE */
         {
-            printf("Missing PTE for proc stack vaddr 0x%x\n", _vaddr);
+            VERBOSE_DEBUG_PRINTF_LV(1, "Missing PTE for proc stack vaddr 0x%x\n", _vaddr);
             break;
         },
 
         /* BODY */
         {
-            printf("Should free proc stack page  %u paddr: 0x%x vaddr: 0x%x\n", proc->pid, _paddr, _vaddr);
+            VERBOSE_DEBUG_PRINTF_LV(1, "Should free proc stack page  %u paddr: 0x%x vaddr: 0x%x\n", proc->pid, _paddr, _vaddr);
             _vaddr+=PAGE_SIZE;
             // free_user_page(_paddr);
         }
@@ -261,7 +261,7 @@ void free_proc_pages(struct Proc* proc){
     // If it was dynamic then it would be not needed to set to hardlimit!
     _vaddr = VADDR_USER_HEAP_START;
 
-    printf("=>Freeing process heap!\n");
+    VERBOSE_DEBUG_PRINTF_LV(1, "=>Freeing process heap!\n");
     
 
     WALK_MEM_PAGES(
@@ -269,19 +269,19 @@ void free_proc_pages(struct Proc* proc){
         VADDR_USER_HEAP_START , proc_page_info->vaddr_proc_heap_end,
         /* ON_MISSING_PDE */
         {
-            printf("Missing PDE for proc heap vaddr 0x%x\n", _vaddr);
+            VERBOSE_DEBUG_PRINTF_LV(1, "Missing PDE for proc heap vaddr 0x%x\n", _vaddr);
             break;
         },
 
         /* ON_MISSING_PTE */
         {
-            printf("Missing PTE for proc heap vaddr 0x%x\n", _vaddr);
+            VERBOSE_DEBUG_PRINTF_LV(1, "Missing PTE for proc heap vaddr 0x%x\n", _vaddr);
             break;
         },
 
         /* BODY */
         {
-            printf("Should free proc heap page  %u paddr: 0x%x vaddr: 0x%x\n", proc->pid, _paddr, _vaddr);
+            VERBOSE_DEBUG_PRINTF_LV(1, "Should free proc heap page  %u paddr: 0x%x vaddr: 0x%x\n", proc->pid, _paddr, _vaddr);
             _vaddr+=PAGE_SIZE;
             free_user_page(_paddr);
 
@@ -333,14 +333,14 @@ int try_add_heap_page_for_proc(struct Proc * proc, paddr_t* allocated_paddr){
     struct UserProcPages* proc_pages = &procs_pages[proc->pid];
 
     if (proc_pages->vaddr_proc_heap_end >= VADDR_USER_HEAP_HARD_END){
-        debug_printf("Process %u reached max limit of heap pages! Cannot alloc\n", proc->pid);
+        VERBOSE_PRINTF("Process %u reached max limit of heap pages! Cannot alloc\n", proc->pid);
         return -1;
     }
 
     int ret_value = try_alloc_user_page(allocated_paddr);
     
     if(ret_value < 0){
-        debug_printf("Failed alloc page, no memory left!\n");
+        VERBOSE_PRINTF("Failed alloc page, no memory left!\n");
         return ret_value;
     }
 
@@ -379,10 +379,10 @@ void syscall_sbrk(FullTrapFrame *tf, uintptr_t pc) {
     
     if(ret_value >= 0){
         vaddr_t ret_vaddr = get_vaddr_user_heap_page(ret_value);
-        printf("SBRK incremented by 1! Allocated page ind %d, vaddr= %x to paddr= %x\n", ret_value, ret_vaddr, allocated_page);
+        VERBOSE_DEBUG_PRINTF("SBRK incremented by 1! Allocated page ind %d, vaddr= %x to paddr= %x\n", ret_value, ret_vaddr, allocated_page);
         ret_value = ret_vaddr;
     } else {
-        printf("ERROR ret %d at alloc sbrk\n", ret_value);
+        VERBOSE_PRINTF("ERROR ret %d at alloc sbrk\n", ret_value);
         ret_value = 0;
     }
 

@@ -12,7 +12,6 @@ extern void main(int argc, char** argv)__attribute__((weak));
 #define VADDR_USER_STACK_TOP VADDR_USER_STACK_BASE
 
 __attribute__((noreturn)) void do_exit(void) {
-    // debug_printf("-------> PROCESS EXITED NORMALLY!\n");
     exit(0); // Syscall exit!
 }
 
@@ -39,14 +38,14 @@ void sleep(int delay) {
 
 
 void arg_main(int argc, char** argv){
-    debug_printf("Prog got argc: %d and argv: %x\n", argc, argv);
+    VERBOSE_DEBUG_PRINTF("Prog got argc: %d and argv: %x\n", argc, argv);
 
     if(argc > 0){
-        debug_printf("GOT ARGS:\n");
+        VERBOSE_DEBUG_PRINTF("GOT ARGS:\n");
         int curr= 0;
         for(curr = 0; curr < argc; curr++) {
-            debug_printf("Prog got arg pointer argv[%d]: %x ", curr, argv[curr]);    
-            debug_printf("=> '%s'\n", argv[curr]);    
+            VERBOSE_DEBUG_PRINTF("Prog got arg pointer argv[%d]: %x ", curr, argv[curr]);    
+            VERBOSE_DEBUG_PRINTF("=> '%s'\n", argv[curr]);    
         }
     }
 

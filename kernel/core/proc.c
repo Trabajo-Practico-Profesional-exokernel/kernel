@@ -41,7 +41,7 @@ int copy_argv_pointers_from_user(struct Proc * proc, paddr_t* argv_pointers, vad
                                     vaddr_argv);
     
     if (src_argv_paddr == 0){
-        printf("Invalid vaddr for argv error!!\n");
+        VERBOSE_PRINTF("Invalid vaddr for argv error!!\n");
         return -2;
     }
     vaddr_t* src_argv = (vaddr_t*) src_argv_paddr;
@@ -49,7 +49,7 @@ int copy_argv_pointers_from_user(struct Proc * proc, paddr_t* argv_pointers, vad
 
     for(argc = 0; src_argv[argc]; argc++) { // While argv[ind] != 0
         if(argc >= MAXARG) {
-            printf("MORE THAN MAX PARAMS!\n");
+            VERBOSE_PRINTF("MORE THAN MAX PARAMS!\n");
             return -1;
         }
 
@@ -59,7 +59,7 @@ int copy_argv_pointers_from_user(struct Proc * proc, paddr_t* argv_pointers, vad
                                         (uint32_t *) proc->pde_paddr,
                                         vaddr_arg);
         if (paddr_arg == 0){
-            printf("Invalid vaddr for arg error!!\n");
+            VERBOSE_PRINTF("Invalid vaddr for arg error!!\n");
             return -2;
         }
 
@@ -68,11 +68,11 @@ int copy_argv_pointers_from_user(struct Proc * proc, paddr_t* argv_pointers, vad
         size_t arg_len = strlen((char* ) paddr_arg) + 1; 
         
         if (arg_len > MAX_ARG_LEN){
-            printf("ARG LONGER THAN ALLOWED!\n");
+            VERBOSE_PRINTF("ARG LONGER THAN ALLOWED!\n");
             return -1;            
         }
 
-        debug_printf("MAPPED PARAM FOR PROGRAM pointer at %x!\n", paddr_arg);
+        VERBOSE_DEBUG_PRINTF_LV(1, "MAPPED PARAM FOR PROGRAM pointer at %x!\n", paddr_arg);
         
         argv_pointers[argc] = paddr_arg;
     }
@@ -95,30 +95,29 @@ int set_init_parameters_for_proc(struct Proc * proc, char ** argv, paddr_t* sp_o
     for(argc = 0; argv[argc]; argc++) { // While argv[ind] != 0
 
         if(argc >= MAXARG) {
-            printf("MORE THAN MAX PARAMS!\n");
+            VERBOSE_PRINTF("MORE THAN MAX PARAMS!\n");
             return -1;
         }
-        // printf("Pushing ARG at 0x%x sp bfr: %p ", argv[argc], sp);
-        // printf("'%s'!\n", argv[argc]);
+        VERBOSE_DEBUG_PRINTF_LV(2,"Pushing ARG at 0x%x sp bfr: %p ", argv[argc], sp);
+        VERBOSE_DEBUG_PRINTF_LV(2,"'%s'!\n", argv[argc]);
         size_t arg_len = strlen(argv[argc]) + 1; 
 
         if (arg_len > MAX_ARG_LEN){
-            printf("ARG LONGER THAN ALLOWED!\n");
+            VERBOSE_PRINTF("ARG LONGER THAN ALLOWED!\n");
             return -1;            
         }
         sp -= arg_len;
         sp -= sp % 16; // riscv sp must be 16-byte aligned
 
         if(sp < proc->user_sp_start){
-            printf("STACK OVERFLOW!!\n");
+            VERBOSE_PRINTF("STACK OVERFLOW!!\n");
             return -2;
         }
-        // printf("trg aft stack: %p , len: %d ", sp, arg_len);
+        VERBOSE_DEBUG_PRINTF_LV(2,"trg aft stack: %p , len: %d ", sp, arg_len);
         memcpy( (void *) sp, (void *) argv[argc], arg_len);
-        // printf("COPIED\n");
         argv_pointers[argc] = VADDR_USER_STACK_HARD_END- (paddr_sp_end- sp);
-        // printf("Copied arg to 0x%x, vaddr: 0x%x", sp, argv_pointers[argc]);
-        // printf(" value: '%s'\n", sp);
+        VERBOSE_DEBUG_PRINTF_LV(2,"Copied arg to 0x%x, vaddr: 0x%x", sp, argv_pointers[argc]);
+        VERBOSE_DEBUG_PRINTF_LV(2," value: '%s'\n", sp);
     }
     argv_pointers[argc] = 0;
 
@@ -128,7 +127,7 @@ int set_init_parameters_for_proc(struct Proc * proc, char ** argv, paddr_t* sp_o
     sp -= sp % 16;
 
     if(sp < proc->user_sp_start){
-        printf("STACK OVERFLOW!!\n");
+        VERBOSE_PRINTF("STACK OVERFLOW!!\n");
         return -2;
     }
 

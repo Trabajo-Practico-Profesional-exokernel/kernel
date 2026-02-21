@@ -168,28 +168,19 @@ void handle_trap(FullTrapFrame *tf) {
 
     if (scause == 8) {
         // Syscall from user mode
-        // Example: dispatch to syscall handler
-        //printf("log trap from userspace scause=%x, stval=%x, sepc=%x\n", scause, stval, user_pc);
-        
-        //uintptr_t new_pc = syscall_dispatch(sp);  // dispatch syscall?
-        //WRITE_CSR(user_pc, new_pc); // Redirect execution
         user_pc = handle_syscall(tf, user_pc);
-        //user_pc += 4;  // Skip ins
         WRITE_CSR(sepc, user_pc);      
 
     } else if(scause == 2) {
         // Just for testing purpose? skip this instruction
-        //printf("ignore trap illegal ins scause=%x, stval=%x, sepc=%x\n", scause, stval, user_pc);
         PANIC("DO NOT IGNORE trap illegal ins scause=%x, stval=%x, sepc=%x\n", scause, stval, user_pc);
-        
+
         user_pc += 4;  // Skip illegal instruction
         WRITE_CSR(sepc, user_pc);
     } else if(IS_CLOCK_INTERRUPT(scause)) {
-        // debug_printf("Clock interrupt ins scause=%x, stval=%x, sepc=%x\n", scause, stval, user_pc);
         SET_NEXT_INTERRUPT(DELAY_INTERRUPT);
         clock_yield(tf, user_pc);
     } else {
         PANIC("unexpected trap scause=%u, stval=%x, sepc=%x\n", scause, stval, user_pc);
     }
-    //printf("log trap scause=%x, stval=%x, sepc=%x\n", scause, stval, user_pc);
 }
