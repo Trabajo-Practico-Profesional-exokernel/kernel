@@ -21,6 +21,9 @@ void init_proc_pages(struct Proc* proc);
 void init_proc_stack(struct Proc* proc);
 
 void free_proc_pages(struct Proc* proc);
+void reset_proc_heap(struct Proc* proc);
+
+void reset_proc_range(struct Proc* proc, vaddr_t start, vaddr_t end);
 int copy_mem_pages(struct Proc* src_proc, struct Proc* trg_proc);
 
 

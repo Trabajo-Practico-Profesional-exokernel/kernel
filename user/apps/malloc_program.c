@@ -27,6 +27,10 @@ void main() {
     strncpy(allocated + 4095, inp, inp_len +1);
     printf("Multi page content ... '%s' \n", allocated+4095);
 
+    printf("JUMP TO SIMPLE FRK! EXECV\n");
+
+    int err = sys_execv("simple_frk", NULL);
+    printf("FAILED JUMP EXECV %d \n", err);
     // printf("Now DO Actually have a page fault?! End of last page/sbrk end\n");
     // strncpy(allocated2 + 4095, inp, inp_len +1);
     

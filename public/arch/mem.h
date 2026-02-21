@@ -39,7 +39,7 @@ void map_page(uint32_t *table1, vaddr_t vaddr, paddr_t paddr, uint32_t flags);
 paddr_t get_paddr_page(uint32_t *page_table, size_t ind_pte);
 paddr_t get_paddr_page_table(uint32_t *page_directory, size_t ind_pde);
 void get_vaddr_indexs(vaddr_t vaddr, size_t* ind_pde, size_t* ind_pte);
-
+void reset_map_page(uint32_t *page_directory, size_t pde_ind, size_t pte_ind);
 
 // start and end will go to the prev indexs... if not aligned with page size... i.e ignoring offset in page
 // Macro does walk pde table from vaddr start to vaddr end ... exposing as it seen

@@ -109,6 +109,11 @@ void switch_page_table(uint32_t *table_next, uint8_t* next_stack){
 }
 */
 
+void reset_map_page(uint32_t *pd_table, size_t pde_ind, size_t pte_ind){
+    uint32_t* pt_table = (uint32_t *) GET_ENTRY_OFFSET(pd_table[pde_ind]); 
+    pt_table[pte_ind] = 0;
+}
+
 void map_page(uint32_t *pd_table, vaddr_t vaddr, paddr_t paddr, uint32_t permissions) {
     if (!is_aligned(vaddr, PAGE_SIZE))
         PANIC("unaligned vaddr %x", vaddr);

@@ -23,6 +23,7 @@ void init_syscalls_ipc(void);
 
 
 void syscall_exec(FullTrapFrame *tf, uintptr_t pc);
+void syscall_execv(FullTrapFrame *tf, uintptr_t pc);
 void syscall_fork(FullTrapFrame *tf, uintptr_t pc);
 
 void syscall_try_send_content(FullTrapFrame *tf, uintptr_t pc);

@@ -94,7 +94,8 @@ void init_sched_main_cpu(void) {
     // struct Proc * first_main_proc = create_process("infinite_loop", INF_LOOP_1_ARGS);
     // create_process("infinite_loop", INF_LOOP_2_ARGS);
 
-    struct Proc * first_main_proc = create_process("coordinator", DEF_ARGV);
+    // struct Proc * first_main_proc = create_process("malloc_program", DEF_ARGV);
+    struct Proc * first_main_proc = create_process(APP_NAME_COORDINATOR, DEF_ARGV);
     coordinator_PID = first_main_proc->pid;
     #endif    
 

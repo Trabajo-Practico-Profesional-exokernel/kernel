@@ -246,6 +246,8 @@ void init_syscalls_proc(void) {
         exit_statuses[i].proc_pid = i;
     }
     register_syscall(SYS_EXEC, syscall_exec);
+    register_syscall(SYS_PROC_EXECV, syscall_execv);
+    
     register_syscall(SYS_FORK, syscall_fork);
 
     register_syscall(SYS_EXIT, syscall_exit);

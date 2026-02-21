@@ -95,11 +95,11 @@ int set_init_parameters_for_proc(struct Proc * proc, char ** argv, paddr_t* sp_o
     for(argc = 0; argv[argc]; argc++) { // While argv[ind] != 0
 
         if(argc >= MAXARG) {
-            debug_printf("MORE THAN MAX PARAMS!\n");
+            printf("MORE THAN MAX PARAMS!\n");
             return -1;
         }
-        debug_printf("Pushing ARG at 0x%x to stack ", argv[argc]);
-        debug_printf("'%s'!\n", argv[argc]);
+        // printf("Pushing ARG at 0x%x sp bfr: %p ", argv[argc], sp);
+        // printf("'%s'!\n", argv[argc]);
         size_t arg_len = strlen(argv[argc]) + 1; 
 
         if (arg_len > MAX_ARG_LEN){
@@ -113,11 +113,12 @@ int set_init_parameters_for_proc(struct Proc * proc, char ** argv, paddr_t* sp_o
             printf("STACK OVERFLOW!!\n");
             return -2;
         }
-
+        // printf("trg aft stack: %p , len: %d ", sp, arg_len);
         memcpy( (void *) sp, (void *) argv[argc], arg_len);
+        // printf("COPIED\n");
         argv_pointers[argc] = VADDR_USER_STACK_HARD_END- (paddr_sp_end- sp);
-        debug_printf("Copied arg to 0x%x, vaddr: 0x%x", sp, argv_pointers[argc]);
-        debug_printf(" value: '%s'\n", sp);
+        // printf("Copied arg to 0x%x, vaddr: 0x%x", sp, argv_pointers[argc]);
+        // printf(" value: '%s'\n", sp);
     }
     argv_pointers[argc] = 0;
 

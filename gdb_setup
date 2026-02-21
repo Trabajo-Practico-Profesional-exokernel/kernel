@@ -1,2 +1,1 @@
-add-symbol-file user/build/infinite_loop/app.elf
-b *0x1000000
+b reload_process_user
