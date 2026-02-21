@@ -30,6 +30,7 @@ extern struct Proc * create_process(char* proc_name, char ** argv);
 extern struct Proc * create_process_from_ind(int ind, char ** argv);
 
 char *DEF_ARGV_TEST[] = { "sh_prog","parameter1", 0 };
+extern char *APP_NAME_COORDINATOR; //= "coordinator";
 
 
 int do_sched_yield(char * args){
@@ -45,13 +46,11 @@ int load_processes_headers(char *args){
 
 
 int start_shell(char *args){
-    struct Proc * proc_def = create_process("coordinator", DEF_ARGV_TEST);
-    coordinator_PID = proc_def->pid;
-    //create_process(APP_IND_SHELL, DEF_ARGV);
-    //struct Proc * proc_def = create_process(APP_IND_PROC_A, DEF_ARGV);
-    //struct Proc * proc_def_2 = create_process(APP_IND_PROC_B, DEF_ARGV);
+
+    struct Proc * first_main_proc = create_process(APP_NAME_COORDINATOR, DEF_ARGV_TEST);
+    coordinator_PID = first_main_proc->pid;
     enable_timer_interrupts();
-    switch_proc(proc_def);
+    sched_yield();
     return 0;
 }
 

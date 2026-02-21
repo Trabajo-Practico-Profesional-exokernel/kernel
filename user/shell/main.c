@@ -37,6 +37,11 @@ void main() {
         printf("user> ");
         read_line(input_buf, MAX_INPUT);
 
+        // Ignore comments and so on
+        if(strlen(input_buf) == 0 || input_buf[0] == '#'){
+            continue;
+        }
+
         if (strncmp((const uint8_t*)input_buf, (const uint8_t*)"q", 2) == 0) {
             printf("Bye!\n");
             break;

@@ -46,7 +46,15 @@ void interactive_shell_main(void) {
         // int len = 
         read_line(input_buf, MAX_INPUT);
 
+
+        // Ignore comments and so on
+        if(strlen(input_buf) == 0 || input_buf[0] == '#'){
+            continue;
+        }
+
+        
         char * args= NULL;
+
         split_by_once((uint8_t*)input_buf, (uint8_t**)&args, ' ');
 
 

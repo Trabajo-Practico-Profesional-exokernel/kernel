@@ -1,0 +1,10 @@
+
+
+# Setup basico, hace falta cargar programas primero
+load_procs
+run_shell
+# Shell abierta, comandos a la shell de usuario.
+# En este caso ejecutar hello_world
+hello_world
+
+exit
