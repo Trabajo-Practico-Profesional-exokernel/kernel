@@ -180,6 +180,12 @@ void map_page(uint32_t *pd_table, vaddr_t vaddr, paddr_t paddr, uint32_t permiss
     // debug_printf("Mapping vaddr %x to paddr %x at pd_index %u (%x), pt_index %u (%x) value: %x \n", vaddr, paddr, pd_index, pd_index*4, pt_index, pt_index*4, pt_table[pt_index]);
 }
 
+void reset_map_page(uint32_t *pd_table, size_t pde_ind, size_t pte_ind){
+    uint32_t* pt_table = (uint32_t *) (pd_table[pde_ind] & I86_PDE_FRAME); 
+    pt_table[pte_ind] = 0;
+}
+
+
 
 
 paddr_t get_paddr_page(uint32_t *page_table, size_t ind_pte){
