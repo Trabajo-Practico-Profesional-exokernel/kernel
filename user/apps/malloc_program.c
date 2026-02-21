@@ -3,11 +3,14 @@
 #include "stdlib.h"
 
 void main() {
-    printf("KALLOC PROGRAM START\n");
+    printf("MALLOC PROGRAM START\n");
 
-    char * allocated = sbrk(1); // Alloc 1 page
-    char * allocated2 = sbrk(1); // Alloc 1 page
+    char * allocated = malloc(4095); // Alloc 1 new page
+    char * allocated2 = malloc(1000); // Alloc 1 new page
+    char * allocated3 = malloc(1000); // Should not alloc new page.
 
+    malloc_stats();
+    
     printf("RECV POINTER %p \n", allocated);
 
     char * inp = "SOME STRING ";

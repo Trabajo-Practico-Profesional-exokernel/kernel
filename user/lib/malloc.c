@@ -45,12 +45,22 @@ static void *extend_heap(uint32_t size) {
     uint32_t pages_needed = (total_size + PAGE_SIZE - 1) / PAGE_SIZE;
     
     // Request pages from kernel
-    void *new_block = sbrk(pages_needed);
+    void *new_block = sbrk(1);
     
     if (new_block == NULL || (int)new_block == -1) {
         printf("malloc: sbrk() failed\n");
         return NULL;
     }
+    
+    for(int remaining = pages_needed-1; remaining > 0; remaining--){
+        void * ret = sbrk(1); // For now sbrk works only with pages = 1
+        if(ret == NULL){
+            pages_needed-= remaining; // Remaining were not allocated
+            break;
+        } 
+    }
+    
+
     
     // Update heap_end if this is the first allocation
     if (heap_end == NULL) {
@@ -164,6 +174,26 @@ void *malloc(size_t size) {
         heap_start->next = NULL;
         heap_start->prev = NULL;
         
+        // Check if there's remaining space in the allocated pages
+        uint32_t total_size = aligned_size + sizeof(block_metadata_t);
+        uint32_t pages_allocated = (total_size + PAGE_SIZE - 1) / PAGE_SIZE;
+        uint32_t actual_allocated = pages_allocated * PAGE_SIZE;
+        
+        if (actual_allocated > total_size) {
+            // Create a free block for the remaining space
+            uint32_t remaining_size = actual_allocated - total_size;
+            
+            if (remaining_size >= sizeof(block_metadata_t)) {
+                block_metadata_t *free_block = (block_metadata_t *)((char *)heap_space + total_size);
+                free_block->size = remaining_size - sizeof(block_metadata_t);
+                free_block->is_free = 1;
+                free_block->next = NULL;
+                free_block->prev = heap_start;
+                
+                heap_start->next = free_block;
+            }
+        }
+        
         return (void *)((char *)heap_start + sizeof(block_metadata_t));
     }
     
@@ -203,6 +233,29 @@ void *malloc(size_t size) {
         block->prev = current;
     } else {
         heap_start = block;
+    }
+    
+    // Check if there's remaining space in the allocated pages
+    uint32_t total_size = aligned_size + sizeof(block_metadata_t);
+    uint32_t pages_allocated = (total_size + PAGE_SIZE - 1) / PAGE_SIZE;
+    uint32_t actual_allocated = pages_allocated * PAGE_SIZE;
+    
+    if (actual_allocated > total_size) {
+        // Create a free block for the remaining space
+        uint32_t remaining_size = actual_allocated - total_size;
+        
+        if (remaining_size >= sizeof(block_metadata_t)) {
+            block_metadata_t *free_block = (block_metadata_t *)((char *)heap_space + total_size);
+            free_block->size = remaining_size - sizeof(block_metadata_t);
+            free_block->is_free = 1;
+            free_block->next = block->next;
+            free_block->prev = block;
+            
+            block->next = free_block;
+            if (free_block->next != NULL) {
+                free_block->next->prev = free_block;
+            }
+        }
     }
     
     return (void *)((char *)block + sizeof(block_metadata_t));
