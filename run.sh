@@ -10,6 +10,7 @@ testing=0
 only_build=0
 disk=
 level=-1
+NCPU=1
 
 while [[ $# -gt 0 ]]; do
 	case "$1" in
@@ -21,28 +22,11 @@ while [[ $# -gt 0 ]]; do
 	        -b) only_build=1; shift ;;
 			-disk) disk=$2; shift 2 ;;
 			-level) level=$2; shift 2 ;;
+			-ncpu) NCPU=$2; shift 2 ;;
 	        #-*) echo "Got flag $1 after - :${1#-}" ; shift;;  	
 	*) trg=$1 ; shift ;;
 	esac
 done
-
-if [[ "$trg" == "riscv" || "$trg" == "x86" ]]; then
-	NCPU=$1 # Next arg after arch is ncpus!
-	if [ -z "$NCPU" ];then
-		NCPU=1
-	fi
-
-else
-	NCPU=$trg # first arg is ncpus!
-
-	trg=$1
-	if [ -z "$trg" ];then
-		trg=riscv
-	fi
-
-
-
-fi
 
 cd src
 

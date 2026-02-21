@@ -28,7 +28,7 @@ ifeq ($(ARCH),x86)
 	AS      = nasm
 	CFLAGS  = $(DEF_INCS) -Imeta/gen -Ikernel/arch/x86 -Ikernel/arch/x86/drivers -m32 -nostdlib -nostdinc -fno-builtin -fno-stack-protector \
 	           -nostartfiles -nodefaultlibs -Wall -Wextra -c -g -DIS_X86 -march=i386 -mtune=i386 	\
-	           -DNCPU=1 -DDEBUG_LEVEL=$(DEBUG_LEVEL)
+	           -DNCPU=$(NCPU) -DDEBUG_LEVEL=$(DEBUG_LEVEL)
 	TEST_DIRS := test/core test/x86
 	TEST_INCS := -Itest/core -Itest/x86
 
@@ -36,7 +36,7 @@ ifeq ($(ARCH),x86)
 	LDFLAGS = -T kernel/arch/x86/linker/kernel.ld -melf_i386
 	QEMU    = qemu-system-i386 -kernel build/x86/kernel.elf -m 512 -no-reboot -no-shutdown -nographic -serial mon:stdio \
 	                           -drive file=$(KERNEL_DISK_PATH),index=1,media=disk,format=raw			 \
-							   -smp 1 
+							   -smp $(NCPU) 
 else ifeq ($(ARCH),riscv)
 	CC      = clang
 
