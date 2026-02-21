@@ -161,9 +161,7 @@ void syscall_fork(FullTrapFrame *tf, uintptr_t pc) {
         switch_page_table((uint32_t *) parent_proc->pde_paddr);
         return;
     }
-
     uintptr_t trg_init_pc = pc + 4;
-    printf("Forked?\n");
     
     SET_SYSCALL_RET0(tf, child_proc->pid)
     save_curr_proc_state(tf, trg_init_pc);

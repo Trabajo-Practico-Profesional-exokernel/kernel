@@ -65,7 +65,7 @@ int copy_mem_pages(struct Proc* src_proc, struct Proc* trg_proc){
     _vaddr = VADDR_USER_HARD_END;
 
     printf("=>Copying process stack!\n");
-    
+    paddr_t curr_paddr_stack = 0;
     WALK_MEM_PAGES(
         src_proc->pde_paddr,
         VADDR_USER_HARD_END , VADDR_USER_STACK_HARD_END,
@@ -83,21 +83,21 @@ int copy_mem_pages(struct Proc* src_proc, struct Proc* trg_proc){
 
         /* BODY */
         {
-            paddr_t copy_page_paddr = alloc_pages(1); // Non user alloc that is not freeable for now!
-            if(copy_page_paddr == 0){
+            curr_paddr_stack = alloc_pages(1); // Non user alloc that is not freeable for now!
+            if(curr_paddr_stack == 0){
                 return -1;
             }
-            // printf("Should copy user stack page  %u src_paddr: 0x%x trg paddr: 0x%x vaddr: 0x%x\n", src_proc->pid, _paddr, copy_page_paddr, _vaddr);
+            // printf("Should copy user stack page  %u src_paddr: 0x%x trg paddr: 0x%x vaddr: 0x%x\n", src_proc->pid, _paddr, curr_paddr_stack, _vaddr);
 
-            memcpy((void *) copy_page_paddr, (void *) _paddr, PAGE_SIZE);
-            map_page(trg_pde , _vaddr, copy_page_paddr,
+            memcpy((void *) curr_paddr_stack, (void *) _paddr, PAGE_SIZE);
+            map_page(trg_pde , _vaddr, curr_paddr_stack,
                      USER_PERMISSIONS_ALL);
 
             _vaddr+=PAGE_SIZE;
 
         }
     );    
-
+    trg_proc->user_sp_start = curr_paddr_stack-  USER_STACK_PAGE_COUNT * PAGE_SIZE + PAGE_SIZE;
     // If it was dynamic then it would be not needed to set to hardlimit!
     _vaddr = VADDR_USER_HEAP_START;
 

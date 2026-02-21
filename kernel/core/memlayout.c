@@ -140,8 +140,6 @@ void load_create_process_kernel(struct Proc * proc, uint32_t proc_entry){
 
 
 int reload_process_user(struct Proc * proc, const struct BinaryAppEntry * app_info, char ** argv) {
-    // Free heap pages
-    reset_proc_heap(proc);
     
     vaddr_t curr_vaddr = VADDR_USER_BASE;
     
@@ -162,6 +160,9 @@ int reload_process_user(struct Proc * proc, const struct BinaryAppEntry * app_in
     if (argc < 0){
         PANIC("ERROR When allocating params for proc!");
     }
+
+    // Free heap pages
+    reset_proc_heap(proc);
     
     paddr_t paddr_sp_end = proc->user_sp_start + USER_STACK_PAGE_COUNT * PAGE_SIZE;
     paddr_t params_total_len = paddr_sp_end - final_user_sp_top; // How many bytes does this ocuppy
@@ -182,7 +183,6 @@ int reload_process_user(struct Proc * proc, const struct BinaryAppEntry * app_in
 
 int load_create_forked(struct Proc* parent, struct Proc* child){
     init_process_pde(child);
-
     int ret = copy_mem_pages(parent, child);
 
     if(ret < 0){
