@@ -8,12 +8,10 @@
 #include "console/colors.h"
 #include "parsers/strutil.h"
 
-// Just one arg?
-// the progam to exec.. maybe also the args for it .. not for now?
+// Execute an external program (with optional args)
 int start_program(char* program_name){
     char * args = NULL;
     split_by_once((uint8_t*)program_name, (uint8_t**)&args, ' ');
-    // printf("START  %s with args %s\n", program_name, args);
 
     return exec_program(program_name, args);
 }
