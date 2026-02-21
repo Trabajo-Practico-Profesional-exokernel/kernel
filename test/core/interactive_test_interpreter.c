@@ -1,4 +1,5 @@
 #include "interactive_test_interpreter.h"
+#include "interactive_test_commands.h"
 #include "testing.h"
 
 #include "constants.h"
@@ -21,6 +22,13 @@ void init_interactive_tests(void){
 
     init_cpu_info();
     set_as_main_cpu();
+
+
+    init_cpus_commands();
+    init_proc_commands();
+    init_test_commands();
+    init_irq_commands();
+    init_info_commands();
 
     interactive_shell_help();
     printf("\n[TEST] interactive test shell ready\n");

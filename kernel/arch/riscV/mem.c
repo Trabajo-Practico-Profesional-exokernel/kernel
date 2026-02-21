@@ -199,7 +199,6 @@ paddr_t get_paddr_for(uint32_t *pd_table, vaddr_t vaddr) {
 paddr_t direct_map_range(uint32_t *pde_table, paddr_t range_start, paddr_t range_end, uint32_t permissions){
     paddr_t paddr = range_start;
     while (paddr < range_end){
-        VERBOSE_DEBUG_PRINTF("MAPPING PAGE %x < %x\n", paddr, range_end);
         map_page(pde_table, paddr, paddr, permissions); // Direct map        
         paddr += PAGE_SIZE;
     }

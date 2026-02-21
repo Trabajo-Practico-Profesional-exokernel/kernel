@@ -136,7 +136,6 @@ void syscall_exec(FullTrapFrame *tf, uintptr_t pc) {
     VERBOSE_DEBUG_PRINTF("Loaded proc '%s'\n", app->name);
     reset_exit_status(get_exit_status(proc->pid));
     init_proc_std_files(proc->pid);
-    strcpy(proc->proc_name, app->name);
 
     // Do switch to new proc? ... no?
     SET_SYSCALL_RET0(tf, proc->pid)

@@ -21,6 +21,7 @@
 // extern struct AppBinaryInfo _binary_apps[];
 #include "proc_disk_loading.h"
 #include "arch/arch_init.h"
+#include "test_shell/command_handler.h"
 
 
 
@@ -31,17 +32,19 @@ extern struct Proc * create_process_from_ind(int ind, char ** argv);
 char *DEF_ARGV_TEST[] = { "sh_prog","parameter1", 0 };
 
 
-void do_sched_yield(char * args){
+int do_sched_yield(char * args){
     enable_timer_interrupts();
     sched_yield();
+    return 0;
 }
 
-void load_processes_headers(void){
+int load_processes_headers(char *args){
     init_proc_headers();
+    return 0;
 }
 
 
-void start_shell(void){
+int start_shell(char *args){
     struct Proc * proc_def = create_process("coordinator", DEF_ARGV_TEST);
     coordinator_PID = proc_def->pid;
     //create_process(APP_IND_SHELL, DEF_ARGV);
@@ -49,7 +52,7 @@ void start_shell(void){
     //struct Proc * proc_def_2 = create_process(APP_IND_PROC_B, DEF_ARGV);
     enable_timer_interrupts();
     switch_proc(proc_def);
-
+    return 0;
 }
 
 
@@ -121,11 +124,28 @@ int handle_create_proc(char*program_name){
 
 
 
+void init_proc_commands(void){
+    add_test_command((struct CommandEntry){
+        .action_name = "run_shell",
+        .handler = start_shell,
+        .description = "corre la shell de usuario y podes probar programas de la misma"
+    });
 
+    add_test_command((struct CommandEntry){
+        .action_name = "sched_yield",
+        .handler = do_sched_yield,
+        .description = "Corre sched_yield... volviendo al scheduler basicamente"
+    });
+    add_test_command((struct CommandEntry){
+        .action_name = "load_procs",
+        .handler = load_processes_headers,
+        .description = "Carga los headers de los procesos para que puedan ser corridos por el scheduler"
+    });
 
-
-
-
-
-
+    add_test_command((struct CommandEntry){
+        .action_name = "add_proc",
+        .handler = handle_create_proc,
+        .description = "Con parametros '<program_name> <args>' Agrega al scheduler un proceso para ser ejecutado"
+    });
+}
 

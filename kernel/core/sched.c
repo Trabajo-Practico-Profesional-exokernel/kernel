@@ -20,6 +20,7 @@
 
 #include "arch_inc/trap_constants.h"
 #include "arch_inc/idle.h"
+#include "status_logging.h"
 
 
 extern void sched_finish(struct Proc * last_proc);
@@ -254,4 +255,27 @@ void sched_yield(void) {
 
     release(&lock_scheduler);
     sched_finish(last_proc);
+}
+
+
+
+
+// Logging functionality, mostly for debugging, or tests
+
+void info_proc(struct Proc * proc){
+	printf("proc id: %d name: '%s', status: %d pc: %x\n", proc->pid, proc->proc_name, proc->status, proc->pc);
+}
+void info_procs_not_free(void){
+    for (int i = 0; i < PROCS_MAX; i++) {
+        if (procs[i].status != PROC_FREE) {
+            info_proc(&procs[i]);
+        }
+    }
+}
+void info_procs_with_state(int state){
+    for (int i = 0; i < PROCS_MAX; i++) {
+        if (procs[i].status == state) {
+            info_proc(&procs[i]);
+        }
+    }
 }

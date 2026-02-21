@@ -4,6 +4,7 @@
 #include "arch/cpus.h"
 #include "arch_inc/trap_constants.h"
 #include "console/debug.h"
+#include "test_shell/command_handler.h"
 
 struct spinlock cpus_lock;
 
@@ -49,4 +50,23 @@ void add_start_cpu(void){
 	printf("Started cpu %d, new count cpus started %d/%d\n",cpuid(), count_started, NCPU);
 
     release(&cpus_lock);
+}
+
+
+
+int test_start_cpus(char* args) {
+    printf("Starting secondary cpus\n");
+    start_cpus();
+    wait_cpus_started();
+    printf("...All cpus started\n");
+
+    return 0;
+}
+
+void init_cpus_commands(void){
+    add_test_command((struct CommandEntry){
+        .action_name = "start_cpus",
+        .handler = test_start_cpus,
+        .description = "empieza el sistema multicore, levanta/desbloquea los cores"
+    });
 }

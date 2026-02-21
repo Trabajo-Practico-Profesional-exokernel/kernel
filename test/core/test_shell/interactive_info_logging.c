@@ -53,3 +53,46 @@ void on_clock_yield(uint32_t new_curr_slices){
 	    printf("[TEST TICK] idle time slice tot idle: %u tot ticks = %u\n",get_idle_ticks(), get_real_ticks());
 	}	
 }
+
+
+
+
+
+
+
+
+
+int handle_disable_log_irq(char* args) {
+    return disable_clock_yield_logging();    
+}
+int handle_disable_interactive_irq(char* args) {
+    return disable_clock_yield_interactive();    
+}
+
+
+void init_irq_commands(void){
+    add_test_command((struct CommandEntry){
+        .action_name = "irq_log_on",
+        .handler = enable_clock_yield_logging,
+        .description = "habilita logs de informacion en cada interrupcion por clock"
+    });
+
+    add_test_command((struct CommandEntry){
+        .action_name = "irq_log_off",
+        .handler = handle_disable_log_irq,
+        .description = "deshabilita logs de informacion en cada interrupcion por clock"
+    });
+
+    add_test_command((struct CommandEntry){
+        .action_name = "irq_to_shell_on",
+        .handler = enable_clock_yield_interactive,
+        .description = "habilita que en cada interrupcion por clock se vuelva a la test shell"
+    });
+
+    add_test_command((struct CommandEntry){
+        .action_name = "irq_to_shell_off",
+        .handler = handle_disable_interactive_irq,
+        .description = "deshabilita que en cada interrupcion por clock se vuelva a la test shell"
+    });
+
+}

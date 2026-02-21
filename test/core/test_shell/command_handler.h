@@ -15,4 +15,7 @@ int exec_test_command(char * action, char* args);
 //int send(char* content);
 int test_help_man(char * args);
 
+
+void add_test_command(struct CommandEntry command);
+
 #endif

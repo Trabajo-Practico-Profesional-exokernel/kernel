@@ -124,8 +124,11 @@ void load_create_process_user(struct Proc * proc, const struct BinaryAppEntry * 
 
 
     // Uptime and more info
+    strcpy(proc->proc_name, app_info->name);
+    
     init_proc_uptime(proc);
     add_proc_info(proc);
+
     int actual_memory = get_free_ram_memory();
     update_system_memory(actual_memory);
 }
@@ -178,6 +181,8 @@ int reload_process_user(struct Proc * proc, const struct BinaryAppEntry * app_in
 
     SET_SYSCALL_RET0(proc_tf, argc);
     SET_SYSCALL_RET1(proc_tf, params_vaddr);
+    strcpy(proc->proc_name, app_info->name);
+
     return 0;
 }
 
@@ -197,6 +202,8 @@ int load_create_forked(struct Proc* parent, struct Proc* child){
     SET_SYSCALL_RET0(child_tf, 0); // Set to 0 so that is flagged to be a child!
 
     child->status = PROC_RUNNABLE;
+    
+    strcpy(child->proc_name, parent->proc_name);
     init_proc_uptime(child);
     
     init_proc_std_files(child->pid);
