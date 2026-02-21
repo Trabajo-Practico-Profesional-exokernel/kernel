@@ -87,6 +87,12 @@ void register_syscall(size_t sysno, syscall_handler_t handler){
     syscall_table[sysno] = handler;
 }
 
+
+#ifdef IS_TESTING
+extern void on_syscall_called(FullTrapFrame *tf, uintptr_t pc);
+#endif
+
+
 uintptr_t handle_syscall(FullTrapFrame *tf, uintptr_t pc) {
     unsigned sysno = SYSCALL_SYSNO(tf);
 
@@ -94,6 +100,10 @@ uintptr_t handle_syscall(FullTrapFrame *tf, uintptr_t pc) {
         VERBOSE_PRINTF("unexpected syscall sysno=%u max sysno: %x at pc: %x\n", sysno, MAX_SYSCALLS, pc);
         printTrapFull(tf);
     } else {
+        #ifdef IS_TESTING
+        on_syscall_called(tf, pc);
+        #endif
+
         syscall_table[sysno](tf, pc);
     }
 

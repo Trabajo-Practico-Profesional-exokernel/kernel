@@ -12,18 +12,19 @@
 #include "sched.h"
 #include "arch/cpus.h"
 #include "arch_inc/trap_constants.h"
+#include "arch_inc/trapframe.h"
 
 
 
-bool enabled_clock_yield_logging = false;
+bool enabled_syscall_interactive = false;
 bool enabled_clock_yield_interactive = false;
 
-int enable_clock_yield_logging(char* args){
-	enabled_clock_yield_logging = true;
+int enable_on_syscall_interactive(char* args){
+	enabled_syscall_interactive = true;
 	return 0;
 }
-int disable_clock_yield_logging(void){
-	enabled_clock_yield_logging = false;
+int disable_syscall_interactive(void){
+	enabled_syscall_interactive = false;
 
 	return 0;
 }
@@ -49,9 +50,13 @@ void on_clock_yield(uint32_t new_curr_slices){
 	    interactive_shell_main();
 	    return;
 	}
-	if(enabled_clock_yield_logging){
-	    printf("[TEST TICK] idle time slice tot idle: %u tot ticks = %u\n",get_idle_ticks(), get_real_ticks());
-	}	
+}
+
+extern void on_syscall_called(FullTrapFrame *tf, uintptr_t pc){
+	if(enabled_syscall_interactive){
+	    interactive_shell_main();
+	    return;
+	}
 }
 
 
@@ -62,8 +67,9 @@ void on_clock_yield(uint32_t new_curr_slices){
 
 
 
-int handle_disable_log_irq(char* args) {
-    return disable_clock_yield_logging();    
+
+int handle_disable_syscall_interactive(char* args) {
+    return disable_syscall_interactive();    
 }
 int handle_disable_interactive_irq(char* args) {
     return disable_clock_yield_interactive();    
@@ -72,15 +78,15 @@ int handle_disable_interactive_irq(char* args) {
 
 void init_irq_commands(void){
     add_test_command((struct CommandEntry){
-        .action_name = "irq_log_on",
-        .handler = enable_clock_yield_logging,
-        .description = "habilita logs de informacion en cada interrupcion por clock"
+        .action_name = "sys_to_shell_on",
+        .handler = enable_on_syscall_interactive,
+        .description = "habilita que en cada syscall se vuelva a la test shell"
     });
 
     add_test_command((struct CommandEntry){
-        .action_name = "irq_log_off",
-        .handler = handle_disable_log_irq,
-        .description = "deshabilita logs de informacion en cada interrupcion por clock"
+        .action_name = "sys_to_shell_off",
+        .handler = handle_disable_syscall_interactive,
+        .description = "deshabilita que en cada syscall se vuelva a la test shell"
     });
 
     add_test_command((struct CommandEntry){
