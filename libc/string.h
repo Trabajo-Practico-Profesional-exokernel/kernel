@@ -23,4 +23,7 @@ int32_t strncmp(const uint8_t *s1, const uint8_t *s2, size_t size);
 uint8_t *strchr(const uint8_t *s, int32_t c);
 uint8_t *strtok(uint8_t *str, const uint8_t *delim);
 
+char* strdup(const char* src);
+
+
 #endif /* _LIBC_STRING_H */

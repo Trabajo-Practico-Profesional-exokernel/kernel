@@ -93,6 +93,21 @@ all: $(APP_OUT) metadata $(ALL_BINS)
 	cp $(TRG_BASE_DISK) $(TRG_DISK) 
 apps:
 	@echo $(META_APP_NAMES)
+disk_image:
+	@python3 disk_image_builder.py $(BUILD_FOLDER) $(TRG_BASE_DISK) $(TRG_DISK_SIZE)
+app:
+	@if [ -z "$(APP)" ]; then \
+		echo "Usage: make app APP=name"; \
+		exit 1; \
+	fi
+	@$(MAKE) $(APP_OUT)/$(APP)
+	@python3 disk_image_builder.py $(BUILD_FOLDER) $(TRG_BASE_DISK) $(TRG_DISK_SIZE)
+	
+shell:
+	@./compile_dir_apps.sh $(ARCH) -add_meta shell
+	@python3 disk_image_builder.py $(BUILD_FOLDER) $(TRG_BASE_DISK) $(TRG_DISK_SIZE)
+	
+
 
 # ----------------------------
 # Metadata

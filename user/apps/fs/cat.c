@@ -4,8 +4,10 @@
 #include "stdlib.h"
 #include "stdio.h"
 #include "types.h"
+#include "optional_setup.h"
 
 void main(int argc, char **argv) {
+    setup_from_env();
     if (argc < 2) {
         printf("Usage: cat <filename>\n");
         exit(1);

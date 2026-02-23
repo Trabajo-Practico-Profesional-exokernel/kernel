@@ -4,10 +4,12 @@
 #include "stdlib.h"
 #include "stdio.h"
 #include "types.h"
+#include "optional_setup.h"
 
 void main(int argc, char **argv) {
+    setup_from_env();
     char *path = NULL;
-    
+
     // Default to current directory if no argument
     if (argc < 2) {
         path = ".";

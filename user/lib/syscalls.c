@@ -12,9 +12,10 @@
 #include "constants.h"
 #include "parsers/strutil.h"
 #include "arch/console.h"
+#include "environ.h"
 
 int sys_exec(char ** args){
-    return syscall(SYS_EXEC, (int)(args),0, 0, 0);
+    return syscall(SYS_EXEC, (int)(args), (int)get_environ_list(), 0, 0);
 }
 
 
@@ -253,6 +254,10 @@ int dup2(int prev_fd, int trg_fd){
 }
 
 int sys_execv(char* new_prog_name, char ** argv){
-    return syscall(SYS_PROC_EXECV,(int)(new_prog_name),(int)(argv), 0, 0);
+    return syscall(SYS_PROC_EXECV,(int)(new_prog_name),(int)(argv), (int)get_environ_list(), 0);
+}
+
+int sys_execve(char* new_prog_name, char ** argv, char ** envp){
+    return syscall(SYS_PROC_EXECV,(int)(new_prog_name),(int)(argv), (int)envp, 0);
 }
 

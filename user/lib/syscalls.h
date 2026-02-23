@@ -7,6 +7,7 @@
 
 int sys_exec(char ** args);
 int sys_execv(char* new_prog_name, char ** argv);
+int sys_execve(char* new_prog_name, char ** argv, char ** envp);
 
 
 int wait(int pid);

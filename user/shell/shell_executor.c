@@ -5,6 +5,7 @@
 #include "stdio.h"
 #include "stdlib.h"
 #include "lib.h"
+#include "environ.h"
 
 // Helper: apply redirections to current process
 static int apply_redirections(command_t *cmd) {
@@ -58,44 +59,27 @@ static int apply_redirections(command_t *cmd) {
     return 0;
 }
 
-// Helper: check if command is a built-in (must run in shell process)
-// Only cd, pwd, exit, clear, smile, procls are truly built-in
-static int is_builtin(const char *cmd) {
-    const char *builtins[] = {
-        "cd", "pwd", "exit", "clear", "smile", "procls", NULL
-    };
-    
-    for (int i = 0; builtins[i] != NULL; i++) {
-        if (strcmp((const uint8_t*)cmd, (const uint8_t*)builtins[i]) == 0) {
-            return 1;
-        }
-    }
-    return 0;
-}
+static int is_builtin(const char *cmd);
 
 // Execute a single command (no piping)
 exec_result_t execute_single_command(command_t *cmd) {
     exec_result_t result;
     memset(&result, 0, sizeof(exec_result_t));
-    
-    // For built-in commands, execute directly
-    if (is_builtin(cmd->cmd)) {
-        // Reconstruct args string for built-in handlers
-        // Built-ins expect args as a single string
-        char args_str[256] = {0};
-        if (cmd->argc > 1) {
-            strcpy((uint8_t*)args_str, (const uint8_t*)cmd->argv[1]);
-            for (int i = 2; i < cmd->argc; i++) {
-                strcat((uint8_t*)args_str, (const uint8_t*)" ");
-                strcat((uint8_t*)args_str, (const uint8_t*)cmd->argv[i]);
-            }
-        }
-        result.exit_code = exec_command(cmd->cmd, args_str);
+
+    command_handler_t command = find_command_builtin(cmd->cmd);
+    if(command){
+        result.exit_code = command(cmd->argc - 1, &cmd->argv[1]);
+        result.execution_error = result.exit_code != 0? 1:0;
+        
         return result;
     }
+
     
     // For external programs, fork and exec
     int pid = sys_fork();
+    
+    setenv("pwd", get_curr_path(), 1);
+
     if (pid == 0) {
         // Child process
         if (apply_redirections(cmd) != 0) {
@@ -149,6 +133,9 @@ exec_result_t execute_pipeline(pipeline_t *pipeline) {
     for (int i = 0; i < pipeline->num_commands; i++) {
         int pid = sys_fork();
         
+        // Load/set env
+        setenv("pwd", get_curr_path(), 1);
+
         if (pid == 0) {
             // Child process
             
@@ -196,23 +183,15 @@ exec_result_t execute_pipeline(pipeline_t *pipeline) {
             }
             
             // Execute the command
-            if (is_builtin(pipeline->commands[i].cmd)) {
-                // Built-ins in pipelines - not ideal but supported
-                char args_str[256] = {0};
-                if (pipeline->commands[i].argc > 1) {
-                    strcpy((uint8_t*)args_str, (const uint8_t*)pipeline->commands[i].argv[1]);
-                    for (int j = 2; j < pipeline->commands[i].argc; j++) {
-                        strcat((uint8_t*)args_str, (const uint8_t*)" ");
-                        strcat((uint8_t*)args_str, (const uint8_t*)pipeline->commands[i].argv[j]);
-                    }
-                }
-                int ret = exec_command(pipeline->commands[i].cmd, args_str);
-                exit(ret);
+            command_handler_t command = find_command_builtin(pipeline->commands[i].cmd);
+            int ret = 0;
+            if(command){
+                ret = command(pipeline->commands[i].argc - 1, &pipeline->commands[i].argv[1]);
             } else {
-                sys_execv(pipeline->commands[i].cmd, (const char **)pipeline->commands[i].argv);
-                printf("Error: Cannot execute %s\n", pipeline->commands[i].cmd);
-                exit(127);
+                ret = command_default_exec(pipeline->commands[i].cmd, &pipeline->commands[i].argv[0]);
             }
+            exit(ret);
+
         } else if (pid > 0) {
             // Parent process - store PID
             pids[i] = pid;

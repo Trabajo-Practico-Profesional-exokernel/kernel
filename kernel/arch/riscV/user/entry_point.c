@@ -40,6 +40,8 @@ void sleep(int delay) {
 extern void init_environ(char ** envp);
 
 void arg_main(int argc, char** argv, char ** envp){
+    init_environ(envp);
+
     VERBOSE_DEBUG_PRINTF("Prog got argc: %d and argv: %p envp: %p\n", argc, argv);
 
     if(argc > 0){

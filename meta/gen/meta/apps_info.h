@@ -39,7 +39,8 @@ struct AppBinaryInfo {
 #define APP_IND_PROC_B 25
 #define APP_IND_READ_WRITE_SHELL 26
 #define APP_IND_SHELL 27
-#define APP_IND_SIMPLE_FRK 28
-#define APP_COUNT 29
+#define APP_IND_SHOW_ENV 28
+#define APP_IND_SIMPLE_FRK 29
+#define APP_COUNT 30
 
 #endif
