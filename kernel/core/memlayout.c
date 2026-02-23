@@ -81,14 +81,14 @@ int init_parameters_for_proc(struct Proc * proc, char ** argv, char ** envp){
     //
     // ARGV and ENVP parameters passing
     //
-    printf("Init parameters for proc %s argv:%p envp: %p\n",proc->proc_name, argv, envp);
+    VERBOSE_PRINTF("Init parameters for proc %s argv:%p envp: %p\n",proc->proc_name, argv, envp);
 
     paddr_t paddr_sp_end = proc->user_sp_start + USER_STACK_PAGE_COUNT * PAGE_SIZE;
     paddr_t final_user_sp_top = paddr_sp_end;
     paddr_t param_pointers[MAXARG];
 
     int argc = copy_to_stack_list(&param_pointers[0],argv, 
-                &final_user_sp_top, proc->user_sp_start);
+                &final_user_sp_top, proc->user_sp_start, VADDR_USER_STACK_HARD_END);
 
     if (argc < 0){
         VERBOSE_PRINTF("ERROR When allocating argv for proc!");
@@ -98,7 +98,7 @@ int init_parameters_for_proc(struct Proc * proc, char ** argv, char ** envp){
     vaddr_t argv_vaddr = VADDR_USER_STACK_HARD_END - (paddr_sp_end - final_user_sp_top);
 
     int env_argc = copy_to_stack_list(&param_pointers[0],envp, 
-                &final_user_sp_top, proc->user_sp_start);
+                &final_user_sp_top, proc->user_sp_start, argv_vaddr);
 
     if (env_argc < 0){
         VERBOSE_PRINTF("ERROR When allocating envp for proc!");

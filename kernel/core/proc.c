@@ -79,7 +79,7 @@ int copy_param_pointers_from_user(struct Proc * proc, paddr_t* param_pointers, p
 
 
 int copy_to_stack_list(paddr_t* item_pointers, 
-        char ** list, paddr_t* max_addr, paddr_t min_addr){
+        char ** list, paddr_t* max_addr, paddr_t min_addr,vaddr_t max_vaddr){
     
     uint32_t argc;
     paddr_t sp = *max_addr;
@@ -107,7 +107,7 @@ int copy_to_stack_list(paddr_t* item_pointers,
         }
         VERBOSE_DEBUG_PRINTF_LV(2,"trg aft stack: %p , len: %d ", sp, arg_len);
         memcpy( (void *) sp, (void *) list[argc], arg_len);
-        item_pointers[argc] = VADDR_USER_STACK_HARD_END- (*max_addr- sp);
+        item_pointers[argc] = max_vaddr- (*max_addr- sp);
         VERBOSE_DEBUG_PRINTF_LV(2,"Copied arg to 0x%x, vaddr: 0x%x", sp, item_pointers[argc]);
         VERBOSE_DEBUG_PRINTF_LV(2," value: '%s'\n", sp);
     }

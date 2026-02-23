@@ -366,7 +366,7 @@ void syscall_sbrk(FullTrapFrame *tf, uintptr_t pc) {
     int page_count = SYSCALL_ARG0(tf);
     struct Proc* caller_proc = myproc();
 
-    debug_printf("Should alloc page count %d for %u\n", page_count, caller_proc->pid);
+    VERBOSE_DEBUG_PRINTF("Should alloc page count %d for %u\n", page_count, caller_proc->pid);
     // Switch to kernel pages to be able to alloc pages
     int ret_value = -1; // By def set as error
 

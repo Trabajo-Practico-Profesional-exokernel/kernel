@@ -1,0 +1,4 @@
+
+mkdir dir1
+cd dir1
+show_env

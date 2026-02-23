@@ -21,7 +21,7 @@ int load_create_process_kernel(struct Proc * proc, uint32_t proc_entry);
 int load_create_forked(struct Proc* parent, struct Proc* child);
 
 int copy_to_stack_list(paddr_t* item_pointers, 
-        char ** list, paddr_t* max_addr, paddr_t min_addr);
+        char ** list, paddr_t* max_addr, paddr_t min_addr,vaddr_t max_vaddr);
 
 int copy_param_pointers_from_user(struct Proc * proc, paddr_t* param_pointers, paddr_t paddr_pointers);
 
