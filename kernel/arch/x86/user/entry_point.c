@@ -28,8 +28,11 @@ void sleep(int delay) {
         __asm__ __volatile__("nop"); // do nothing
 }
 
+extern void init_environ(char ** envp);
+
 // __attribute__((section(".text.start")))
-void _start(int argc, char** argv){
+void _start(int argc, char** argv,char** envp){
+    init_environ(envp);
     VERBOSE_DEBUG_PRINTF("Prog got argc: %d and argv: %x\n", argc, argv);
 
     if(argc > 0){
@@ -53,6 +56,7 @@ void _entry(void) {
         "andl $~0xF, %esp        \n"
 
         /* Push C ABI arguments (right to left) */
+        "pushl %ecx             \n" /* envp */
         "pushl %ebx             \n" /* argv */
         "pushl %eax             \n" /* argc */
 
