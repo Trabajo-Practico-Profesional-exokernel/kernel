@@ -34,17 +34,12 @@ void free_process(struct Proc * proc){
     // Trapframe reset? maybe for security reasons.. but create_process would reset it anyway!    
 }
 
-
-int copy_argv_pointers_from_user(struct Proc * proc, paddr_t* argv_pointers, vaddr_t vaddr_argv){
-    paddr_t src_argv_paddr = get_paddr_for(
-                                    (uint32_t *) proc->pde_paddr,
-                                    vaddr_argv);
-    
-    if (src_argv_paddr == 0){
-        VERBOSE_PRINTF("Invalid vaddr for argv error!!\n");
+int copy_param_pointers_from_user(struct Proc * proc, paddr_t* param_pointers, paddr_t paddr_pointers){
+    if (paddr_pointers == 0){
+        VERBOSE_PRINTF("Invalid vaddr for params error!!\n");
         return -2;
     }
-    vaddr_t* src_argv = (vaddr_t*) src_argv_paddr;
+    vaddr_t* src_argv = (vaddr_t*) paddr_pointers;
     int argc;
 
     for(argc = 0; src_argv[argc]; argc++) { // While argv[ind] != 0
@@ -74,33 +69,30 @@ int copy_argv_pointers_from_user(struct Proc * proc, paddr_t* argv_pointers, vad
 
         VERBOSE_DEBUG_PRINTF_LV(1, "MAPPED PARAM FOR PROGRAM pointer at %x!\n", paddr_arg);
         
-        argv_pointers[argc] = paddr_arg;
+        param_pointers[argc] = paddr_arg;
     }
     
-    argv_pointers[argc] = 0;
+    param_pointers[argc] = 0;
 
     return argc;
 }
 
 
-int set_init_parameters_for_proc(struct Proc * proc, char ** argv, paddr_t* sp_out){
-    // Copy arguments to the stack of the proc
-    // In the future it could be we use instead dynamically allocated pages
-    // Not needed for now.
-    paddr_t paddr_sp_end= proc->user_sp_start + USER_STACK_PAGE_COUNT * PAGE_SIZE; // Start at the stack top
-    paddr_t sp = paddr_sp_end;
+int copy_to_stack_list(paddr_t* item_pointers, 
+        char ** list, paddr_t* max_addr, paddr_t min_addr){
     
     uint32_t argc;
-    paddr_t argv_pointers[MAXARG];
-    for(argc = 0; argv[argc]; argc++) { // While argv[ind] != 0
+    paddr_t sp = *max_addr;
+
+    for(argc = 0; list[argc]; argc++) { // While list[ind] != 0
 
         if(argc >= MAXARG) {
             VERBOSE_PRINTF("MORE THAN MAX PARAMS!\n");
             return -1;
         }
-        VERBOSE_DEBUG_PRINTF_LV(2,"Pushing ARG at 0x%x sp bfr: %p ", argv[argc], sp);
-        VERBOSE_DEBUG_PRINTF_LV(2,"'%s'!\n", argv[argc]);
-        size_t arg_len = strlen(argv[argc]) + 1; 
+        VERBOSE_DEBUG_PRINTF_LV(2,"Pushing ARG at 0x%x sp bfr: %p ", list[argc], sp);
+        VERBOSE_DEBUG_PRINTF_LV(2,"'%s'!\n", list[argc]);
+        size_t arg_len = strlen(list[argc]) + 1; 
 
         if (arg_len > MAX_ARG_LEN){
             VERBOSE_PRINTF("ARG LONGER THAN ALLOWED!\n");
@@ -109,30 +101,39 @@ int set_init_parameters_for_proc(struct Proc * proc, char ** argv, paddr_t* sp_o
         sp -= arg_len;
         sp -= sp % 16; // riscv sp must be 16-byte aligned
 
-        if(sp < proc->user_sp_start){
+        if(sp < min_addr){
             VERBOSE_PRINTF("STACK OVERFLOW!!\n");
             return -2;
         }
         VERBOSE_DEBUG_PRINTF_LV(2,"trg aft stack: %p , len: %d ", sp, arg_len);
-        memcpy( (void *) sp, (void *) argv[argc], arg_len);
-        argv_pointers[argc] = VADDR_USER_STACK_HARD_END- (paddr_sp_end- sp);
-        VERBOSE_DEBUG_PRINTF_LV(2,"Copied arg to 0x%x, vaddr: 0x%x", sp, argv_pointers[argc]);
+        memcpy( (void *) sp, (void *) list[argc], arg_len);
+        item_pointers[argc] = VADDR_USER_STACK_HARD_END- (*max_addr- sp);
+        VERBOSE_DEBUG_PRINTF_LV(2,"Copied arg to 0x%x, vaddr: 0x%x", sp, item_pointers[argc]);
         VERBOSE_DEBUG_PRINTF_LV(2," value: '%s'\n", sp);
     }
-    argv_pointers[argc] = 0;
 
-    // Finally push to the stack.. the actually array of pointer i.e argv_pointers
-    size_t argv_bytes_size = (argc+1) * sizeof(paddr_t); 
-    sp -= argv_bytes_size; // +1 for the extra 0
+
+    item_pointers[argc] = 0;
+
+    // Finally push to the stack.. the actually array of pointer i.e item_pointers
+    size_t pointers_bytes_size = (argc+1) * sizeof(paddr_t); 
+    sp -= pointers_bytes_size; // +1 for the extra 0
     sp -= sp % 16;
 
-    if(sp < proc->user_sp_start){
+    if(sp < min_addr){
         VERBOSE_PRINTF("STACK OVERFLOW!!\n");
         return -2;
     }
-
-    memcpy((void *) sp, (void *) &argv_pointers[0], argv_bytes_size);
+    memcpy((void *) sp, (void *) &item_pointers[0], pointers_bytes_size);
     
-    *sp_out = sp;
+    *max_addr = sp;
+
+
     return argc;
 }
+
+
+
+
+
+

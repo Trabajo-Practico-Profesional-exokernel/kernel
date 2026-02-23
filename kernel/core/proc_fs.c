@@ -128,3 +128,9 @@ int proc_ls(void) {
     printf("\n");
     return 0;
 }
+
+void add_proc_to_system_stats(struct Proc* proc){
+    add_proc_info(proc);
+    int actual_memory = get_free_ram_memory();
+    update_system_memory(actual_memory);
+}

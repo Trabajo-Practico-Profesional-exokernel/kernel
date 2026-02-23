@@ -51,12 +51,10 @@ volatile static int started = 0;
 void kmain()
 {
 
-    disable_debug_print();
     #ifdef IS_X86
     mem_init(); // first of all set up paging
     #endif
     init_arch();
-    disable_debug_print();
     reset_std_files();
     clear();
     move_cursor(0);
@@ -84,7 +82,6 @@ void kmain()
     kbd_init();
     #endif
     
-    disable_debug_print();
    
 
     printf("===INITING IDLE PROC In case all procs are blocked!\n");        

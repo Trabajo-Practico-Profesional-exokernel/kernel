@@ -38,4 +38,7 @@ int add_proc_info(struct Proc *proc);
 int delete_proc_info(int proc_id);
 int proc_ls();
 
+
+void add_proc_to_system_stats(struct Proc* proc);
+
 #endif
