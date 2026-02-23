@@ -20,4 +20,9 @@ int32_t pipe_dup(int32_t fd, int32_t app_id);
 
 int32_t pipe_fstat(int32_t fd, int32_t app_id);
 
+int32_t pipe_fork(int32_t app_pid, int32_t app_father);
+
+int32_t pipe_close_all(int32_t app_pid);
+
+
 #endif

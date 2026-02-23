@@ -50,6 +50,8 @@ typedef struct {
 
     int32_t content_vaddr;
     int32_t len_content;
+
+    int32_t arg_1;
 } PipeOperation;
 
 typedef struct {

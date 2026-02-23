@@ -71,7 +71,13 @@ int file_read(struct File *f, uint8_t *dst, uint8_t len) {
     if (f->readopen == OFF) return ERROR;
 
     int bytes_read = membuffer_read(f->buffer, dst, len);
-
+    
+    if (bytes_read == 0) {
+        if (f->buffer->references > 1) {
+            return -2;
+        }
+    }
+    
     return bytes_read;
 }
 
@@ -120,7 +126,7 @@ int get_fd(int32_t pid){
 }
 
 void reset_fd(int32_t pid, int32_t fd){
-    files[pid][fd].state == OFF;
+    files[pid][fd].state = OFF;
 }
 
 void file_init(struct File *f, uint8_t perms) {

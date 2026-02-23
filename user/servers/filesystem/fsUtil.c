@@ -9,7 +9,7 @@
 extern superblock_t super;
 extern bmap_t map;
 extern dir_t current_dir;
-extern FileDescriptor table[MAX_OPEN_FILES];
+extern FileDescriptor table[PROCS_MAX][MAX_OPEN_FILES];
 
 int check_file_permission(int uid, int gid, inode_t *file, int mode_requested) {
 
@@ -372,10 +372,13 @@ inode_t get_inode_per_inum(int index){
     return block.inodes[index%super.inodes_per_block];
 }
 
-/* Operation on Table of Open Files */
-int get_single_available_fd(){
-    for(int fd = 0; fd < MAX_OPEN_FILES; fd++){
-        if(table[fd].fd == -1) return fd;
+
+int get_fd(int32_t pid){
+    for (int i = 0; i < MAX_OPEN_FILES; i++) 
+    {
+        if (table[pid][i].fd == -1){
+            return i;
+        }
     }
     return -1;
 }

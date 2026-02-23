@@ -3,6 +3,11 @@
 
 #include "types.h"
 
+
+#define FS_O_RDONLY 1
+#define FS_O_WRONLY 2
+#define FS_O_RDWR 3
+
 typedef void (*fs_event_handler)(int msg_count);
 
 struct FilesystemEventsHandler {

@@ -24,6 +24,8 @@ typedef enum {
     OP_UPDATE, //no es una syscall pero por el momento lo pongo aca
     OP_GET_FD, //no es una syscall pero por el momento lo pongo aca
     OP_GET_SERVER_FD, //no es una syscall pero por el momento lo pongo aca
+    OP_FORK,
+    OP_CLOSE_ALL
 } SyscallOp;
 
 typedef enum {
@@ -45,7 +47,9 @@ typedef enum {
     FS_OP_LINK,
     FS_OP_UNLINK,
     FS_OP_CHOWN,
-    FS_OP_CHMOD
+    FS_OP_CHMOD,
+    FS_OP_FORK,
+    FS_OP_CLOSE_ALL
 } FilesystemOp;
 
 typedef enum {
@@ -55,7 +59,9 @@ typedef enum {
     PIPE_OP_WRITE,
     PIPE_OP_CLOSE,
     PIPE_OP_FSTAT,
-    PIPE_OP_DUP
+    PIPE_OP_DUP,
+    PIPE_OP_FORK,
+    PIPE_OP_CLOSE_ALL
 } PipeOp;
 
 typedef enum {
@@ -65,6 +71,12 @@ typedef enum {
     CONSOLE_OP_OPEN,
     CONSOLE_OP_CLOSE
 } ConsoleOp;
+
+
+typedef enum {
+    APP_OP_NOOP = 0,
+    APP_OP_FORK
+} AppOp;
 
 typedef enum {
     NONE = 0,

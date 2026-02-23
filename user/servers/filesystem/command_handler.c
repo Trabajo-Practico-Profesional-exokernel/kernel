@@ -10,6 +10,9 @@
 #include "types.h"
 #include "console/debug.h"
 #include "syscalls.h"
+#include "fs.h"
+
+extern FileDescriptor table[PROCS_MAX][MAX_OPEN_FILES];
 
 static int32_t current_client_pid = -1;
 
@@ -33,6 +36,8 @@ static int32_t map_op_code(int32_t protocol_op) {
         case OP_UNLINK: return FS_OP_UNLINK;
         case OP_CHOWN:  return FS_OP_CHOWN;
         case OP_CHMOD:  return FS_OP_CHMOD;
+        case OP_FORK:   return FS_OP_FORK;
+        case OP_CLOSE_ALL: return FS_OP_CLOSE_ALL;
         default:        return -1;
     }
 }
@@ -57,6 +62,8 @@ static int32_t unmap_op_code(int32_t fs_op) {
         case FS_OP_UNLINK: return OP_UNLINK;
         case FS_OP_CHOWN:  return OP_CHOWN;
         case FS_OP_CHMOD:  return OP_CHMOD;
+        case FS_OP_FORK:   return OP_FORK;
+        case FS_OP_CLOSE_ALL: return OP_CLOSE_ALL;
         default:           return -1;
     }
 }
@@ -105,14 +112,14 @@ int32_t get_command(FilesystemOperation *command){
 
 int32_t update_coord_state(int32_t type_server, int32_t type_command, int32_t current_client_pid, int32_t fd){
     
-    if (type_command != OP_OPEN && type_command != OP_CLOSE ){
+    if (type_command != OP_OPEN && type_command != OP_CLOSE && type_command != OP_DUP){
         return -1;
     }
     
     int32_t coord_pid = get_coord_pid();
     int32_t state = 0;
 
-    if (type_command == OP_OPEN){
+    if (type_command == OP_OPEN || type_command == OP_DUP){
         state = 1; 
     } else if (type_command == OP_CLOSE){
         state = -1;
@@ -152,6 +159,25 @@ int32_t give_response(int32_t type_command, int32_t arg_1, int32_t arg_2, int32_
             if (protocol_op == OP_OPEN ){
                 int32_t real_fd = server_get_real_fd(arg_1, current_client_pid, FILESYSTEM);
                 return server_send_parameter_to_app(current_client_pid, protocol_op, real_fd);
+            }
+            if (protocol_op == OP_DUP) {
+                update_coord_state(FILESYSTEM, OP_OPEN, current_client_pid, arg_1);
+                int32_t real_fd = server_get_real_fd(arg_1, current_client_pid, FILESYSTEM);
+                return server_send_parameter_to_app(current_client_pid, protocol_op, real_fd);
+            }
+            if (protocol_op == OP_FORK) {
+                for (int i = 0; i < MAX_OPEN_FILES; i++) {
+                    if (table[current_client_pid][i].fd != -1) {
+                        update_coord_state(FILESYSTEM, OP_OPEN, current_client_pid, i);
+                    }
+                }
+            }
+            if (protocol_op == OP_CLOSE_ALL) {
+                for (int i = 0; i < MAX_OPEN_FILES; i++) {
+                    if (table[current_client_pid][i].fd != -1) {
+                        update_coord_state(FILESYSTEM, OP_CLOSE, current_client_pid, i);
+                    }
+                }
             }
         }
         return server_send_parameter_to_app(current_client_pid, protocol_op, arg_1);

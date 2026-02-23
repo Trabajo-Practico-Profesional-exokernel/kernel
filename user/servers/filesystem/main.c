@@ -27,6 +27,7 @@ void handle_ping(FilesystemOperation *op) {
 }
 
 void handle_open(FilesystemOperation *op) {
+    printf("HANDLE OPEN\n");
     int32_t app_pid = op->app_id;
     char path[MAX_PATH_NAME];
     
@@ -49,6 +50,8 @@ void handle_close(FilesystemOperation *op) {
 }
 
 void handle_read(FilesystemOperation *op) {
+    printf("HANDLE READ\n");
+
     int32_t app_pid = op->app_id;
     int fd = op->fd;
     int count = op->len_content_1;
@@ -62,6 +65,7 @@ void handle_read(FilesystemOperation *op) {
 }
 
 void handle_write(FilesystemOperation *op) {
+    printf("HANDLE WRITE\n");
     int32_t app_pid = op->app_id;
     int fd = op->fd;
     int count = op->len_content_1;
@@ -118,9 +122,25 @@ void handle_dup(FilesystemOperation *op) {
 
     int32_t res = fs_dup(fd, app_pid);
     
-    give_response(FS_OP_DUP, res, 0, 0, 0);
+    give_response(FS_OP_DUP, res, 0, 0, fd);
 }
 
+void handle_fork(FilesystemOperation *op) {
+    int32_t app_pid = op->app_id;
+    int32_t app_father = op->arg_1;
+
+    int32_t res = fs_fork(app_pid, app_father);
+    
+    give_response(FS_OP_FORK, res, 0, 0, 0);
+}
+
+void handle_close_all(FilesystemOperation *op) {
+    int32_t app_pid = op->app_id;
+
+    int32_t res = fs_close_all(app_pid);
+    
+    give_response(FS_OP_CLOSE_ALL, res, 0, 0, 0);
+}
 
 void handle_mkdir(FilesystemOperation *op) {
     int32_t app_pid = op->app_id;
@@ -255,24 +275,26 @@ void send_error_msg(int32_t operation){
 typedef void (*fs_op_handler_t)(FilesystemOperation *op);
 
 static const fs_op_handler_t op_dispatch_table[] = {
-    [FS_OP_PING]   = handle_ping,
-    [FS_OP_OPEN]   = handle_open,
-    [FS_OP_CLOSE]  = handle_close,
-    [FS_OP_READ]   = handle_read,
-    [FS_OP_WRITE]  = handle_write,
-    [FS_OP_LSEEK]  = handle_lseek,
-    [FS_OP_FSTAT]  = handle_fstat,
-    [FS_OP_DUP]    = handle_dup,
-    [FS_OP_MKDIR]  = handle_mkdir,
-    [FS_OP_RMDIR]  = handle_rmdir,
-    [FS_OP_CHDIR]  = handle_chdir,
-    [FS_OP_PWD]    = handle_pwd,
-    [FS_OP_LS]     = handle_ls,
-    [FS_OP_MKNOD]  = handle_mknod,
-    [FS_OP_LINK]   = handle_link,
-    [FS_OP_UNLINK] = handle_unlink,
-    [FS_OP_CHOWN]  = handle_chown,
-    [FS_OP_CHMOD]  = handle_chmod,
+    [FS_OP_PING]        = handle_ping,
+    [FS_OP_OPEN]        = handle_open,
+    [FS_OP_CLOSE]       = handle_close,
+    [FS_OP_READ]        = handle_read,
+    [FS_OP_WRITE]       = handle_write,
+    [FS_OP_LSEEK]       = handle_lseek,
+    [FS_OP_FSTAT]       = handle_fstat,
+    [FS_OP_DUP]         = handle_dup,
+    [FS_OP_MKDIR]       = handle_mkdir,
+    [FS_OP_RMDIR]       = handle_rmdir,
+    [FS_OP_CHDIR]       = handle_chdir,
+    [FS_OP_PWD]         = handle_pwd,
+    [FS_OP_LS]          = handle_ls,
+    [FS_OP_MKNOD]       = handle_mknod,
+    [FS_OP_LINK]        = handle_link,
+    [FS_OP_UNLINK]      = handle_unlink,
+    [FS_OP_CHOWN]       = handle_chown,
+    [FS_OP_CHMOD]       = handle_chmod,
+    [FS_OP_FORK]        = handle_fork,
+    [FS_OP_CLOSE_ALL]   = handle_close_all,
 };
 
 #define MAX_OP_HANDLERS (sizeof(op_dispatch_table) / sizeof(op_dispatch_table[0]))

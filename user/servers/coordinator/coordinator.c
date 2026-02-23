@@ -91,7 +91,6 @@ int32_t get_server_real_fd(int32_t pid, int32_t fd, int32_t type){
 }
 
 int32_t set_server_type(int32_t server_fd, int32_t pid_app, int32_t pid_server, int32_t state) {
-
     int32_t server_type = -1;
     for (int32_t i = 0; i < SERVER_COUNT; i++) {
         if (coordinator.server_map.pids[i] == pid_server) {
@@ -100,35 +99,25 @@ int32_t set_server_type(int32_t server_fd, int32_t pid_app, int32_t pid_server, 
         }
     }
 
-    if (server_type < 0) {
-        return ERROR;
-    }
+    if (server_type < 0) return ERROR;
 
-    // CASO CIERRE
     if (state < 0) {
         for (int32_t i = 0; i < MAX_FILES; i++) {
-            // Buscamos coincidencia exacta para borrar
-            if (coordinator.fd[pid_app][i].fd == server_fd && 
-                coordinator.fd[pid_app][i].type_server == server_type) 
-            {
-                
+            if (coordinator.fd[pid_app][i].fd == server_fd && coordinator.fd[pid_app][i].type_server == server_type) {
+                printf("[COORD] Cierre FD: PID [%d] liberando FD Virtual [%d]\n", pid_app, i);
                 coordinator.fd[pid_app][i].fd = -1;
                 coordinator.fd[pid_app][i].type_server = -1;
                 return SUCCESS;
             }
         }
-
         return ERROR;
-    } 
-    
-    // CASO APERTURA
-    else {
+    } else {
         for (int32_t i = 0; i < MAX_FILES; i++) {
             if (coordinator.fd[pid_app][i].type_server == -1) {
-                
+                printf("[COORD] Apertura FD: PID [%d] mapeando FD Real [%d] a FD Virtual [%d] (Server %d)\n", 
+                       pid_app, server_fd, i, server_type);
                 coordinator.fd[pid_app][i].fd = server_fd;
                 coordinator.fd[pid_app][i].type_server = server_type;
-                
                 return i;
             }
         }
@@ -346,6 +335,38 @@ int32_t coordinator_chmod(void) {
         return ERROR;
     }
     return server_map_get(&coordinator.server_map, FILESYSTEM);
+}
+
+int32_t coordinator_fork(int32_t child_pid, int32_t father_pid) {
+    printf("[COORD] coordinator_fork: Clonando tabla de Padre [%d] a Hijo [%d]\n", father_pid, child_pid);
+    if (child_pid < 0 || child_pid >= PROCS_MAX || father_pid < 0 || father_pid >= PROCS_MAX) {
+        return ERROR;
+    }
+
+    for (int i = 0; i < MAX_FILES; i++) {
+        coordinator.fd[child_pid][i].fd = coordinator.fd[father_pid][i].fd;
+        coordinator.fd[child_pid][i].type_server = coordinator.fd[father_pid][i].type_server;
+        if (coordinator.fd[child_pid][i].type_server != -1) {
+            printf("[COORD] Heredado: Hijo [%d] FD Virtual [%d] -> FD Real [%d] Server [%d]\n", 
+                   child_pid, i, coordinator.fd[child_pid][i].fd, coordinator.fd[child_pid][i].type_server);
+        }
+    }
+    return SUCCESS;
+}
+
+
+
+int32_t coordinator_close_all(int32_t server_type){
+    if (server_type == FILESYSTEM || server_type == PIPE) {
+        if (!is_server_alive(server_type)){
+            handle_dead_server(server_type);
+            return ERROR;
+        }
+        return server_map_get(&coordinator.server_map, server_type);
+    }
+
+    return ERROR;
+
 }
 
 static const char * const server_names[] = {

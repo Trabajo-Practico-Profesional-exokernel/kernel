@@ -13,6 +13,7 @@ uint8_t ipc_buffer[MAX_BUFFER_IPC_SIZE] = {0};
 
 int32_t send_msg(int32_t recv_pid, int32_t arg_1, int32_t arg_2, int32_t arg_3, int32_t arg_4, int32_t arg_5, int32_t arg_6){
     int32_t sender_pid = getpid();
+    printf("[IPC] send_msg: Sender [%d] -> Recv [%d] | OP: %d | args: %d, %d, %d\n", sender_pid, recv_pid, arg_1, arg_2, arg_3, arg_4);
     Msg msg = {sender_pid, arg_1, arg_2, arg_3, arg_4, arg_5, arg_6};
     return try_send_content(recv_pid, (char*)&msg, sizeof(Msg));
 }
@@ -25,17 +26,16 @@ int32_t recv_msg(Msg *msg) {
 }
 
 int32_t app_try_recv_msg(Msg *msg) {
-    if (!msg) {
-        return ERROR;
-    }
+    if (!msg) return ERROR;
 
     for (int i = 0; i<MAX_APP_ATTEMPTS; i++){
         if (try_recv_content((char*)msg, sizeof(Msg))==SUCCESS){
+            printf("[IPC] recv_msg: PID [%d] received OP %d from PID [%d]\n", getpid(), msg->arg_1, msg->sender_pid);
             return SUCCESS;
         }
         sys_yield();
     }
-    printf("TIMEOUT\n");
+    printf("[IPC] recv_msg: TIMEOUT PID [%d]\n", getpid());
     return ERROR;
 }
 
@@ -82,17 +82,17 @@ int32_t app_receive_content(uint32_t operation, char *buffer, int len){
     }
 
     int copy_len = (msg.arg_4 < len) ? msg.arg_4 : len;
-    res = virtual_copy(msg.sender_pid, msg.arg_3, (uint32_t)buffer, copy_len);
     
-    if (res == ERROR){
-        //ver si conviene mas devolver un NACK
-        //send_ack(msg.sender_pid, operation);
-        return ERROR;
+    if (copy_len > 0) {
+        res = virtual_copy(msg.sender_pid, msg.arg_3, (uint32_t)buffer, copy_len);
+        if (res == ERROR) {
+            return ERROR;
+        }
+        
+        send_ack(msg.sender_pid, operation);
     }
 
-    send_ack(msg.sender_pid, operation);
-    
-    return msg.arg_2; 
+    return msg.arg_2;
 }
 
 int32_t server_send_parameter_to_app(int32_t pid, uint32_t operation, int32_t arg) {
@@ -103,7 +103,7 @@ int32_t server_send_content_to_app(int32_t pid, uint32_t operation, char *buffer
 
     int32_t res;
     memcpy(&ipc_buffer, buffer, len);
-    res = send_msg(pid, operation, value, (int)buffer, len, 0, 0);
+    res = send_msg(pid, operation, value, (int)&ipc_buffer, len, 0, 0);
     if (res == ERROR){
         return ERROR;
     } 
@@ -219,4 +219,69 @@ int32_t app_send_msg_to_server(int32_t arg_1, int32_t arg_2, int32_t arg_3,
 
     // ------------------------------------------------
     return send_msg(server_pid, arg_1, arg_2, arg_3, arg_4, arg_5, arg_6);
+}
+
+
+int32_t app_recv_fork_msg() {
+    Msg msg;
+    if (recv_msg(&msg) != SUCCESS) return ERROR;
+    if (msg.arg_1 != APP_OP_FORK) return ERROR;
+
+    int32_t father_pid = msg.arg_2;
+    printf("[IPC-FORK] PID [%d] iniciando sincronizacion de herencia desde Padre [%d]\n", getpid(), father_pid);
+
+    printf("[IPC-FORK] Notificando al Coordinador...\n");
+    send_msg(get_coord_pid(), OP_FORK, father_pid, 0, 0, 0, 0);
+    app_receive_parameter(OP_FORK);
+
+    int32_t fs_pid = get_server_pid(OP_OPEN, 0, 0, 0, 0, 0);
+    if (fs_pid >= 0) {
+        printf("[IPC-FORK] Notificando al Filesystem (PID %d)...\n", fs_pid);
+        send_msg(fs_pid, OP_FORK, 0, father_pid, 0, 0, 0);
+        app_receive_parameter(OP_FORK);
+    }
+
+    int32_t pipe_pid = get_server_pid(OP_PIPE, 0, 0, 0, 0, 0);
+    if (pipe_pid >= 0) {
+        printf("[IPC-FORK] Notificando al Pipe (PID %d)...\n", pipe_pid);
+        send_msg(pipe_pid, OP_FORK, 0, father_pid, 0, 0, 0);
+        app_receive_parameter(OP_FORK);
+    }
+    
+    printf("[IPC-FORK] Sincronizacion completa. Desbloqueando Padre [%d]\n", father_pid);
+    send_msg(father_pid, APP_OP_FORK, SUCCESS, 0, 0, 0, 0);
+    return SUCCESS;
+}
+int32_t app_send_fork_msg(int32_t child_pid) {
+    int32_t father_pid = getpid();
+    printf("father pid [%d] child pid [%d]\n", father_pid, child_pid);
+    int32_t res = send_msg(child_pid, APP_OP_FORK, father_pid, 0, 0, 0, 0);
+    
+    if (res < 0) {
+        return ERROR;
+    }
+
+    Msg ack_msg;
+    if (recv_msg(&ack_msg) != SUCCESS) {
+        return ERROR;
+    }
+
+    return SUCCESS;
+}
+
+
+int32_t app_send_close_msg() {
+    int32_t fs_pid = get_server_pid(OP_CLOSE_ALL, 0, FILESYSTEM, 0, 0, 0);
+    if (fs_pid >= 0) {
+        send_msg(fs_pid, OP_CLOSE_ALL, 0, 0, 0, 0, 0);
+        app_receive_parameter(OP_CLOSE_ALL);
+    }
+
+    int32_t pipe_pid = get_server_pid(OP_CLOSE_ALL, 0, PIPE, 0, 0, 0);
+    if (pipe_pid >= 0) {
+        send_msg(pipe_pid, OP_CLOSE_ALL, 0, 0, 0, 0, 0);
+        app_receive_parameter(OP_CLOSE_ALL);
+    }
+
+    return SUCCESS;
 }

@@ -5,6 +5,8 @@
 
 #define TOTAL_FILES PROCS_MAX*MAX_FILES
 
+extern struct File files[PROCS_MAX][MAX_FILES];
+
 void pipe_init(void){
     init_files();
 }
@@ -100,4 +102,38 @@ int32_t pipe_dup(int32_t fd, int32_t app_id){
 
 int32_t pipe_fstat(int32_t fd, int32_t app_id){
     return 0;
+}
+
+int32_t pipe_fork(int32_t app_pid, int32_t app_father) {
+    if (app_pid < 0 || app_pid >= PROCS_MAX || app_father < 0 || app_father >= PROCS_MAX) {
+        return ERROR;
+    }
+    printf("[PIPE] pipe_fork: Replicando estado de Padre [%d] a Hijo [%d]\n", app_father, app_pid);
+    
+    for (int i = 0; i < MAX_FILES; i++) {
+        struct File *father_file = get_file(app_father, i);
+        if (father_file != NULL) {
+            printf("[PIPE] pipe_fork: Hijo [%d] asume FD [%d]\n", app_pid, i);
+            files[app_pid][i].state = father_file->state;
+            files[app_pid][i].readopen = father_file->readopen;
+            files[app_pid][i].writeopen = father_file->writeopen;
+            files[app_pid][i].buffer = father_file->buffer;
+            
+            file_retain(&files[app_pid][i]);
+        }
+    }
+    return SUCCESS;
+}
+
+int32_t pipe_close_all(int32_t app_pid) {
+    if (app_pid < 0 || app_pid >= PROCS_MAX) {
+        return ERROR;
+    }
+
+    for (int i = 0; i < MAX_FILES; i++) {
+        if (files[app_pid][i].state == ON) {
+            pipe_close(i, app_pid);
+        }
+    }
+    return SUCCESS;
 }

@@ -910,6 +910,42 @@ int fs_chown(int proc_pid, const char *filename, int new_uid, int new_gid){
     return 0;
 }
 
-int fs_dup(int fd, int app_id){
+int fs_fork(int app_pid, int app_father) {
+    if (app_pid < 0 || app_pid >= PROCS_MAX || app_father < 0 || app_father >= PROCS_MAX) {
+        return -1;
+    }
+
+    for (int i = 0; i < MAX_OPEN_FILES; i++) {
+        table[app_pid][i] = table[app_father][i];
+    }
+
+    current_dir[app_pid] = current_dir[app_father];
+    bcopy((unsigned char *)current_path[app_father], (unsigned char *)current_path[app_pid], MAX_PATH_NAME);
+
+    return 0;
+}
+
+int fs_dup(int fd, int app_id) {
+    int dup_fd = get_fd(app_id);
+
+    if (dup_fd == -1 || table[app_id][fd].fd == -1) {
+        return -1;
+    } 
+
+    table[app_id][dup_fd] = table[app_id][fd];
+    table[app_id][dup_fd].fd = dup_fd;
+
+    return dup_fd;
+}
+
+int fs_close_all(int app_pid) {
+    if (app_pid < 0 || app_pid >= PROCS_MAX) {
+        return -1;
+    }
+
+    for (int i = 0; i < MAX_OPEN_FILES; i++) {
+        fs_close(i, app_pid);
+    }
+
     return 0;
 }

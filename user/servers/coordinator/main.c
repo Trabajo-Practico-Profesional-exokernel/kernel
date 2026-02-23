@@ -108,7 +108,7 @@ void handle_chmod(CoordinatorOperation *op) {
 
 
 void handle_update(CoordinatorOperation *op) {
-    coordinator_update(op->fd, op->app_id, op->server_type, op->type_op);
+    coordinator_update(op->fd, op->app_id, op->server_type, op->state);
 }
 
 void send_error_msg(int32_t operation) {
@@ -122,6 +122,19 @@ void handle_get_fd(CoordinatorOperation *op) {
 
 void handle_get_server_fd(CoordinatorOperation *op) {
     int32_t res = get_server_real_fd(op->app_id, op->fd, op->server_type);
+    give_response(op->type_op, res, 0, 0);
+}
+
+void handle_fork(CoordinatorOperation *op) {
+    int32_t child_pid = op->app_id;
+    int32_t father_pid = op->fd; 
+    
+    int32_t res = coordinator_fork(child_pid, father_pid);
+    give_response(op->type_op, res, 0, 0);
+}
+
+void handle_close_all(CoordinatorOperation *op) {
+    int32_t res = coordinator_close_all(op->server_type);
     give_response(op->type_op, res, 0, 0);
 }
 
@@ -154,6 +167,8 @@ static const coord_op_handler_t op_dispatch_table[] = {
     [OP_UPDATE]         = handle_update,
     [OP_GET_FD]         = handle_get_fd,
     [OP_GET_SERVER_FD]  = handle_get_server_fd,
+    [OP_FORK]           = handle_fork,
+    [OP_CLOSE_ALL]      = handle_close_all,
 };
 
 #define MAX_OP_HANDLERS (sizeof(op_dispatch_table) / sizeof(op_dispatch_table[0]))

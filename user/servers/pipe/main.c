@@ -20,7 +20,7 @@ void send_error_msg(int32_t operation) {
 void handle_open(PipeOperation *op) {
     int32_t app_pid = op->app_id;
     int32_t fd[2];
-
+    printf("PIPE OPEN [%d]\n", op->app_id);
     int32_t res = pipe_open(app_pid, fd);
     
     give_response(op->type_op, res, (uint32_t)fd, sizeof(fd), fd[0], fd[1]);
@@ -30,7 +30,7 @@ void handle_read(PipeOperation *op) {
     int32_t app_pid = op->app_id;
     int fd = op->fd;
     int count = op->len_content;
-
+    printf("PIPE READ [%d]\n", op->app_id);
     char buffer[MAX_BUFFER_IPC_SIZE]; 
     int to_read = (count > (int)sizeof(buffer)) ? (int)sizeof(buffer) : count;
 
@@ -45,7 +45,7 @@ void handle_write(PipeOperation *op) {
     int32_t app_pid = op->app_id;
     int fd = op->fd;
     int count = op->len_content;
-
+    printf("PIPE WRITE [%d]\n", op->app_id);
     char buffer[MAX_BUFFER_IPC_SIZE];
     int to_write = (count > (int)sizeof(buffer)) ? (int)sizeof(buffer) : count;
 
@@ -59,7 +59,7 @@ void handle_write(PipeOperation *op) {
 void handle_close(PipeOperation *op) {
     int32_t app_pid = op->app_id;
     int fd = op->fd;
-
+    printf("PIPE CLOSE [%d] fd [%d]\n", op->app_id, fd);
     int32_t res = pipe_close(fd, app_pid);
 
     give_response(PIPE_OP_CLOSE, res, 0, 0, fd, 0);
@@ -68,10 +68,28 @@ void handle_close(PipeOperation *op) {
 void handle_dup(PipeOperation *op) {
     int32_t app_pid = op->app_id;
     int32_t fd = op->fd;
-
+    printf("PIPE DUP [%d]\n", op->app_id);
     int32_t res = pipe_dup(fd, app_pid);
     
     give_response(PIPE_OP_DUP, res, 0, 0, fd, 0);
+}
+
+
+void handle_fork(PipeOperation *op) {
+    int32_t app_pid = op->app_id;
+    int32_t app_father = op->arg_1;
+    printf("PIPE FORK [%d]\n", op->app_id);
+    int32_t res = pipe_fork(app_pid, app_father);
+    
+    give_response(PIPE_OP_FORK, res, 0, 0, 0, 0);
+}
+
+void handle_close_all(PipeOperation *op) {
+    int32_t app_pid = op->app_id;
+    printf("PIPE CLOSE ALL [%d]\n", op->app_id);
+    int32_t res = pipe_close_all(app_pid);
+    
+    give_response(PIPE_OP_CLOSE_ALL, res, 0, 0, 0, 0);
 }
 
 void handle_fstat(PipeOperation *op) {
@@ -87,7 +105,9 @@ static const pipe_op_handler_t op_dispatch_table[] = {
     [PIPE_OP_WRITE]     = handle_write,
     [PIPE_OP_CLOSE]     = handle_close,
     [PIPE_OP_FSTAT]     = handle_fstat,
-    [PIPE_OP_DUP]       = handle_dup
+    [PIPE_OP_DUP]       = handle_dup,
+    [PIPE_OP_CLOSE_ALL] = handle_close_all,
+    [PIPE_OP_FORK]      = handle_fork
 };
 
 #define MAX_OP_HANDLERS (sizeof(op_dispatch_table) / sizeof(op_dispatch_table[0]))

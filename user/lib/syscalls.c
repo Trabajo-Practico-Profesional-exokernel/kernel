@@ -12,6 +12,7 @@
 #include "constants.h"
 #include "parsers/strutil.h"
 #include "arch/console.h"
+#include "arch/proc.h"
 
 int sys_exec(char ** args){
     return syscall(SYS_EXEC, (int)(args),0, 0, 0);
@@ -19,7 +20,23 @@ int sys_exec(char ** args){
 
 
 int sys_fork(void){
-    return syscall(SYS_FORK, 0, 0, 0, 0);
+
+    int pid = syscall(SYS_FORK, 0, 0, 0, 0);
+
+    if (pid == 0) {
+        int res = app_recv_fork_msg();
+        if (res == ERROR){
+            printf("error en fork hijo\n");
+            return ERROR;
+        }
+        printf("devolviendo pid [%d]\n", pid);
+    } else if (pid > 0) {
+        int res = app_send_fork_msg(pid);
+        if (res == ERROR){
+            return ERROR;
+        }
+    }
+    return pid;
 }
 
 int sys_sleep(int time){
@@ -41,6 +58,7 @@ void sys_yield(){
 }
 
 __attribute__((noreturn)) void exit(int ret_code) {
+    app_send_close_msg();
     syscall(SYS_EXIT, ret_code, 0, 0, 0);
     printf("SHOULD NOT REACH HERE! AFTER EXIT\n");
     for(;;){}
@@ -116,35 +134,44 @@ int open(const char *path, int mode) {
 }
 
 int close(int fd) {
-
-    if (fd == STDIN || fd == STDOUT){
-        int res = console_close(fd);
-        //es necesario refactorizar
-        int pid = getpid();
-        int res_update = send_msg(get_coord_pid(), OP_UPDATE, KERNEL, pid, fd, -1, 0);
-
-        if (res_update < 0){
-            printf("ERROR UPDATING STATE IN COORDINATOR\n");
+    int server_pid = get_server_pid(OP_CLOSE, fd, 0, 0, 0, 0);
+    
+    if (server_pid < 0) {
+        if (fd == STDIN || fd == STDOUT) {
+            int res = console_close(fd);
+            send_msg(get_coord_pid(), OP_UPDATE, KERNEL, getpid(), fd, -1, 0);
+            return (res > 0) ? res : 0;
         }
-
-        if (res > 0) return res;
+        return ERROR;
     }
+    
+    int real_fd = get_real_fd(OP_CLOSE, fd, server_pid);
+    int target_fd = (real_fd >= 0) ? real_fd : fd;
 
-    int res = app_send_msg_to_server(OP_CLOSE, fd, 0, 0, 0, 0);
+    int res = app_send_msg_to_server(OP_CLOSE, target_fd, 0, 0, 0, 0);
     if (res == ERROR) return ERROR;
+    
     return app_receive_parameter(OP_CLOSE);
 }
 
 int read(int fd, char *buf, int size) {
-
     if (fd == STDIN){
         int res = console_read(buf, size);
         if (res > 0) return res;
     }
     
-    int res = app_send_msg_to_server(OP_READ, fd, 0, 0, (int)buf, size);
-    if (res == ERROR) return ERROR;
-    return app_receive_content(OP_READ, buf, size);
+    while (1) {
+        int res = app_send_msg_to_server(OP_READ, fd, 0, 0, (int)buf, size);
+        if (res == ERROR) return ERROR;
+        
+        res = app_receive_content(OP_READ, buf, size);
+        
+        if (res != -2) {
+            return res;
+        }
+        
+        sys_yield();
+    }
 }
 
 int write(int fd, char *content, int len) {
@@ -248,8 +275,21 @@ int dup(int prev_fd){
     if (res == ERROR) return ERROR;
     return app_receive_parameter(OP_DUP);
 }
-int dup2(int prev_fd, int trg_fd){
-    printf("NOT IMPLEMENTED YET ATTEMPT TO DUP2 %d to %d\n", prev_fd, trg_fd);
+
+int dup2(int target_fd, int prev_fd) {
+    if (prev_fd == target_fd) {
+        return target_fd;
+    }
+
+    if (close(prev_fd) == ERROR){
+        return ERROR;
+    }
+
+    if (dup(target_fd) == ERROR){
+        return ERROR;
+    }
+    
+    return SUCCESS;
 }
 
 int sys_execv(char* new_prog_name, char ** argv){

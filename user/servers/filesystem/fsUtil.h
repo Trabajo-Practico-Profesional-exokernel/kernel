@@ -38,10 +38,7 @@ bool is_directory_empty(inode_t);
 void save_inode(int, inode_t);
 inode_t get_inode_per_inum(int);
 
-/*
-    Operation on Table of Open Files
-*/
-int get_single_available_fd();
+int get_fd(int32_t pid);
 
 /*
     Operations on Files

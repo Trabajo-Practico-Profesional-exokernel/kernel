@@ -19,7 +19,6 @@ void main(int argc, char **argv) {
         printf("ls: cannot access '%s'\n", path);
         exit(1);
     }
-    printf("ls: finished '%s'\n", path);
     
     exit(0);
 }

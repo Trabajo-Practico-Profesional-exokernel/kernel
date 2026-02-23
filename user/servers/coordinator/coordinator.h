@@ -44,5 +44,6 @@ int32_t coordinator_link(void);
 int32_t coordinator_unlink(void);
 int32_t coordinator_chown(void);
 int32_t coordinator_chmod(void);
-
+int32_t coordinator_fork(int32_t child_pid, int32_t father_pid);
+int32_t coordinator_close_all(int32_t server_type);
 #endif

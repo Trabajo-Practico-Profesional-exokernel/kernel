@@ -5,6 +5,10 @@
 #include "console/debug.h"
 #include "constants.h"
 #include "syscalls.h"
+#include "files.h"
+#include "arch/proc.h"
+
+extern struct File files[PROCS_MAX][MAX_FILES];
 
 static int32_t current_client_pid = -1;
 
@@ -20,6 +24,8 @@ static int32_t map_op_code(int32_t protocol_op) {
         case OP_CLOSE:  return PIPE_OP_CLOSE;
         case OP_STAT:   return PIPE_OP_FSTAT;
         case OP_DUP:    return PIPE_OP_DUP;
+        case OP_FORK:   return PIPE_OP_FORK;
+        case OP_CLOSE_ALL: return PIPE_OP_CLOSE_ALL;
         default:        return -1;
     }
 }
@@ -32,12 +38,13 @@ static int32_t unmap_op_code(int32_t pipe_op) {
         case PIPE_OP_CLOSE:  return OP_CLOSE;
         case PIPE_OP_FSTAT:  return OP_STAT;
         case PIPE_OP_DUP:    return OP_DUP;
+        case PIPE_OP_FORK:   return OP_FORK;
+        case PIPE_OP_CLOSE_ALL: return OP_CLOSE_ALL;
         default:             return -1;
     }
 }
 
 static int32_t update_coord_state(int32_t type_server, int32_t type_command, int32_t client_pid, int32_t fd){
-    
     if (type_command != OP_OPEN && type_command != OP_CLOSE && type_command != OP_PIPE){
         return -1;
     }
@@ -46,19 +53,18 @@ static int32_t update_coord_state(int32_t type_server, int32_t type_command, int
     int32_t state = 0;
 
     if (type_command == OP_OPEN || type_command == OP_PIPE || type_command == OP_DUP){
-        state = 1; 
-    } 
-    else if (type_command == OP_CLOSE){
+        state = 1;
+    } else if (type_command == OP_CLOSE){
         state = -1;
-    } 
-    else {
+    } else {
         return SUCCESS;
     }
 
+    printf("[PIPE] update_coord_state: Notificando Coordinador PID[%d] -> FD Real[%d], State[%d]\n", client_pid, fd, state);
     return send_msg(coord_pid, OP_UPDATE, getpid(), client_pid, fd, state, 0);
 }
 
-int32_t get_command(PipeOperation *command){
+int32_t get_command(PipeOperation *command) {
     Msg msg;
 
     if (recv_msg(&msg) != SUCCESS) {
@@ -71,27 +77,27 @@ int32_t get_command(PipeOperation *command){
     command->type_op = map_op_code(msg.arg_1);
 
     command->fd            = msg.arg_2;
+    command->arg_1         = msg.arg_3; 
     command->content_vaddr = msg.arg_5;
     command->len_content   = msg.arg_6;
 
     return SUCCESS;
 }
 
-int32_t give_response(int32_t type_command, int32_t arg_1, int32_t arg_2, int32_t arg_3, int32_t fd_1, int32_t fd_2){
 
+
+int32_t give_response(int32_t type_command, int32_t arg_1, int32_t arg_2, int32_t arg_3, int32_t fd_1, int32_t fd_2){
     int32_t protocol_op = unmap_op_code(type_command);
+    
     if (current_client_pid == -1 || protocol_op == -1) {
         return ERROR;
     }
     
-    // Lógica de envío de contenido (sin cambios, manteniendo el fix anterior para arg_1 >= 0)
-    if ((type_command == PIPE_OP_OPEN || 
-        type_command == PIPE_OP_READ) && arg_2 != 0)
-    {
+    if ((type_command == PIPE_OP_OPEN || type_command == PIPE_OP_READ) && arg_2 != 0) {
         if (arg_2 != 0 && arg_3 > 0 && arg_1 >= 0) {
              if (protocol_op == OP_PIPE) {
-                update_coord_state(PIPE, OP_OPEN, current_client_pid, fd_1); // Registrar FD Lectura
-                update_coord_state(PIPE, OP_OPEN, current_client_pid, fd_2); // Registrar FD Escritura
+                update_coord_state(PIPE, OP_OPEN, current_client_pid, fd_1);
+                update_coord_state(PIPE, OP_OPEN, current_client_pid, fd_2);
 
                 int32_t real_fd_1 = server_get_real_fd(fd_1, current_client_pid, PIPE);
                 int32_t real_fd_2 = server_get_real_fd(fd_2, current_client_pid, PIPE);
@@ -100,22 +106,25 @@ int32_t give_response(int32_t type_command, int32_t arg_1, int32_t arg_2, int32_
              } else {
                 return server_send_content_to_app(current_client_pid, protocol_op, (char*)arg_2, arg_3, arg_1);
              }
-            
         }
         return server_send_parameter_to_app(current_client_pid, protocol_op, arg_1);
     } 
     else {
-        // Respuesta estándar
         if (arg_1 >= 0) {
-            // Caso CLOSE: Desregistrar el FD cerrado
             if (protocol_op == OP_CLOSE) {
                 update_coord_state(PIPE, protocol_op, current_client_pid, fd_1);
             }
-
             if (protocol_op == OP_DUP) {
                 update_coord_state(PIPE, OP_OPEN, current_client_pid, arg_1);
                 int32_t real_fd_1 = server_get_real_fd(arg_1, current_client_pid, PIPE);
                 return server_send_parameter_to_app(current_client_pid, protocol_op, real_fd_1);
+            }
+            if (protocol_op == OP_CLOSE_ALL) {
+                for (int i = 0; i < MAX_FILES; i++) {
+                    if (files[current_client_pid][i].state == ON) {
+                        update_coord_state(PIPE, OP_CLOSE, current_client_pid, i);
+                    }
+                }
             }
         }
         return server_send_parameter_to_app(current_client_pid, protocol_op, arg_1);

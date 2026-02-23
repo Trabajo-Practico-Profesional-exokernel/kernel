@@ -9,7 +9,7 @@
 #define FS_SIZE 2048
 #define MAX_FILE_NAME 28
 #define MAX_PATH_NAME 256  
-#define MAX_OPEN_FILES 256
+#define MAX_OPEN_FILES 16
 #define MAGIC_NUMBER 0x70
 
 #define INODES_BLOCKS 256
@@ -143,4 +143,7 @@ int fs_chmod(int proc_pid, const char *path, int new_mode);
 int fs_chown(int proc_pid, const char *path, int new_uid, int new_gid);
 
 int fs_dup(int fd, int app_id);
+int fs_fork(int app_pid, int app_father);
+int fs_close_all(int app_pid);
+
 #endif

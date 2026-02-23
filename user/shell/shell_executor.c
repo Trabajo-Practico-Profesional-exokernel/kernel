@@ -10,7 +10,7 @@
 static int apply_redirections(command_t *cmd) {
     // Input redirection
     if (cmd->stdin_redir.type == REDIR_INPUT) {
-        int fd = open(cmd->stdin_redir.path, 0); // 0 = O_RDONLY
+        int fd = open(cmd->stdin_redir.path, 1); // 0 = O_RDONLY
         if (fd < 0) {
             printf("Error: Cannot open file for input: %s\n", cmd->stdin_redir.path);
             return -1;
@@ -22,7 +22,7 @@ static int apply_redirections(command_t *cmd) {
     
     // Output redirection (> overwrites)
     if (cmd->stdout_redir.type == REDIR_OUTPUT) {
-        int fd = open(cmd->stdout_redir.path, 1); // 1 = O_WRONLY
+        int fd = open(cmd->stdout_redir.path, 2); // 1 = O_WRONLY
         if (fd < 0) {
             printf("Error: Cannot open file for output: %s\n", cmd->stdout_redir.path);
             return -1;
@@ -35,7 +35,7 @@ static int apply_redirections(command_t *cmd) {
     if (cmd->stdout_redir.type == REDIR_APPEND) {
         // Note: append mode would need syscall support
         // For now, treat same as REDIR_OUTPUT
-        int fd = open(cmd->stdout_redir.path, 1);
+        int fd = open(cmd->stdout_redir.path, 2);
         if (fd < 0) {
             printf("Error: Cannot open file for append: %s\n", cmd->stdout_redir.path);
             return -1;
@@ -46,7 +46,7 @@ static int apply_redirections(command_t *cmd) {
     
     // Error redirection (2> redirects stderr)
     if (cmd->stderr_redir.type == REDIR_ERROR || cmd->stderr_redir.type == REDIR_ERROR_APPEND) {
-        int fd = open(cmd->stderr_redir.path, 1);
+        int fd = open(cmd->stderr_redir.path, 2);
         if (fd < 0) {
             printf("Error: Cannot open file for stderr: %s\n", cmd->stderr_redir.path);
             return -1;

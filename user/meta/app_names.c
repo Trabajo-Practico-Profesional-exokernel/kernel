@@ -4,6 +4,7 @@ char * _app_names[] = {
 "stat",
 "cat",
 "coordinator",
+"echo",
 "example_dapp",
 "filesystem",
 "fs/cat",
