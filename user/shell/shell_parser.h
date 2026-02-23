@@ -27,6 +27,8 @@ typedef struct {
     char *cmd;         // Command name (first word)
     char **argv;       // Arguments array (including command at argv[0])
     int argc;          // Argument count
+    char **env_vars;   // Temporary env assignments (NAME=VALUE)
+    int env_count;     // Number of temporary env assignments
     redirection_t stdin_redir;   // Input redirection
     redirection_t stdout_redir;  // Output redirection
     redirection_t stderr_redir;  // Error redirection

@@ -34,7 +34,7 @@ static int tokenize(char *input, char **tokens, int max_tokens) {
     int in_token = 0;
     
     while (copy[i] != '\0' && count < max_tokens) {
-        if (copy[i] == ' ' || copy[i] == '|' || copy[i] == '>' || copy[i] == '<') {
+        if (copy[i] == ' ' || copy[i] == '|' || copy[i] == '>' || copy[i] == '<' || copy[i] == '&') {
             if (in_token) {
                 // End current token and duplicate it
                 copy[i] = '\0';
@@ -119,6 +119,20 @@ static int tokenize(char *input, char **tokens, int max_tokens) {
     }
     
     free(copy);
+
+    // Sanitize: remove any empty-string tokens if present
+    for (int j = 0; j < count; ) {
+        if (tokens[j] && strlen((const uint8_t*)tokens[j]) == 0) {
+            free(tokens[j]);
+            // shift left
+            for (int k = j; k < count - 1; k++) tokens[k] = tokens[k+1];
+            tokens[count-1] = NULL;
+            count--;
+            continue; // check current index again
+        }
+        j++;
+    }
+
     return count;
 }
 
@@ -126,9 +140,16 @@ static int tokenize(char *input, char **tokens, int max_tokens) {
 static int parse_command_args(char **tokens, int start_idx, int end_idx, 
                               command_t *cmd) {
     int arg_idx = 0;
+
     
     cmd->argv = (char **)malloc(sizeof(char *) * MAX_ARGS_PER_CMD);
     if (!cmd->argv) return -1;
+    cmd->env_vars = (char **)malloc(sizeof(char *) * MAX_ARGS_PER_CMD);
+    if (!cmd->env_vars) {
+        free(cmd->argv);
+        return -1;
+    }
+    cmd->env_count = 0;
     
     // First token is the command
     if (start_idx >= end_idx) return -1;
@@ -137,9 +158,21 @@ static int parse_command_args(char **tokens, int start_idx, int end_idx,
     while (start_idx < end_idx && strlen((const uint8_t*)tokens[start_idx]) == 0) {
         start_idx++;
     }
-    
+
+    // Collect leading temporary env assignments of form NAME=VALUE
+    while (start_idx < end_idx) {
+        char *t = tokens[start_idx];
+        if (t && t[0] != '\0' && strchr(t, '=') && t[0] != '=') {
+            if (cmd->env_count >= MAX_ARGS_PER_CMD - 1) return -1;
+            cmd->env_vars[cmd->env_count++] = t;
+            start_idx++;
+            continue;
+        }
+        break;
+    }
+
     if (start_idx >= end_idx) return -1;
-    
+
     cmd->cmd = tokens[start_idx];
     cmd->argv[arg_idx++] = tokens[start_idx];
     
@@ -219,6 +252,7 @@ static int parse_command_args(char **tokens, int start_idx, int end_idx,
     
     cmd->argv[arg_idx] = NULL; // Null-terminate argv
     cmd->argc = arg_idx;
+
     return 0;
 }
 
@@ -325,6 +359,9 @@ void free_parse_result(parse_result_t *result) {
         for (int i = 0; i < result->pipeline.num_commands; i++) {
             if (result->pipeline.commands[i].argv) {
                 free(result->pipeline.commands[i].argv);
+            }
+            if (result->pipeline.commands[i].env_vars) {
+                free(result->pipeline.commands[i].env_vars);
             }
         }
         free(result->pipeline.commands);
