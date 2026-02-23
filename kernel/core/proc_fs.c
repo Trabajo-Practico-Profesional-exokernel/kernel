@@ -37,6 +37,22 @@ void update_system_info(int ticks, int use_of_cpu) {
     sys_info.kernel.ticks = ticks;
     sys_info.kernel.use_of_cpu = use_of_cpu;
 }
+int upd_proc_gid(struct Proc *proc){
+    if (proc == NULL) {
+        return ERROR;
+    }
+
+    int pid = proc->pid;
+
+    if (pid < 0 || pid >= PROCS_MAX) {
+        return ERROR;
+    }
+
+    ProcInfo *info = &sys_info.procs[pid];
+    info->gid = proc->gid;
+    
+    return 0;
+}
 
 int add_proc_info(struct Proc *proc) {
     if (proc == NULL) {

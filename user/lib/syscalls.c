@@ -37,6 +37,14 @@ int sys_kill(int pid){
     return syscall(SYS_KILL, pid, 0, 0, 0);
 }
 
+int sys_kill_group(int gid){
+    return syscall(SYS_KILL, gid, 1, 0, 0);
+}
+
+int set_gid(int gid){
+    return syscall(SYS_PROC_SET_GID, gid, 0, 0, 0);
+}
+
 void sys_yield(){
     syscall(SYS_YIELD, 0, 0, 0, 0);
 }

@@ -101,6 +101,9 @@ void syscall_execv(FullTrapFrame *tf, uintptr_t pc) {
         return;
     }
 
+    //Change name,stats and so on
+    add_proc_to_system_stats(caller_proc);
+
     // Do sched yield to be fair?
     sched_yield();
 

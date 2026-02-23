@@ -38,6 +38,7 @@ typedef struct {
     int num_commands;     // Number of commands in pipeline
     char **tokens_to_free;  // Tokens allocated during parsing (for cleanup)
     int token_count;      // Number of tokens
+    int background;       // 1 if should run in background, 0 otherwise
 } pipeline_t;
 
 // Parser result

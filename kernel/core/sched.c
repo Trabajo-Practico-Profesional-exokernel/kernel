@@ -64,6 +64,18 @@ struct Proc * get_proc(procid_t proc_pid){
     return &procs[PROCX(proc_pid)];
 }
 
+struct Proc * get_next_gid_from(procid_t pid_start, int gid){
+    for (int i = PROCX(pid_start); i < PROCS_MAX; i++) {
+        if (procs[i].status != PROC_FREE && procs[i].gid == gid) {
+            return &procs[i];
+        }
+    }
+    
+    return NULL;    
+}
+
+
+
 #define TRAMPOLINE_STACK_SIZE 4096 // 1 page essentially?
 uint8_t trampoline_stacks[NCPU][TRAMPOLINE_STACK_SIZE]; // All process control structures.
 
@@ -164,7 +176,7 @@ void clock_yield(FullTrapFrame *tf, uintptr_t proc_pc) {  // Quitamos uintptr_t 
         } else {
             add_uptime_to_proc(curr);
             // Check/poll for IO, Disk, etc. Drivers
-            // polling_checks(); 
+            polling_checks(); 
         }
     }
 

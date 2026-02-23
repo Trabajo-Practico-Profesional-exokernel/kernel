@@ -226,17 +226,25 @@ static int parse_command_args(char **tokens, int start_idx, int end_idx,
 parse_result_t parse_command_line(char *input) {
     parse_result_t result;
     memset(&result, 0, sizeof(parse_result_t));
-    
+
     // Tokenize input
     char *tokens[MAX_TOKENS];
     int token_count = tokenize(input, tokens, MAX_TOKENS);
-    
+
     if (token_count <= 0) {
         result.parse_error = 1;
         strcpy((uint8_t*)result.error_msg, (const uint8_t*)"Tokenization failed");
         return result;
     }
-    
+
+    // Check for background execution (& at end)
+    int background = 0;
+    if (token_count > 0 && strcmp((const uint8_t*)tokens[token_count-1], (const uint8_t*)"&") == 0) {
+        background = 1;
+        free(tokens[token_count-1]);
+        token_count--;
+    }
+
     // Count commands (separated by pipes)
     int cmd_count = 1;
     for (int i = 0; i < token_count; i++) {
@@ -244,7 +252,7 @@ parse_result_t parse_command_line(char *input) {
             cmd_count++;
         }
     }
-    
+
     if (cmd_count > MAX_PIPELINE_LEN) {
         result.parse_error = 1;
         strcpy((uint8_t*)result.error_msg, (const uint8_t*)"Too many commands in pipeline");
@@ -254,7 +262,7 @@ parse_result_t parse_command_line(char *input) {
         }
         return result;
     }
-    
+
     // Allocate space for commands
     result.pipeline.commands = (command_t *)malloc(sizeof(command_t) * cmd_count);
     if (!result.pipeline.commands) {
@@ -266,20 +274,20 @@ parse_result_t parse_command_line(char *input) {
         }
         return result;
     }
-    
+
     // Initialize all commands
     for (int i = 0; i < cmd_count; i++) {
         memset(&result.pipeline.commands[i], 0, sizeof(command_t));
     }
-    
+
     // Parse each command in the pipeline
     int cmd_idx = 0;
     int cmd_start = 0;
-    
+
     for (int i = 0; i <= token_count; i++) {
         int is_pipe = (i < token_count && strcmp((const uint8_t*)tokens[i], (const uint8_t*)"|") == 0);
         int is_end = (i == token_count);
-        
+
         if (is_pipe || is_end) {
             // Parse command from cmd_start to i
             if (parse_command_args(tokens, cmd_start, i, &result.pipeline.commands[cmd_idx]) != 0) {
@@ -295,7 +303,7 @@ parse_result_t parse_command_line(char *input) {
             cmd_start = i + 1;
         }
     }
-    
+
     // Store tokens array reference in pipeline for cleanup
     // We need to keep track of tokens to free them later
     result.pipeline.tokens_to_free = (char **)malloc(sizeof(char*) * token_count);
@@ -305,8 +313,9 @@ parse_result_t parse_command_line(char *input) {
         }
         result.pipeline.token_count = token_count;
     }
-    
+
     result.pipeline.num_commands = cmd_count;
+    result.pipeline.background = background;
     return result;
 }
 

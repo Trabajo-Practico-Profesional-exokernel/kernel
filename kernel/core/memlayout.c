@@ -161,6 +161,8 @@ int load_create_process_user(struct Proc * proc, const struct BinaryAppEntry * a
     strcpy(proc->proc_name, app_info->name);
     
     init_proc_uptime(proc);
+    proc->gid = proc->pid;
+
 }
 
 // For now no extra mapping needed.
@@ -183,7 +185,6 @@ int reload_process_user(struct Proc * proc, const struct BinaryAppEntry * app_in
     init_trapframe(proc, VADDR_USER_STACK_HARD_END); // Reset values
     
     strcpy(proc->proc_name, app_info->name);
-
     return 0;
 }
 
@@ -208,6 +209,7 @@ int load_create_forked(struct Proc* parent, struct Proc* child){
     init_proc_uptime(child);
     
     init_proc_std_files(child->pid);
+    child->gid = parent->gid;
 
     return 0;
 }

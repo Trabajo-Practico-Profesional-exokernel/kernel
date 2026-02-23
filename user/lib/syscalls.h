@@ -12,6 +12,10 @@ int sys_execve(char* new_prog_name, char ** argv, char ** envp);
 
 int wait(int pid);
 int sys_kill(int pid);
+int sys_kill_group(int gid);
+
+int set_gid(int gid);
+
 
 int sys_fork(void);
 int sys_sleep(int time);
