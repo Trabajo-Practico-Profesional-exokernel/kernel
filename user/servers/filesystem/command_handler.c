@@ -165,13 +165,13 @@ int32_t give_response(int32_t type_command, int32_t arg_1, int32_t arg_2, int32_
                 int32_t real_fd = server_get_real_fd(arg_1, current_client_pid, FILESYSTEM);
                 return server_send_parameter_to_app(current_client_pid, protocol_op, real_fd);
             }
-            if (protocol_op == OP_FORK) {
+            /*if (protocol_op == OP_FORK) {
                 for (int i = 0; i < MAX_OPEN_FILES; i++) {
                     if (table[current_client_pid][i].fd != -1) {
                         update_coord_state(FILESYSTEM, OP_OPEN, current_client_pid, i);
                     }
                 }
-            }
+            }*/
             if (protocol_op == OP_CLOSE_ALL) {
                 for (int i = 0; i < MAX_OPEN_FILES; i++) {
                     if (table[current_client_pid][i].fd != -1) {
