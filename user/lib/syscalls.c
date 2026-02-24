@@ -281,7 +281,7 @@ int pipe(int fds[2]){
 }
 
 int dup(int prev_fd){
-    int res = app_send_msg_to_server(OP_DUP, prev_fd, prev_fd, 0, 0, 0);
+    int res = app_send_msg_to_server(OP_DUP, prev_fd, -1, 0, 0, 0);
     if (res == ERROR) return ERROR;
     return app_receive_parameter(OP_DUP);
 }
@@ -295,9 +295,14 @@ int do_dup2(int prev_fd,int new_fd){
 
 int dup2(int src_fd, int trg_fd) {
     if (trg_fd == src_fd) {
-        return target_fd;
+        return SUCCESS;
     }
 
+    if(src_fd < 0 || trg_fd < 0){
+        return ERROR;
+    }
+    
+    printf("-----------> DUP2 CALL WITH src: %d to %d \n", src_fd, trg_fd);
     if (close(trg_fd) == ERROR){
         return ERROR;
     }

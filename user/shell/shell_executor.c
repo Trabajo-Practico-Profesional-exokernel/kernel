@@ -240,6 +240,13 @@ exec_result_t execute_pipeline(pipeline_t *pipeline) {
             strcpy((uint8_t*)result.error_msg, (const uint8_t*)"Pipe creation failed");
             return result;
         }
+        printf("PIPE AT %d got fd write fd: %d, read fd: %d\n", i, pipes[i][1], pipes[i][0]);
+
+        if(pipes[i][1] < 0 || pipes[i][0] < 0){
+            result.execution_error = 1;
+            strcpy((uint8_t*)result.error_msg, (const uint8_t*)"Pipe had invalid fds");
+            return result;
+        }
     }
 
     // Fork and execute each command
@@ -247,7 +254,6 @@ exec_result_t execute_pipeline(pipeline_t *pipeline) {
         int pid = sys_fork();
         if (pid == 0) {
             // Child process
-
             set_gid(-1); // Set gid == pid
             // Setup input redirection or pipe from previous command
             if (i == 0) {
