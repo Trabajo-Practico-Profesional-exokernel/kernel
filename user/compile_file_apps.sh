@@ -4,7 +4,7 @@ set -e
 ARCH="$1"
 shift #Remove arch param
 
-ROOT=../
+ROOT=..
 USER_FOLDER=$ROOT/user
 BUILD_FOLDER=$USER_FOLDER/build
 OBJCOPY=llvm-objcopy
@@ -47,14 +47,19 @@ COMMON_SRC_FILES+=" $(find "$ROOT/user/lib" -name "*.c")"
 COMMON_SRC_FILES+=" $(find "$ROOT/libc" -name "*.c")"
 COMMON_SRC_FILES+=" $(find "$ROOT/util" -name "*.c")"
 
-for app_file in $@; do
-    app_name=$(basename "$app_file" .c)
-    echo "$ARCH build '$app_name'"
 
-    app_build_folder="$BUILD_FOLDER/$app_name"
+base_dir_for_apps=$1
+shift
+
+for app_rel in $@; do
+    src_file=$base_dir_for_apps/$app_rel.c
+    app_build_folder="$BUILD_FOLDER/$app_rel"
+    app_name=$(basename "$app_rel" .c)
+
+    echo "$ARCH build '$src_file' to $app_build_folder, name '$app_name'"
     mkdir -p $app_build_folder
 
-    $CC $CFLAGS $INC_DIR -Wl,-T$ARCH_FOLDER/linker/user.ld -Wl,-Map=$app_build_folder/app.map -o $app_build_folder/app.elf $app_file $COMMON_SRC_FILES
+    $CC $CFLAGS $INC_DIR -Wl,-T$ARCH_FOLDER/linker/user.ld -Wl,-Map=$app_build_folder/app.map -o $app_build_folder/app.elf $src_file $COMMON_SRC_FILES
 
     $OBJCOPY --set-section-flags .bss=alloc,contents -O binary $app_build_folder/app.elf $app_build_folder/app.bin
     

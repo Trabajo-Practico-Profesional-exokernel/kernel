@@ -77,7 +77,64 @@ void init_process_pde(struct Proc * proc){
 }
 
 
-void load_create_process_user(struct Proc * proc, const struct BinaryAppEntry * app_info, char ** argv) {    
+int init_parameters_for_proc(struct Proc * proc, char ** argv, char ** envp){
+    //
+    // ARGV and ENVP parameters passing
+    //
+    VERBOSE_PRINTF("Init parameters for proc %s argv:%p envp: %p\n",proc->proc_name, argv, envp);
+
+    paddr_t paddr_sp_end = proc->user_sp_start + USER_STACK_PAGE_COUNT * PAGE_SIZE;
+    paddr_t final_user_sp_top = paddr_sp_end;
+    paddr_t param_pointers[MAXARG];
+
+    int argc = copy_to_stack_list(&param_pointers[0],argv, 
+                &final_user_sp_top, proc->user_sp_start, VADDR_USER_STACK_HARD_END);
+
+    if (argc < 0){
+        VERBOSE_PRINTF("ERROR When allocating argv for proc!");
+        return argc;
+    }
+
+    vaddr_t argv_vaddr = VADDR_USER_STACK_HARD_END - (paddr_sp_end - final_user_sp_top);
+
+    int env_argc = copy_to_stack_list(&param_pointers[0],envp, 
+                &final_user_sp_top, proc->user_sp_start, argv_vaddr);
+
+    if (env_argc < 0){
+        VERBOSE_PRINTF("ERROR When allocating envp for proc!");
+        return argc;
+    }
+    proc->envp_list_start = final_user_sp_top;
+
+    vaddr_t envp_vaddr = VADDR_USER_STACK_HARD_END - (paddr_sp_end - proc->envp_list_start);
+
+    VERBOSE_PRINTF("Proc has sp top 0x%x after argv vaddr: 0x%x, envp vaddr: 0x%x\n", paddr_sp_end, 
+            argv_vaddr, envp_vaddr);
+
+    // Sets sp to the virtual stack end - len of params.. envp_vaddr start vaddr, so that it does not use it for the proc
+    
+    struct TrapFrame * proc_tf = &proc->tf;
+
+    // Init sp, in x86 also sets ebp to this.
+    INIT_TRAPFRAME_SP(proc_tf, envp_vaddr);
+
+    SET_SYSCALL_RET0(proc_tf, argc);
+    SET_SYSCALL_RET1(proc_tf, argv_vaddr);
+    SET_SYSCALL_RET2(proc_tf, envp_vaddr);
+
+    return 0;
+}
+
+
+
+
+
+
+
+
+
+
+int load_create_process_user(struct Proc * proc, const struct BinaryAppEntry * app_info) {    
     init_process_pde(proc);
 
     proc->pc = VADDR_USER_BASE; // Entry point is setted to the vaddr, here it could be the trampoline but for now is the code of prog   
@@ -87,7 +144,8 @@ void load_create_process_user(struct Proc * proc, const struct BinaryAppEntry * 
     
     int err = load_app_code_to_user_mem(app_info, &curr_vaddr, (uint32_t*) proc->pde_paddr);
     if(err < 0){
-        PANIC("Failed to load app code to memory for proc %u err: %d\n", proc->pid, err);
+        VERBOSE_PRINTF("Failed to load app code to memory for proc %u err: %d\n", proc->pid, err);
+        return err;
     }
     
     // curr_vaddr is the first page not to be used by the process! i.e if it is 0x160000 then this could be the stack start.. for now ignored.
@@ -95,94 +153,38 @@ void load_create_process_user(struct Proc * proc, const struct BinaryAppEntry * 
 
     init_proc_pages(proc);
 
+    init_trapframe(proc, VADDR_USER_STACK_HARD_END); // Reset values
+
     proc->status = PROC_RUNNABLE;
-
-    //
-    // ARGV/init parameters passing
-    //
-
-    paddr_t final_user_sp_top;
-    int argc= set_init_parameters_for_proc(proc, argv, &final_user_sp_top);
-    if (argc < 0){
-        PANIC("ERROR When allocating params for proc!");
-    }
-    
-    paddr_t paddr_sp_end = proc->user_sp_start + USER_STACK_PAGE_COUNT * PAGE_SIZE;
-    paddr_t params_total_len = paddr_sp_end - final_user_sp_top; // How many bytes does this ocuppy
-    // Sets on the trapframe th pc to the right vl
-
-    vaddr_t params_vaddr = VADDR_USER_STACK_HARD_END - params_total_len;
-    VERBOSE_PRINTF("Proc has sp top 0x%x after params at: 0x%x, len: %u so vaddr 0x%x\n", paddr_sp_end, final_user_sp_top, params_total_len, params_vaddr);
-
-    // Sets sp to the virtual stack end - len of params.. params start vaddr, so that it does not use it for the proc
-    init_trapframe(proc, params_vaddr); 
-    
-    struct TrapFrame * proc_tf = &proc->tf;
-
-    SET_SYSCALL_RET0(proc_tf, argc);
-    SET_SYSCALL_RET1(proc_tf, params_vaddr);
-
 
     // Uptime and more info
     strcpy(proc->proc_name, app_info->name);
     
     init_proc_uptime(proc);
-    add_proc_info(proc);
+    proc->gid = proc->pid;
 
-    int actual_memory = get_free_ram_memory();
-    update_system_memory(actual_memory);
 }
 
 // For now no extra mapping needed.
-void load_create_process_kernel(struct Proc * proc, uint32_t proc_entry){
+int load_create_process_kernel(struct Proc * proc, uint32_t proc_entry){
     PANIC("Not implemented kernel process yet");
 } 
 
 
-
-
-
-int reload_process_user(struct Proc * proc, const struct BinaryAppEntry * app_info, char ** argv) {
-    
+int reload_process_user(struct Proc * proc, const struct BinaryAppEntry * app_info) {
     vaddr_t curr_vaddr = VADDR_USER_BASE;
     
     int err = reload_app_code_to_user_mem(app_info, &curr_vaddr, (uint32_t*) proc->pde_paddr);
     if(err < 0){
+        // Probably corrupted code segment. For now it panics.
         PANIC("Failed to reload app code to memory for proc %u err: %d\n", proc->pid, err);
     }    
     reset_proc_range(proc, curr_vaddr, VADDR_USER_HARD_END);
     
     proc->pc = VADDR_USER_BASE; // Entry point is setted to the vaddr, here it could be the trampoline but for now is the code of prog   
+    init_trapframe(proc, VADDR_USER_STACK_HARD_END); // Reset values
     
-    //
-    // ARGV/init parameters passing (keep the same stack)
-    //
-
-    paddr_t final_user_sp_top;
-    int argc= set_init_parameters_for_proc(proc, argv, &final_user_sp_top);
-    if (argc < 0){
-        PANIC("ERROR When allocating params for proc!");
-    }
-
-    // Free heap pages
-    reset_proc_heap(proc);
-    
-    paddr_t paddr_sp_end = proc->user_sp_start + USER_STACK_PAGE_COUNT * PAGE_SIZE;
-    paddr_t params_total_len = paddr_sp_end - final_user_sp_top; // How many bytes does this ocuppy
-    // Sets on the trapframe th pc to the right vl
-
-    vaddr_t params_vaddr = VADDR_USER_STACK_HARD_END - params_total_len;
-    VERBOSE_PRINTF("Proc has sp top 0x%x after params at: 0x%x, len: %u so vaddr 0x%x\n", paddr_sp_end, final_user_sp_top, params_total_len, params_vaddr);
-
-    // Sets sp to the virtual stack end - len of params.. params start vaddr, so that it does not use it for the proc
-    init_trapframe(proc, params_vaddr); 
-    
-    struct TrapFrame * proc_tf = &proc->tf;
-
-    SET_SYSCALL_RET0(proc_tf, argc);
-    SET_SYSCALL_RET1(proc_tf, params_vaddr);
     strcpy(proc->proc_name, app_info->name);
-
     return 0;
 }
 
@@ -207,10 +209,55 @@ int load_create_forked(struct Proc* parent, struct Proc* child){
     init_proc_uptime(child);
     
     init_proc_std_files(child->pid);
+    child->gid = parent->gid;
 
     return 0;
 }
 
 
+
+char *EMPTY_LIST[] = { 0 };
+
+
+struct Proc * create_process_from_ind(int ind, char ** argv, char ** envp){
+    struct Proc * proc = get_first_free_proc();
+    init_proc_std_files(proc->pid);
+    proc->gid = 0;
+
+    struct BinaryAppEntry* app = get_app_from_ind(ind);
+    if(app == NULL){
+        PANIC("Invalid app ind %d to create process!", ind);
+    }
+
+    if(envp == NULL){
+        envp = &EMPTY_LIST[0];
+    }
+    if(argv == NULL){
+        argv = &EMPTY_LIST[0];
+    }
+    
+    int err = load_create_process_user(proc, app);
+    
+    if (err >=0){
+        err = init_parameters_for_proc(proc, argv, envp);
+    }
+
+    if(err < 0){
+        PANIC("Failed create process from ind. %d\n", ind);
+    }
+    add_proc_to_system_stats(proc);
+
+    return proc;
+}
+
+struct Proc * create_process(char* proc_name, char ** argv, char ** envp){
+    int ind = get_app_from_name(proc_name);
+
+    if(ind < 0){
+        PANIC("Invalid app name %s to create process!", proc_name);
+    }
+
+    return create_process_from_ind(ind, argv, envp);
+}
 
 

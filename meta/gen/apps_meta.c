@@ -29,6 +29,7 @@ extern char _binary_proc_a_app_bin_start[],_binary_proc_a_app_bin_size[];
 extern char _binary_proc_b_app_bin_start[],_binary_proc_b_app_bin_size[];
 extern char _binary_read_write_shell_app_bin_start[],_binary_read_write_shell_app_bin_size[];
 extern char _binary_shell_app_bin_start[],_binary_shell_app_bin_size[];
+extern char _binary_show_env_app_bin_start[],_binary_show_env_app_bin_size[];
 extern char _binary_simple_frk_app_bin_start[],_binary_simple_frk_app_bin_size[];
 
 
@@ -62,6 +63,7 @@ struct AppBinaryInfo _binary_apps[] = {
     {_binary_proc_b_app_bin_start, (size_t) _binary_proc_b_app_bin_size},
     {_binary_read_write_shell_app_bin_start, (size_t) _binary_read_write_shell_app_bin_size},
     {_binary_shell_app_bin_start, (size_t) _binary_shell_app_bin_size},
+    {_binary_show_env_app_bin_start, (size_t) _binary_show_env_app_bin_size},
     {_binary_simple_frk_app_bin_start, (size_t) _binary_simple_frk_app_bin_size},
 
 };

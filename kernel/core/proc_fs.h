@@ -34,8 +34,13 @@ typedef struct{
 void init_system_info();
 void update_system_info(int ticks, int use_of_cpu);
 void update_system_memory(int memory);
-int add_proc_info(struct Proc *proc);
 int delete_proc_info(int proc_id);
 int proc_ls();
+
+
+int add_proc_info(struct Proc *proc);
+int upd_proc_gid(struct Proc *proc);
+
+void add_proc_to_system_stats(struct Proc* proc);
 
 #endif

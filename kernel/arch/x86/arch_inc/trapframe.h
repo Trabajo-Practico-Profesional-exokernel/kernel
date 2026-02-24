@@ -123,4 +123,12 @@ typedef TrapFrame FullTrapFrame;
             : "memory");                                     
 
 
+#define SET_SYSCALL_RET2(tf, vl) tf->regs.ecx=vl;
+
+#define SET_TRAPFRAME_SP(tf, vl) tf->esp=vl;
+#define INIT_TRAPFRAME_SP(tf, vl) \
+        tf->esp=vl; \
+        tf->regs.ebp=vl;
+
+
 

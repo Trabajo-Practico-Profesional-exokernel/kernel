@@ -12,10 +12,12 @@
 #include "constants.h"
 #include "parsers/strutil.h"
 #include "arch/console.h"
-#include "arch/proc.h"
+
+// #include "arch/proc.h"
+#include "environ.h"
 
 int sys_exec(char ** args){
-    return syscall(SYS_EXEC, (int)(args),0, 0, 0);
+    return syscall(SYS_EXEC, (int)(args), (int)get_environ_list(), 0, 0);
 }
 
 
@@ -51,6 +53,14 @@ int wait(int pid){
 
 int sys_kill(int pid){
     return syscall(SYS_KILL, pid, 0, 0, 0);
+}
+
+int sys_kill_group(int gid){
+    return syscall(SYS_KILL, gid, 1, 0, 0);
+}
+
+int set_gid(int gid){
+    return syscall(SYS_PROC_SET_GID, gid, 0, 0, 0);
 }
 
 void sys_yield(){
@@ -271,21 +281,28 @@ int pipe(int fds[2]){
 }
 
 int dup(int prev_fd){
-    int res = app_send_msg_to_server(OP_DUP, prev_fd, 0, 0, 0, 0);
+    int res = app_send_msg_to_server(OP_DUP, prev_fd, prev_fd, 0, 0, 0);
     if (res == ERROR) return ERROR;
     return app_receive_parameter(OP_DUP);
 }
 
-int dup2(int target_fd, int prev_fd) {
-    if (prev_fd == target_fd) {
+int do_dup2(int prev_fd,int new_fd){
+    int res = app_send_msg_to_server(OP_DUP, prev_fd, new_fd, 0, 0, 0);
+    if (res == ERROR) return ERROR;
+    return app_receive_parameter(OP_DUP);
+}
+
+
+int dup2(int src_fd, int trg_fd) {
+    if (trg_fd == src_fd) {
         return target_fd;
     }
 
-    if (close(prev_fd) == ERROR){
+    if (close(trg_fd) == ERROR){
         return ERROR;
     }
 
-    if (dup(target_fd) == ERROR){
+    if (do_dup2(src_fd, trg_fd) == ERROR){
         return ERROR;
     }
     
@@ -293,6 +310,10 @@ int dup2(int target_fd, int prev_fd) {
 }
 
 int sys_execv(char* new_prog_name, char ** argv){
-    return syscall(SYS_PROC_EXECV,(int)(new_prog_name),(int)(argv), 0, 0);
+    return syscall(SYS_PROC_EXECV,(int)(new_prog_name),(int)(argv), (int)get_environ_list(), 0);
+}
+
+int sys_execve(char* new_prog_name, char ** argv, char ** envp){
+    return syscall(SYS_PROC_EXECV,(int)(new_prog_name),(int)(argv), (int)envp, 0);
 }
 

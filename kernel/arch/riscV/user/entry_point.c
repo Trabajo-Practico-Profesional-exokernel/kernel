@@ -5,7 +5,7 @@
 // extern char __stack_top[];
 
 // extern void main(void);
-extern void main(int argc, char** argv)__attribute__((weak));
+extern void main(int argc, char** argv,char** envp)__attribute__((weak));
 
 #define VADDR_USER_STACK_SIZE 32* 4096 // 8kb
 #define VADDR_USER_STACK_BASE 0x1800000 + VADDR_USER_STACK_SIZE
@@ -37,8 +37,12 @@ void sleep(int delay) {
 }
 
 
-void arg_main(int argc, char** argv){
-    VERBOSE_DEBUG_PRINTF("Prog got argc: %d and argv: %x\n", argc, argv);
+extern void init_environ(char ** envp);
+
+void arg_main(int argc, char** argv, char ** envp){
+    init_environ(envp);
+
+    VERBOSE_DEBUG_PRINTF("Prog got argc: %d and argv: %p envp: %p\n", argc, argv);
 
     if(argc > 0){
         VERBOSE_DEBUG_PRINTF("GOT ARGS:\n");
@@ -49,7 +53,7 @@ void arg_main(int argc, char** argv){
         }
     }
 
-    main(argc, argv);
+    main(argc, argv, envp);
     
     do_exit();
 }

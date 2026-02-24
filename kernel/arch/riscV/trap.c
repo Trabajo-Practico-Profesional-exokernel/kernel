@@ -9,6 +9,7 @@
 #include "arch/console.h"
 #include "arch/stdio.h"
 #include "arch/trap_handling.h"
+#include "arch/spin_locks.h"
 
 // Assume its defined somewhere
 void clock_yield(FullTrapFrame *tf, uintptr_t pc);
@@ -40,6 +41,9 @@ ignore trap illegal ins scause=00000002, stval=30651073, sepc=8020008e csrw mcou
 #define SET_NEXT_INTERRUPT(delay) \
     w_stimecmp(r_time() + delay);
 
+
+struct spinlock lock_pollings;
+
 void init_trap(){
 
     WRITE_CSR(stvec, (uint32_t) trap_entry); // riscv5 , set in case of interruption trap entry to be exec 
@@ -47,9 +51,16 @@ void init_trap(){
     enable_interrupts();
     SET_NEXT_INTERRUPT(DELAY_INTERRUPT);
     disable_timer_interrupts(); // Just in case, to control when to enable it
+
+    
 }
 
 void polling_checks(void){
+    if (try_acquire(&lock_pollings) != 0){
+        // Skip pollings, another cpu doing them.
+        return;
+    }
+
     long c = getchar(); 
     if (c != -1) {
         int res = console_push_input(c);
@@ -62,7 +73,9 @@ void polling_checks(void){
             }
         }
         
-    }    
+    }
+
+    release(&lock_pollings);
 }
 
 /*

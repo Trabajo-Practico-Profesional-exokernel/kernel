@@ -27,6 +27,8 @@ typedef struct {
     char *cmd;         // Command name (first word)
     char **argv;       // Arguments array (including command at argv[0])
     int argc;          // Argument count
+    char **env_vars;   // Temporary env assignments (NAME=VALUE)
+    int env_count;     // Number of temporary env assignments
     redirection_t stdin_redir;   // Input redirection
     redirection_t stdout_redir;  // Output redirection
     redirection_t stderr_redir;  // Error redirection
@@ -38,6 +40,7 @@ typedef struct {
     int num_commands;     // Number of commands in pipeline
     char **tokens_to_free;  // Tokens allocated during parsing (for cleanup)
     int token_count;      // Number of tokens
+    int background;       // 1 if should run in background, 0 otherwise
 } pipeline_t;
 
 // Parser result

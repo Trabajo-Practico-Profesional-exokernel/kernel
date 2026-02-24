@@ -23,12 +23,6 @@
 #include "arch/arch_init.h"
 #include "test_shell/command_handler.h"
 
-
-
-/// For now defined on sched_init.c
-extern struct Proc * create_process(char* proc_name, char ** argv);
-extern struct Proc * create_process_from_ind(int ind, char ** argv);
-
 char *DEF_ARGV_TEST[] = { "sh_prog","parameter1", 0 };
 extern char *APP_NAME_COORDINATOR; //= "coordinator";
 

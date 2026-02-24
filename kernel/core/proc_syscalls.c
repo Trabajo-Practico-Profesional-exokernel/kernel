@@ -16,6 +16,7 @@
 #include "arch/ipc.h"
 
 #include "proc_sleeping.h"
+#include "proc_fs.h"
 
 
 struct ProcExitStatus exit_statuses[PROCS_MAX]; // Have for every process a current return status. 
@@ -137,44 +138,64 @@ void syscall_wait(FullTrapFrame *tf, uintptr_t pc){
     sched_yield();    
 }
 
-void syscall_kill(FullTrapFrame *tf, uintptr_t pc){
-    procid_t killed_proc_pid = SYSCALL_ARG0(tf);
-    struct Proc * killer_proc = myproc();
-    VERBOSE_DEBUG_PRINTF("Process %d should kill at pc: %x(ret to %x) for %d: ",killer_proc->pid, pc, pc+4, killed_proc_pid);
+void syscall_set_gid(FullTrapFrame *tf, uintptr_t pc){
+    int new_gid = SYSCALL_ARG0(tf);
+    struct Proc * caller_proc = myproc();
+    if(new_gid == -1){
+        new_gid = caller_proc->pid;
+    }
+    caller_proc->gid = new_gid;
+    upd_proc_gid(caller_proc);
 
-    struct Proc* killed_proc = get_proc(killed_proc_pid);
+}
 
+
+int kill_proc(struct Proc* killed_proc){
     if(killed_proc == NULL || killed_proc->status == PROC_FREE){
         VERBOSE_PRINTF("Error waited proc was non valid, or was on a invalid state\n");
-        SET_SYSCALL_RET0(tf, -1) // Error
-        return;
+        return 0;
     }
-    struct ProcExitStatus* killed_exit_status = &exit_statuses[PROCX(killed_proc_pid)];
+    VERBOSE_DEBUG_PRINTF("Killing proc: %d\n", kill_proc->pid);
+    
+    struct ProcExitStatus* killed_exit_status = &exit_statuses[PROCX(killed_proc->pid)];
     
     if(killed_proc->status == PROC_DYING){
         VERBOSE_DEBUG_PRINTF(" already exited, cleaning orphan and returning to waiter!\n");
-        
-        switch_to_kernel_tables();
-        // Already finished! So notify directly and return to curr process? no need for sched yield
-        SET_SYSCALL_RET0(tf, killed_exit_status->ret_code)
-        
         reset_exit_status(killed_exit_status);
         free_process(killed_proc);
-        
-        switch_page_table((uint32_t *) killer_proc->pde_paddr);
-        
-        return;
+        return 1;
     }
     VERBOSE_DEBUG_PRINTF(" did not exit... cleanup/forcefully!\n");
     notify_exited(killed_exit_status, -3); // Code for forcefully exited?
-    
-    switch_to_kernel_tables();
-    // Already finished! So notify directly and return to curr process? no need for sched yield
-    SET_SYSCALL_RET0(tf, 0)
-    
+
     reset_exit_status(killed_exit_status);
     free_process(killed_proc);
     
+    return 1;
+}
+void syscall_kill(FullTrapFrame *tf, uintptr_t pc){
+    procid_t killed_proc_pid = SYSCALL_ARG0(tf);
+    procid_t is_gid = SYSCALL_ARG1(tf);
+    struct Proc * killer_proc = myproc();
+    switch_to_kernel_tables();
+    if(is_gid){
+        VERBOSE_DEBUG_PRINTF("Process %d should kill at pc: %x(ret to %x) for group id %d\n",killer_proc->pid, pc, pc+4, killed_proc_pid);
+
+        struct Proc * killed_proc = get_next_gid_from(0, killed_proc_pid);
+        int count = 0;
+
+        while(killed_proc){
+            count+= kill_proc(killed_proc);
+            killed_proc = get_next_gid_from(killed_proc->pid, killed_proc_pid);
+        }
+        SET_SYSCALL_RET0(tf, count);
+        switch_page_table((uint32_t *) killer_proc->pde_paddr);
+        return;
+    }
+    VERBOSE_DEBUG_PRINTF("Process %d should kill at pc: %x(ret to %x) for proc id %d\n",killer_proc->pid, pc, pc+4, killed_proc_pid);
+
+    int ret = kill_proc(get_proc(killed_proc_pid));
+    SET_SYSCALL_RET0(tf, ret);
     switch_page_table((uint32_t *) killer_proc->pde_paddr);
 
 }
@@ -262,6 +283,7 @@ void init_syscalls_proc(void) {
 
     register_syscall(SYS_SLEEP, syscall_sleep);
     register_syscall(SYS_UPTIME, syscall_uptime);
+    register_syscall(SYS_PROC_SET_GID, syscall_set_gid);
 
     // register_syscall(SYS_LOCK_SLEEP, syscall_lock_sleep);
 

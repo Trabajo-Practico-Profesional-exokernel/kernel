@@ -44,7 +44,7 @@ static int32_t unmap_op_code(int32_t pipe_op) {
     }
 }
 
-static int32_t update_coord_state(int32_t type_server, int32_t type_command, int32_t client_pid, int32_t fd){
+static int32_t update_coord_state(int32_t type_server, int32_t type_command, int32_t client_pid, int32_t fd, int fd_2){
     if (type_command != OP_OPEN && type_command != OP_CLOSE && type_command != OP_PIPE){
         return -1;
     }
@@ -60,8 +60,8 @@ static int32_t update_coord_state(int32_t type_server, int32_t type_command, int
         return SUCCESS;
     }
 
-    printf("[PIPE] update_coord_state: Notificando Coordinador PID[%d] -> FD Real[%d], State[%d]\n", client_pid, fd, state);
-    return send_msg(coord_pid, OP_UPDATE, getpid(), client_pid, fd, state, 0);
+    printf("[PIPE] update_coord_state: Notificando Coordinador PID[%d] -> FD Real[%d], State[%d], extra: %d\n", client_pid, fd, state, fd_2);
+    return send_msg(coord_pid, OP_UPDATE, getpid(), client_pid, fd, state, fd_2);
 }
 
 int32_t get_command(PipeOperation *command) {
@@ -96,8 +96,8 @@ int32_t give_response(int32_t type_command, int32_t arg_1, int32_t arg_2, int32_
     if ((type_command == PIPE_OP_OPEN || type_command == PIPE_OP_READ) && arg_2 != 0) {
         if (arg_2 != 0 && arg_3 > 0 && arg_1 >= 0) {
              if (protocol_op == OP_PIPE) {
-                update_coord_state(PIPE, OP_OPEN, current_client_pid, fd_1);
-                update_coord_state(PIPE, OP_OPEN, current_client_pid, fd_2);
+                update_coord_state(PIPE, OP_OPEN, current_client_pid, fd_1, 0);
+                update_coord_state(PIPE, OP_OPEN, current_client_pid, fd_2, 0);
 
                 int32_t real_fd_1 = server_get_real_fd(fd_1, current_client_pid, PIPE);
                 int32_t real_fd_2 = server_get_real_fd(fd_2, current_client_pid, PIPE);
@@ -112,17 +112,17 @@ int32_t give_response(int32_t type_command, int32_t arg_1, int32_t arg_2, int32_
     else {
         if (arg_1 >= 0) {
             if (protocol_op == OP_CLOSE) {
-                update_coord_state(PIPE, protocol_op, current_client_pid, fd_1);
+                update_coord_state(PIPE, protocol_op, current_client_pid, fd_1, 0);
             }
             if (protocol_op == OP_DUP) {
-                update_coord_state(PIPE, OP_OPEN, current_client_pid, arg_1);
+                update_coord_state(PIPE, OP_OPEN, current_client_pid, arg_1, fd_2);
                 int32_t real_fd_1 = server_get_real_fd(arg_1, current_client_pid, PIPE);
                 return server_send_parameter_to_app(current_client_pid, protocol_op, real_fd_1);
             }
             if (protocol_op == OP_CLOSE_ALL) {
                 for (int i = 0; i < MAX_FILES; i++) {
                     if (files[current_client_pid][i].state == ON) {
-                        update_coord_state(PIPE, OP_CLOSE, current_client_pid, i);
+                        update_coord_state(PIPE, OP_CLOSE, current_client_pid, i, 0);
                     }
                 }
             }

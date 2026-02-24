@@ -87,5 +87,10 @@ struct TrapFrame {
 
 #define SET_SYSCALL_RET0(tf, vl) tf->a0=vl;
 #define SET_SYSCALL_RET1(tf, vl) tf->a1=vl;
+#define SET_SYSCALL_RET2(tf, vl) tf->a2=vl;
+
+#define SET_TRAPFRAME_SP(tf, vl) tf->sp=vl;
+#define INIT_TRAPFRAME_SP(tf, vl) tf->sp=vl;
+
 
 #endif /* !*/

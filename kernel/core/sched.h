@@ -33,5 +33,6 @@ void idle_main(void);
 uint64_t get_real_ticks(void);
 uint32_t get_idle_ticks(void);
 
+struct Proc * get_next_gid_from(procid_t pid_start, int gid);
 
 #endif

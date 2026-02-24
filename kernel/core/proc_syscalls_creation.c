@@ -15,6 +15,7 @@
 #include "console/debug.h"
 #include "arch/ipc.h"
 #include "console_files.h"
+#include "proc_fs.h"
 
 //extern struct AppBinaryInfo _binary_apps[];
 #include "proc_disk_loading.h"
@@ -23,6 +24,8 @@
 void syscall_execv(FullTrapFrame *tf, uintptr_t pc) {
     vaddr_t vaddr_proc_name = SYSCALL_ARG0(tf);
     vaddr_t vaddr_argv_pointer = SYSCALL_ARG1(tf);
+    vaddr_t vaddr_envp_pointer = SYSCALL_ARG2(tf);
+
     struct Proc* caller_proc = myproc();
     switch_to_kernel_tables();
 
@@ -36,7 +39,11 @@ void syscall_execv(FullTrapFrame *tf, uintptr_t pc) {
     paddr_t argv_pointers[MAXARG]; 
     
     if (vaddr_argv_pointer != 0){
-        int argc = copy_argv_pointers_from_user(caller_proc, &argv_pointers[0], vaddr_argv_pointer);
+        paddr_t argv_paddr = get_paddr_for(
+                                    (uint32_t *) caller_proc->pde_paddr,
+                                    vaddr_argv_pointer);        
+
+        int argc = copy_param_pointers_from_user(caller_proc, &argv_pointers[0], argv_paddr);
 
         if (argc< 0){
             SET_SYSCALL_RET0(tf, argc)
@@ -66,7 +73,27 @@ void syscall_execv(FullTrapFrame *tf, uintptr_t pc) {
         return;
     }
 
-    int ret = reload_process_user(caller_proc, app, (char **) &argv_pointers[0]);
+    paddr_t envp_pointers[MAXARG]; 
+    
+    paddr_t envp_paddr = caller_proc->envp_list_start;
+
+    if(vaddr_envp_pointer != 0){
+        envp_paddr = get_paddr_for((uint32_t *) caller_proc->pde_paddr, vaddr_envp_pointer);
+    }
+    int envp_argc = copy_param_pointers_from_user(caller_proc, &envp_pointers[0], envp_paddr);
+
+    if (envp_argc< 0){
+        SET_SYSCALL_RET0(tf, envp_argc)
+        switch_page_table((uint32_t *) caller_proc->pde_paddr);
+        return;
+    }
+
+
+    int ret = reload_process_user(caller_proc, app);
+
+    if (ret >=0){
+        ret = init_parameters_for_proc(caller_proc, (char **) &argv_pointers[0], (char **) &envp_pointers[0]);
+    }
 
     if(ret != 0){
         SET_SYSCALL_RET0(tf, ret);
@@ -74,21 +101,29 @@ void syscall_execv(FullTrapFrame *tf, uintptr_t pc) {
         return;
     }
 
+    //Change name,stats and so on
+    add_proc_to_system_stats(caller_proc);
+
     // Do sched yield to be fair?
     sched_yield();
-    
+
 }
 
 void syscall_exec(FullTrapFrame *tf, uintptr_t pc) {
 
     vaddr_t vaddr_argv_pointer = SYSCALL_ARG0(tf);
+    vaddr_t vaddr_envp_pointer = SYSCALL_ARG1(tf);
     struct Proc* parent_proc = myproc();
     switch_to_kernel_tables();
     
     paddr_t argv_pointers[MAXARG]; 
     
     if (vaddr_argv_pointer != 0){
-        int argc = copy_argv_pointers_from_user(parent_proc, &argv_pointers[0], vaddr_argv_pointer);
+        paddr_t argv_paddr = get_paddr_for(
+                                    (uint32_t *) parent_proc->pde_paddr,
+                                    vaddr_argv_pointer);
+
+        int argc = copy_param_pointers_from_user(parent_proc, &argv_pointers[0], argv_paddr);
 
         if (argc< 0){
             SET_SYSCALL_RET0(tf, argc)
@@ -119,6 +154,25 @@ void syscall_exec(FullTrapFrame *tf, uintptr_t pc) {
         switch_page_table((uint32_t *) parent_proc->pde_paddr);
         return;
     }
+
+    paddr_t envp_pointers[MAXARG]; 
+    
+    paddr_t envp_paddr = parent_proc->envp_list_start;
+
+    if(vaddr_envp_pointer != 0){
+        envp_paddr = get_paddr_for((uint32_t *) parent_proc->pde_paddr, vaddr_envp_pointer);
+    }
+    int envp_argc = copy_param_pointers_from_user(parent_proc, &envp_pointers[0], envp_paddr);
+
+    if (envp_argc< 0){
+        SET_SYSCALL_RET0(tf, envp_argc)
+        switch_page_table((uint32_t *) parent_proc->pde_paddr);
+        return;
+    }
+    
+    
+
+
     struct Proc* proc= get_first_free_proc();
 
     // It cannot but NULL it throws panic for now but check it anyway for the future!
@@ -131,7 +185,20 @@ void syscall_exec(FullTrapFrame *tf, uintptr_t pc) {
 
     VERBOSE_DEBUG_PRINTF("Should run free proc %p binary: %s at off: %u \n", proc, app->name, app->start);
 
-    load_create_process_user(proc, app, (char **) &argv_pointers[0]);
+    int err = load_create_process_user(proc, app);
+    if (err >=0){
+        err = init_parameters_for_proc(proc, (char **) &argv_pointers[0], (char **) &envp_pointers[0]);
+    }
+
+    if(err < 0){
+        free_process(proc);
+        SET_SYSCALL_RET0(tf, err)
+        switch_page_table((uint32_t *) parent_proc->pde_paddr);
+        return;
+    }
+    add_proc_to_system_stats(proc);
+
+
 
     VERBOSE_DEBUG_PRINTF("Loaded proc '%s'\n", app->name);
     reset_exit_status(get_exit_status(proc->pid));
@@ -175,6 +242,7 @@ void syscall_fork(FullTrapFrame *tf, uintptr_t pc) {
     } else {
         reset_exit_status(get_exit_status(child_proc->pid));
     }
+    add_proc_to_system_stats(child_proc);
 
 
     switch_page_table((uint32_t *) parent_proc->pde_paddr);

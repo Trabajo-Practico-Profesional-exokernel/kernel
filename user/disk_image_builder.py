@@ -19,18 +19,62 @@ def parse_args(build_dir, output_file, padding):
 def discover_apps(build_dir, name_max_len=32):
     apps = []
 
-    for entry in os.scandir(build_dir):
-        if entry.is_dir():
-            app_bin_path = os.path.join(entry.path, "app.bin")
-            if os.path.isfile(app_bin_path):
-                name_bytes = entry.name.encode()
-                if len(name_bytes) >= name_max_len:
-                    raise ValueError(f"App name '{entry.name}' too long")
+    for root, dirs, files in os.walk(build_dir):
+        if "app.bin" in files:
+            app_bin_path = os.path.join(root, "app.bin")
 
-                apps.append((entry.name, app_bin_path))
+            # Only the immediate parent folder name
+            app_name = os.path.basename(root)
+
+            name_bytes = app_name.encode()
+            if len(name_bytes) >= name_max_len:
+                raise ValueError(f"App name '{app_name}' too long")
+
+            apps.append((app_name, app_bin_path))
+
     return apps
 
 
+def load_existing_padding_if_valid(path):
+    if not os.path.exists(path):
+        return None
+
+    with open(path, "rb") as f:
+        header = f.read(8)
+        if len(header) != 8:
+            return None
+
+        magic, count = struct.unpack("<II", header)
+        if magic != MAGIC_NUMBER:
+            return None
+
+        # Read entries
+        entries = []
+        for _ in range(count):
+            data = f.read(ENTRY_STRUCT.size)
+            if len(data) != ENTRY_STRUCT.size:
+                return None
+            name, offset, size = ENTRY_STRUCT.unpack(data)
+            entries.append((offset, size))
+
+        if not entries:
+            return None
+
+        # Padding starts after the last app
+        last_offset, last_size = max(entries, key=lambda x: x[0])
+        padding_start = last_offset + last_size
+
+        f.seek(0, os.SEEK_END)
+        file_size = f.tell()
+
+        if padding_start > file_size:
+            return None
+
+        f.seek(padding_start)
+        padding_data = f.read()
+
+        print(f"Existing image valid. Preserving {len(padding_data)} bytes of padding.")
+        return padding_data
 
 
 
@@ -60,7 +104,7 @@ for name, path in APPS:
 
 print(f"Total apps: {len(APPS)}, add padding: {PADDING} bytes, total size: {sum(os.path.getsize(p) for _, p in APPS) + PADDING} bytes")
 
-
+padding_data = load_existing_padding_if_valid(OUT_FILE);
 
 with open(OUT_FILE, "wb") as f:
 
@@ -97,4 +141,11 @@ with open(OUT_FILE, "wb") as f:
                             size))
 
     f.seek(end_pos)
-    f.write(b"\x00" * PADDING)
+
+    if padding_data:
+        f.write(padding_data)
+        if len(padding_data) < PADDING:
+            f.write(b"\x00" * (PADDING- len(padding_data)))
+    else:
+        f.write(b"\x00" * PADDING)
+            

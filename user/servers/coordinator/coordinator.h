@@ -22,7 +22,7 @@ void init_coordinator();
 int32_t start_server(Server type);
 int32_t get_server_fd(int32_t pid_app, int32_t fd, int32_t server_pid);
 int32_t get_server_real_fd(int32_t pid, int32_t fd, int32_t type);
-int32_t coordinator_update(int32_t fd, int32_t pid, int32_t type, int32_t state);
+int32_t coordinator_update_fd(int32_t fd, int32_t pid, int32_t type, int32_t state, int trg_fd);
 int32_t coordinator_noop(void);
 int32_t coordinator_putchar(void);
 int32_t coordinator_getchar(void);

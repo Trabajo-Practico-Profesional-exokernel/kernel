@@ -34,7 +34,7 @@ static int tokenize(char *input, char **tokens, int max_tokens) {
     int in_token = 0;
     
     while (copy[i] != '\0' && count < max_tokens) {
-        if (copy[i] == ' ' || copy[i] == '|' || copy[i] == '>' || copy[i] == '<') {
+        if (copy[i] == ' ' || copy[i] == '|' || copy[i] == '>' || copy[i] == '<' || copy[i] == '&') {
             if (in_token) {
                 // End current token and duplicate it
                 copy[i] = '\0';
@@ -119,6 +119,20 @@ static int tokenize(char *input, char **tokens, int max_tokens) {
     }
     
     free(copy);
+
+    // Sanitize: remove any empty-string tokens if present
+    for (int j = 0; j < count; ) {
+        if (tokens[j] && strlen((const uint8_t*)tokens[j]) == 0) {
+            free(tokens[j]);
+            // shift left
+            for (int k = j; k < count - 1; k++) tokens[k] = tokens[k+1];
+            tokens[count-1] = NULL;
+            count--;
+            continue; // check current index again
+        }
+        j++;
+    }
+
     return count;
 }
 
@@ -126,9 +140,16 @@ static int tokenize(char *input, char **tokens, int max_tokens) {
 static int parse_command_args(char **tokens, int start_idx, int end_idx, 
                               command_t *cmd) {
     int arg_idx = 0;
+
     
     cmd->argv = (char **)malloc(sizeof(char *) * MAX_ARGS_PER_CMD);
     if (!cmd->argv) return -1;
+    cmd->env_vars = (char **)malloc(sizeof(char *) * MAX_ARGS_PER_CMD);
+    if (!cmd->env_vars) {
+        free(cmd->argv);
+        return -1;
+    }
+    cmd->env_count = 0;
     
     // First token is the command
     if (start_idx >= end_idx) return -1;
@@ -137,9 +158,21 @@ static int parse_command_args(char **tokens, int start_idx, int end_idx,
     while (start_idx < end_idx && strlen((const uint8_t*)tokens[start_idx]) == 0) {
         start_idx++;
     }
-    
+
+    // Collect leading temporary env assignments of form NAME=VALUE
+    while (start_idx < end_idx) {
+        char *t = tokens[start_idx];
+        if (t && t[0] != '\0' && strchr(t, '=') && t[0] != '=') {
+            if (cmd->env_count >= MAX_ARGS_PER_CMD - 1) return -1;
+            cmd->env_vars[cmd->env_count++] = t;
+            start_idx++;
+            continue;
+        }
+        break;
+    }
+
     if (start_idx >= end_idx) return -1;
-    
+
     cmd->cmd = tokens[start_idx];
     cmd->argv[arg_idx++] = tokens[start_idx];
     
@@ -219,6 +252,7 @@ static int parse_command_args(char **tokens, int start_idx, int end_idx,
     
     cmd->argv[arg_idx] = NULL; // Null-terminate argv
     cmd->argc = arg_idx;
+
     return 0;
 }
 
@@ -226,17 +260,25 @@ static int parse_command_args(char **tokens, int start_idx, int end_idx,
 parse_result_t parse_command_line(char *input) {
     parse_result_t result;
     memset(&result, 0, sizeof(parse_result_t));
-    
+
     // Tokenize input
     char *tokens[MAX_TOKENS];
     int token_count = tokenize(input, tokens, MAX_TOKENS);
-    
+
     if (token_count <= 0) {
         result.parse_error = 1;
         strcpy((uint8_t*)result.error_msg, (const uint8_t*)"Tokenization failed");
         return result;
     }
-    
+
+    // Check for background execution (& at end)
+    int background = 0;
+    if (token_count > 0 && strcmp((const uint8_t*)tokens[token_count-1], (const uint8_t*)"&") == 0) {
+        background = 1;
+        free(tokens[token_count-1]);
+        token_count--;
+    }
+
     // Count commands (separated by pipes)
     int cmd_count = 1;
     for (int i = 0; i < token_count; i++) {
@@ -244,7 +286,7 @@ parse_result_t parse_command_line(char *input) {
             cmd_count++;
         }
     }
-    
+
     if (cmd_count > MAX_PIPELINE_LEN) {
         result.parse_error = 1;
         strcpy((uint8_t*)result.error_msg, (const uint8_t*)"Too many commands in pipeline");
@@ -254,7 +296,7 @@ parse_result_t parse_command_line(char *input) {
         }
         return result;
     }
-    
+
     // Allocate space for commands
     result.pipeline.commands = (command_t *)malloc(sizeof(command_t) * cmd_count);
     if (!result.pipeline.commands) {
@@ -266,20 +308,20 @@ parse_result_t parse_command_line(char *input) {
         }
         return result;
     }
-    
+
     // Initialize all commands
     for (int i = 0; i < cmd_count; i++) {
         memset(&result.pipeline.commands[i], 0, sizeof(command_t));
     }
-    
+
     // Parse each command in the pipeline
     int cmd_idx = 0;
     int cmd_start = 0;
-    
+
     for (int i = 0; i <= token_count; i++) {
         int is_pipe = (i < token_count && strcmp((const uint8_t*)tokens[i], (const uint8_t*)"|") == 0);
         int is_end = (i == token_count);
-        
+
         if (is_pipe || is_end) {
             // Parse command from cmd_start to i
             if (parse_command_args(tokens, cmd_start, i, &result.pipeline.commands[cmd_idx]) != 0) {
@@ -295,7 +337,7 @@ parse_result_t parse_command_line(char *input) {
             cmd_start = i + 1;
         }
     }
-    
+
     // Store tokens array reference in pipeline for cleanup
     // We need to keep track of tokens to free them later
     result.pipeline.tokens_to_free = (char **)malloc(sizeof(char*) * token_count);
@@ -305,8 +347,9 @@ parse_result_t parse_command_line(char *input) {
         }
         result.pipeline.token_count = token_count;
     }
-    
+
     result.pipeline.num_commands = cmd_count;
+    result.pipeline.background = background;
     return result;
 }
 
@@ -316,6 +359,9 @@ void free_parse_result(parse_result_t *result) {
         for (int i = 0; i < result->pipeline.num_commands; i++) {
             if (result->pipeline.commands[i].argv) {
                 free(result->pipeline.commands[i].argv);
+            }
+            if (result->pipeline.commands[i].env_vars) {
+                free(result->pipeline.commands[i].env_vars);
             }
         }
         free(result->pipeline.commands);

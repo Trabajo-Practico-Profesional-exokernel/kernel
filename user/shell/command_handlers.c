@@ -8,16 +8,18 @@
 #include "console/colors.h"
 #include "parsers/strutil.h"
 
-// Built-in shell commands (these MUST be handled by the shell, not spawned as programs)
+#include "environ.h"
 
-int handle_exit(char* args) {
-    (void)args;
+// Built-in shell commands (these MUST be handled by the shell, not spawned as programs)
+int handle_exit(int argc, char** argv) {
+    if(argc > 0){
+        exit(atoi(argv[0]));
+    }
     exit(0);
     return OK_CODE;
 }
 
-int handle_smile(char* args) {
-    (void)args;
+int handle_smile(int argc, char** argv) {
     printf("\n");
     printf("         , - ~ ~ ~ - ,           \n");
     printf("     , '               ' ,       \n");
@@ -33,30 +35,42 @@ int handle_smile(char* args) {
     return OK_CODE;
 }
 
-int handle_clear(char* args) {
-    (void)args;
+int handle_clear(int argc, char** argv) {
     printf("\x1b[2J\x1b[3J\x1b[H");
     return OK_CODE;
 }
 
-int handle_cd(char* args) {
-    if (!args || strlen((const uint8_t*)args) == 0) {
+
+static char curr_path[256] = {0};
+
+char * get_curr_path(void){
+    if(curr_path[0] == 0){
+        return NULL;
+    }
+    // Skip '/'
+    return &curr_path[1];
+}
+
+int handle_cd(int argc, char** argv) {
+    if (argc == 0) {
         printf("Usage: cd <path>\n");
         return ERR_CODE;
     }
-    if (chdir(args) == 0) {
+    if (chdir(argv[0]) == 0) {
+        if (getcwd(curr_path, sizeof(curr_path)) != 0) {
+            printf("Error getting pwd\n");
+        }
+
         return OK_CODE;
     }
     printf("cd failed\n");
     return ERR_CODE;
 }
 
-int handle_pwd(char* args) {
-    (void)args;
-    char path[256] = {0};
+int handle_pwd(int argc, char** argv) {
     
-    if (getcwd(path, sizeof(path)) == 0) {
-        printf("%s\n", path);
+    if (getcwd(curr_path, sizeof(curr_path)) == 0) {
+        printf("%s\n", curr_path);
         return OK_CODE;
     }
     
@@ -64,12 +78,34 @@ int handle_pwd(char* args) {
     return ERR_CODE;
 }
 
-int handle_procls(char* args) {
-    (void)args;
+
+int handle_env(int argc, char** argv) {
+    char ** env_list = get_environ_list();
+    size_t count = 0;
+    while (env_list[count]){
+        printf("env at: %d '%s'\n",count, env_list[count]); 
+        count++;
+    }
+
+    printf("env got %d vars\n",count); 
+    return 0;
+}
+
+
+int handle_procls(int argc, char** argv) {
     if (procls() == 0) {
         return OK_CODE;
     }
     return ERR_CODE;
+}
+
+int handle_export_env(int argc, char** argv) {
+    if (argc < 2) {
+        printf("Usage: export <name> <value>\n it cannot contain spaces value!");
+        return ERR_CODE;
+    }
+
+    return setenv(argv[0], argv[1], 1);
 }
 
 struct CommandEntry commands[] = {
@@ -80,31 +116,30 @@ struct CommandEntry commands[] = {
     { "clear",     handle_clear },
     { "smile",     handle_smile },
     { "procls",    handle_procls },
+    { "env",       handle_env },
+    { "export",       handle_export_env },
 };
 
 // Auto-calculate command count
 #define COMMAND_COUNT (sizeof(commands) / sizeof(struct CommandEntry))
 
-int exec_command(char * action, char* args){
-    int len_act = strlen((const uint8_t*)action) + 1;
 
+int command_default_exec(char* proc_name, char** argv) {
+    sys_execv(proc_name, (const char **)argv);
+    printf("Error: Cannot execute %s\n", proc_name);
+    return 127;    
+}
+
+
+command_handler_t find_command_builtin(char * action){
     // Check for built-in commands first
+    int len_act = strlen(action) +1;
     for (unsigned int i = 0; i < COMMAND_COUNT; i++) {
         char* trg_action = commands[i].action_name;
         if (strncmp((const uint8_t*)action, (const uint8_t*)trg_action, len_act) == 0) {
-            if(!args){
-                args = "";
-            }
-            return commands[i].handler(args);
+            return commands[i].handler;
         }
     }
-    
-    // Not a built-in, try to execute as external program
-    int ret_code = ERR_CODE;
-    if (default_executable_check(action, args, &ret_code)){
-        return ret_code;
-    }
-    
-    printf("\nUnknown Command: '%s' args '%s'\n", action, args);
-    return ret_code;
+
+    return NULL;    
 }

@@ -23,6 +23,6 @@ void main(int argc, char ** argv) {
 	while(true){
 		printf("INFINITE LOOP n%d '%s'\n", count, log);
 		count+=1;
-		sleep(sleep_time);
+		sys_sleep(sleep_time);
 	}
 }

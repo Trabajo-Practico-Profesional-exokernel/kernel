@@ -28,6 +28,7 @@ char * _app_names[] = {
 "proc_b",
 "read_write_shell",
 "shell",
+"show_env",
 "simple_frk",
 
 };

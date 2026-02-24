@@ -24,6 +24,7 @@ typedef struct {
     int32_t fd;
     int32_t type_command;
     int32_t state;
+    int32_t arg_6;
 } CoordinatorOperation;
 
 typedef struct {

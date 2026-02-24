@@ -33,6 +33,8 @@
 #define SYS_PROC_DUP2 22
 #define SYS_PROC_EXECV 23
 
+#define SYS_PROC_SET_GID 24
+
 #define DEF_ERR_CODE -1
 
 

@@ -13,6 +13,7 @@
 
 #include "arch/arch_init.h"
 
+
 char *DEF_ARGV[] = { "sh_prog","parameter1", 0 };
 char *DEF_FS_ARGS[] = { "filesystem", 0 };
 char *DEF_SHELL_ARGS[] = { "shell", 0 };
@@ -29,33 +30,6 @@ char *APP_NAME_SIMPLE_FRK = "simple_fork";
 
 char *APP_NAME_PROC_A = "proc_a";
 char *APP_NAME_PERIODIC_YIELD = "periodic_yield";
-
-
-
-struct Proc * create_process_from_ind(int ind, char ** argv){
-    struct Proc * proc = get_first_free_proc();
-    init_proc_std_files(proc->pid);
-    proc->gid = 0;
-
-    struct BinaryAppEntry* app = get_app_from_ind(ind);
-    if(app == NULL){
-        PANIC("Invalid app ind %d to create process!", ind);
-    }
-    
-    load_create_process_user(proc, app, argv);
-    return proc;
-}
-
-struct Proc * create_process(char* proc_name, char ** argv){
-    int ind = get_app_from_name(proc_name);
-
-    if(ind < 0){
-        PANIC("Invalid app name %s to create process!", proc_name);
-    }
-
-    return create_process_from_ind(ind, argv);
-}
-
 
 #include "arch/spin_locks.h"
 
@@ -87,15 +61,15 @@ void init_sched_main_cpu(void) {
 
 
     #ifdef IS_RISC
-    // struct Proc * first_main_proc = create_process("infinite_loop", INF_LOOP_1_ARGS);
-    struct Proc * first_main_proc = create_process(APP_NAME_COORDINATOR, DEF_ARGV);
+    // struct Proc * first_main_proc = create_process("infinite_loop", INF_LOOP_1_ARGS, NULL);
+    struct Proc * first_main_proc = create_process(APP_NAME_COORDINATOR, DEF_ARGV, NULL);
     coordinator_PID = first_main_proc->pid;
     #else
-    // struct Proc * first_main_proc = create_process("infinite_loop", INF_LOOP_1_ARGS);
-    // create_process("infinite_loop", INF_LOOP_2_ARGS);
+    // struct Proc * first_main_proc = create_process("infinite_loop", INF_LOOP_1_ARGS, NULL);
+    // create_process("infinite_loop", INF_LOOP_2_ARGS, NULL);
 
-    // struct Proc * first_main_proc = create_process("malloc_program", DEF_ARGV);
-    struct Proc * first_main_proc = create_process(APP_NAME_COORDINATOR, DEF_ARGV);
+    // struct Proc * first_main_proc = create_process("malloc_program", DEF_ARGV, NULL);
+    struct Proc * first_main_proc = create_process(APP_NAME_COORDINATOR, DEF_ARGV, NULL);
     coordinator_PID = first_main_proc->pid;
     #endif    
 

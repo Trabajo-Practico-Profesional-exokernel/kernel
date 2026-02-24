@@ -107,8 +107,8 @@ void handle_chmod(CoordinatorOperation *op) {
 }
 
 
-void handle_update(CoordinatorOperation *op) {
-    coordinator_update(op->fd, op->app_id, op->server_type, op->state);
+void handle_update_fd(CoordinatorOperation *op) {
+    coordinator_update_fd(op->fd, op->app_id, op->server_type, op->state, op->arg_6);
 }
 
 void send_error_msg(int32_t operation) {
@@ -164,7 +164,7 @@ static const coord_op_handler_t op_dispatch_table[] = {
     [OP_UNLINK]         = handle_unlink,
     [OP_CHOWN]          = handle_chown,
     [OP_CHMOD]          = handle_chmod,
-    [OP_UPDATE]         = handle_update,
+    [OP_UPDATE]         = handle_update_fd,
     [OP_GET_FD]         = handle_get_fd,
     [OP_GET_SERVER_FD]  = handle_get_server_fd,
     [OP_FORK]           = handle_fork,

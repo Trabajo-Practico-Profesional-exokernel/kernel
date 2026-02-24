@@ -40,6 +40,9 @@ struct Proc {
     // user stack goes from [user_sp_start ..USER_STACK_PAGE_COUNT .. initial_user_stack_top] .. user stack grows up to sp_start.
     paddr_t user_sp_start; 
 
+    // Save in order to be able to copy it when execv or so by default.
+    paddr_t envp_list_start; 
+
     procid_t pid;             // Process ID
 
     int gid;                // Group ID

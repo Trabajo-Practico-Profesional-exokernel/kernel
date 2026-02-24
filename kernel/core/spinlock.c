@@ -14,6 +14,22 @@ initlock(struct spinlock *lk, char *name)
   lk->cpuid = -1;
 }
 
+
+int try_acquire(struct spinlock* lk){
+  push_off(); // disable interrupts to avoid deadlock.
+  if(holding(lk))
+    PANIC("acquire already holding?");
+
+  if(sync_lock_test_and_set(&lk->locked, 1) != 0){
+    pop_off();
+    return -1;
+  }
+  
+  sync_synchronize();
+  lk->cpuid = cpuid();
+  return 0;
+}
+
 // Acquire the lock.
 // Loops (spins) until the lock is acquired.
 void

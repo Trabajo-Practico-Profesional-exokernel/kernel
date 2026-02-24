@@ -68,10 +68,10 @@ void handle_close(PipeOperation *op) {
 void handle_dup(PipeOperation *op) {
     int32_t app_pid = op->app_id;
     int32_t fd = op->fd;
-    printf("PIPE DUP [%d]\n", op->app_id);
+    printf("PIPE DUP [%d] fd %d trg: %d\n", op->app_id, fd, op->content_vaddr);
     int32_t res = pipe_dup(fd, app_pid);
     
-    give_response(PIPE_OP_DUP, res, 0, 0, fd, 0);
+    give_response(PIPE_OP_DUP, res, 0, 0, fd, op->content_vaddr);
 }
 
 

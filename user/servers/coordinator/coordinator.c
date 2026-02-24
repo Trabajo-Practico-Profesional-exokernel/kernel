@@ -90,7 +90,7 @@ int32_t get_server_real_fd(int32_t pid, int32_t fd, int32_t type){
     return ERROR;
 }
 
-int32_t set_server_type(int32_t server_fd, int32_t pid_app, int32_t pid_server, int32_t state) {
+int32_t set_server_type(int32_t server_fd, int32_t pid_app, int32_t pid_server, int32_t state, int trg_fd) {
     int32_t server_type = -1;
     for (int32_t i = 0; i < SERVER_COUNT; i++) {
         if (coordinator.server_map.pids[i] == pid_server) {
@@ -112,14 +112,23 @@ int32_t set_server_type(int32_t server_fd, int32_t pid_app, int32_t pid_server, 
         }
         return ERROR;
     } else {
-        for (int32_t i = 0; i < MAX_FILES; i++) {
-            if (coordinator.fd[pid_app][i].type_server == -1) {
-                printf("[COORD] Apertura FD: PID [%d] mapeando FD Real [%d] a FD Virtual [%d] (Server %d)\n", 
-                       pid_app, server_fd, i, server_type);
-                coordinator.fd[pid_app][i].fd = server_fd;
-                coordinator.fd[pid_app][i].type_server = server_type;
-                return i;
+
+        if (trg_fd<0){ // No target fd.. look for first available
+            for (int32_t i = 0; i < MAX_FILES; i++) {
+                if (coordinator.fd[pid_app][i].type_server == -1) {
+                    printf("[COORD] Apertura FD: PID [%d] mapeando FD Real [%d] a FD Virtual [%d] (Server %d)\n", 
+                        pid_app, server_fd, i, server_type);
+                    coordinator.fd[pid_app][i].fd = server_fd;
+                    coordinator.fd[pid_app][i].type_server = server_type;
+                    return i;
+                }
             }
+        } else if (coordinator.fd[pid_app][trg_fd].type_server == -1) {
+            printf("[COORD] Apertura FD: PID [%d] mapeando FD Real [%d] a FD Virtual [%d] (Server %d)\n", 
+                pid_app, server_fd, trg_fd, server_type);
+            coordinator.fd[pid_app][trg_fd].fd = server_fd;
+            coordinator.fd[pid_app][trg_fd].type_server = server_type;
+            return trg_fd;
         }
         return ERROR;
     }
@@ -137,13 +146,13 @@ int32_t coordinator_getchar(void) {
     return -1;
 }
 
-int32_t coordinator_update(int32_t fd, int32_t pid, int32_t type, int32_t state) {
+int32_t coordinator_update_fd(int32_t fd, int32_t pid, int32_t type, int32_t state, int trg_fd) {
     if (fd < 0 || fd >= MAX_FILES || pid < 0 || pid >= PROCS_MAX) {
         return ERROR;
     }
 
     reset_current_client_pid();
-    return set_server_type(fd, pid, type, state);
+    return set_server_type(fd, pid, type, state, trg_fd);
 }
 
 int32_t coordinator_open(void) {

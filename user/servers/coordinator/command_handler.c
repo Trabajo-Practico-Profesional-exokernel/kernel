@@ -21,6 +21,7 @@ int32_t get_command(CoordinatorOperation *command) {
         command->app_id      = msg.arg_3;
         command->fd          = msg.arg_4;
         command->state       = msg.arg_5;
+        command->arg_6 = msg.arg_6;
         return SUCCESS;
     } 
     
