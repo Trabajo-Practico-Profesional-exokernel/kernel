@@ -76,6 +76,11 @@ int32_t get_command(PipeOperation *command) {
     command->app_id = msg.sender_pid;
     command->type_op = map_op_code(msg.arg_1);
 
+    // if(msg.arg_1 == OP_DUP){
+    printf("PIPE GOT ARGS arg1: %d, arg2: %d, arg3: %d, arg4: %d, arg5: %d, arg6: %d\n",
+         msg.arg_1,msg.arg_2,msg.arg_3,msg.arg_4,msg.arg_5,msg.arg_6);
+    // }
+
     command->fd            = msg.arg_2;
     command->arg_1         = msg.arg_3; 
     command->content_vaddr = msg.arg_5;

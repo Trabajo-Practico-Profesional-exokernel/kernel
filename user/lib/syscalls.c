@@ -147,9 +147,16 @@ int close(int fd) {
     int server_pid = get_server_pid(OP_CLOSE, fd, 0, 0, 0, 0);
     
     if (server_pid < 0) {
+
         if (fd == STDIN || fd == STDOUT) {
+            if(fd == STDIN){
+                printf("---> CLOSING CONSOLE STDIN? NO SERVER AND FD STDIN\n");
+            } else {
+                printf("---> CLOSING CONSOLE STDOUT? NO SERVER AND FD STDOUT\n");
+            }
+
             int res = console_close(fd);
-            send_msg(get_coord_pid(), OP_UPDATE, KERNEL, getpid(), fd, -1, 0);
+            send_msg(get_coord_pid(), OP_UPDATE, KERNEL, getpid(), fd, -1, -1);
             return (res > 0) ? res : 0;
         }
         return ERROR;
@@ -304,10 +311,13 @@ int dup2(int src_fd, int trg_fd) {
     
     printf("-----------> DUP2 CALL WITH src: %d to %d \n", src_fd, trg_fd);
     if (close(trg_fd) == ERROR){
+        printf("Failed close of %d\n", trg_fd);
         return ERROR;
     }
+    printf("-----------> CLOSED fd: %d \n",trg_fd);
 
     if (do_dup2(src_fd, trg_fd) == ERROR){
+        printf("Failed dup %d to %d\n", src_fd, trg_fd);
         return ERROR;
     }
     

@@ -98,6 +98,7 @@ int32_t set_server_type(int32_t server_fd, int32_t pid_app, int32_t pid_server, 
             break;
         }
     }
+    printf("[COORDINATOR SET SERVER ] server type %d \n", server_type);
 
     if (server_type < 0) return ERROR;
 
@@ -130,6 +131,8 @@ int32_t set_server_type(int32_t server_fd, int32_t pid_app, int32_t pid_server, 
             coordinator.fd[pid_app][trg_fd].type_server = server_type;
             return trg_fd;
         }
+
+        
         return ERROR;
     }
 }
@@ -147,6 +150,8 @@ int32_t coordinator_getchar(void) {
 }
 
 int32_t coordinator_update_fd(int32_t fd, int32_t pid, int32_t type, int32_t state, int trg_fd) {
+    printf("[COORDINATOR UPDATE FD ] fd: %d for pid: %d type? %d state: %d trg fd? %d\n",
+    fd,pid, type, state, trg_fd);
     if (fd < 0 || fd >= MAX_FILES || pid < 0 || pid >= PROCS_MAX) {
         return ERROR;
     }

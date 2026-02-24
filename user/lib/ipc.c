@@ -30,12 +30,12 @@ int32_t app_try_recv_msg(Msg *msg) {
 
     for (int i = 0; i<MAX_APP_ATTEMPTS; i++){
         if (try_recv_content((char*)msg, sizeof(Msg))==SUCCESS){
-            printf("[IPC] recv_msg: PID [%d] received OP %d from PID [%d]\n", getpid(), msg->arg_1, msg->sender_pid);
+            // printf("[IPC] recv_msg: PID [%d] received OP %d from PID [%d]\n", getpid(), msg->arg_1, msg->sender_pid);
             return SUCCESS;
         }
         sys_yield();
     }
-    printf("[IPC] recv_msg: TIMEOUT PID [%d]\n", getpid());
+    // printf("[IPC] recv_msg: TIMEOUT PID [%d]\n", getpid());
     return ERROR;
 }
 
