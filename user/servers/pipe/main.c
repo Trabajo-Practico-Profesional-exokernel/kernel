@@ -22,6 +22,7 @@ void handle_open(PipeOperation *op) {
     int32_t fd[2];
     printf("PIPE OPEN [%d]\n", op->app_id);
     int32_t res = pipe_open(app_pid, fd);
+    printf("PIPE OPEN RES [%d] fd read: %d write: %d\n", res, fd[0], fd[1]);
     
     give_response(op->type_op, res, (uint32_t)fd, sizeof(fd), fd[0], fd[1]);
 }
@@ -68,10 +69,10 @@ void handle_close(PipeOperation *op) {
 void handle_dup(PipeOperation *op) {
     int32_t app_pid = op->app_id;
     int32_t fd = op->fd;
-    printf("PIPE DUP [%d] fd %d trg: %d\n", op->app_id, fd, op->content_vaddr);
+    printf("PIPE DUP [%d] fd %d trg: %d\n", op->app_id, fd, op->arg_1);
     int32_t res = pipe_dup(fd, app_pid);
     
-    give_response(PIPE_OP_DUP, res, 0, 0, fd, op->content_vaddr);
+    give_response(PIPE_OP_DUP, res, 0, 0, fd, op->arg_1);
 }
 
 

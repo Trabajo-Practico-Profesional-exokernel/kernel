@@ -96,12 +96,14 @@ int32_t give_response(int32_t type_command, int32_t arg_1, int32_t arg_2, int32_
     if ((type_command == PIPE_OP_OPEN || type_command == PIPE_OP_READ) && arg_2 != 0) {
         if (arg_2 != 0 && arg_3 > 0 && arg_1 >= 0) {
              if (protocol_op == OP_PIPE) {
-                update_coord_state(PIPE, OP_OPEN, current_client_pid, fd_1, 0);
-                update_coord_state(PIPE, OP_OPEN, current_client_pid, fd_2, 0);
+                update_coord_state(PIPE, OP_OPEN, current_client_pid, fd_1, -1);
+                update_coord_state(PIPE, OP_OPEN, current_client_pid, fd_2, -1);
 
                 int32_t real_fd_1 = server_get_real_fd(fd_1, current_client_pid, PIPE);
                 int32_t real_fd_2 = server_get_real_fd(fd_2, current_client_pid, PIPE);
                 int32_t real_fds[] = {real_fd_1, real_fd_2};
+                printf("OPEN PIPE REAL FDS? %d and %d\n", real_fd_1, real_fd_2);
+
                 return server_send_content_to_app(current_client_pid, protocol_op, (char*)real_fds, arg_3, arg_1);
              } else {
                 return server_send_content_to_app(current_client_pid, protocol_op, (char*)arg_2, arg_3, arg_1);

@@ -13,7 +13,7 @@ uint8_t ipc_buffer[MAX_BUFFER_IPC_SIZE] = {0};
 
 int32_t send_msg(int32_t recv_pid, int32_t arg_1, int32_t arg_2, int32_t arg_3, int32_t arg_4, int32_t arg_5, int32_t arg_6){
     int32_t sender_pid = getpid();
-    printf("[IPC] send_msg: Sender [%d] -> Recv [%d] | OP: %d | args: %d, %d, %d\n", sender_pid, recv_pid, arg_1, arg_2, arg_3, arg_4);
+    // printf("[IPC] send_msg: Sender [%d] -> Recv [%d] | OP: %d | args: %d, %d, %d\n", sender_pid, recv_pid, arg_1, arg_2, arg_3, arg_4);
     Msg msg = {sender_pid, arg_1, arg_2, arg_3, arg_4, arg_5, arg_6};
     return try_send_content(recv_pid, (char*)&msg, sizeof(Msg));
 }
