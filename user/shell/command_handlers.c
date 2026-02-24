@@ -44,7 +44,11 @@ int handle_clear(int argc, char** argv) {
 static char curr_path[256] = {0};
 
 char * get_curr_path(void){
-    return &curr_path[0];
+    if(curr_path[0] == 0){
+        return NULL;
+    }
+    // Skip '/'
+    return &curr_path[1];
 }
 
 int handle_cd(int argc, char** argv) {
