@@ -6,8 +6,8 @@ from .output_accumulator import OutputAccumulator
 def test_simple_write_to_stdout(program):
 	acc = OutputAccumulator()
 	lines_to_send = [
-		"run_shell",
-		"write 1 HOLA MUNDO",
+		"run_main",
+		"echo HOLA MUNDO",
 		"exit"
 	]
 
@@ -17,6 +17,6 @@ def test_simple_write_to_stdout(program):
 
 	monitor = LineMonitor()
 	monitor.expect(
-		r"user>\swrite\s1\sHOLA\sMUNDO\nHOLA\sMUNDOWritten\s10\sbytes\sto\sFD\s1\nuser>\sexit")
+		r"user>\secho\sHOLA\sMUNDO\n\nHOLA MUNDO\nuser>\sexit")
 	
 	return acc, monitor

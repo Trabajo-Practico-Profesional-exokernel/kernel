@@ -76,7 +76,7 @@ uint32_t * get_kernel_pde(void){
 }
 
 void switch_to_kernel_tables(void){
-    VERBOSE_DEBUG_PRINTF("SHOULD SWITCH TO KERNEL PAGES? IS THAT IT? %x\n", (uint32_t *) kernel_page_table);
+    // VERBOSE_DEBUG_PRINTF("SHOULD SWITCH TO KERNEL PAGES? IS THAT IT? %x\n", (uint32_t *) kernel_page_table);
 
     switch_page_table((uint32_t *) kernel_page_table);
 }

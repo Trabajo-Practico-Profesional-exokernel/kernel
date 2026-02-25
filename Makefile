@@ -78,7 +78,7 @@ S_SOURCES += $(foreach dir,$(SRC_DIRS),$(wildcard $(dir)/*.S))
 
 
 
-ifeq ($(TESTING),1)
+ifeq ($(VERBOSE),1)
 	CFLAGS += -DIS_VERBOSE
 endif
 
