@@ -155,7 +155,7 @@ int kill_proc(struct Proc* killed_proc){
         VERBOSE_PRINTF("Error waited proc was non valid, or was on a invalid state\n");
         return 0;
     }
-    VERBOSE_DEBUG_PRINTF("Killing proc: %d\n", kill_proc->pid);
+    VERBOSE_DEBUG_PRINTF("Killing proc: %d\n", killed_proc->pid);
     
     struct ProcExitStatus* killed_exit_status = &exit_statuses[PROCX(killed_proc->pid)];
     
