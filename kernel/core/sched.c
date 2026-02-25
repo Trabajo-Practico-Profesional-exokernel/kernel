@@ -275,7 +275,7 @@ void sched_yield(void) {
 // Logging functionality, mostly for debugging, or tests
 
 void info_proc(struct Proc * proc){
-	printf("proc id: %d name: '%s', status: %d pc: %x\n", proc->pid, proc->proc_name, proc->status, proc->pc);
+	printf("proc id: %d name: '%s', status: %d pc: %x, gid: %x\n", proc->pid, proc->proc_name, proc->status, proc->pc, proc->gid);
 }
 void info_procs_not_free(void){
     for (int i = 0; i < PROCS_MAX; i++) {

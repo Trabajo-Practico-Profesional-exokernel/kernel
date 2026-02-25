@@ -39,12 +39,11 @@ int load_processes_headers(char *args){
 }
 
 
-int start_shell(char *args){
+int start_coordinator(char *args){
 
-    struct Proc * first_main_proc = create_process(APP_NAME_COORDINATOR, DEF_ARGV_TEST);
+    struct Proc * first_main_proc = create_process(APP_NAME_COORDINATOR, DEF_ARGV_TEST, NULL);
     coordinator_PID = first_main_proc->pid;
-    enable_timer_interrupts();
-    sched_yield();
+
     return 0;
 }
 
@@ -108,7 +107,7 @@ int handle_create_proc(char*program_name){
 
     count+=1;
     printf("DO Create proc exec %d %s with %d args\n", ind_program,program_name, count);
-    struct Proc * new_proc = create_process_from_ind(ind_program, &argv);
+    struct Proc * new_proc = create_process_from_ind(ind_program, &argv, NULL);
     
     return new_proc->pid;
 }
@@ -120,8 +119,8 @@ int handle_create_proc(char*program_name){
 void init_proc_commands(void){
     add_test_command((struct CommandEntry){
         .action_name = "run_shell",
-        .handler = start_shell,
-        .description = "corre la shell de usuario y podes probar programas de la misma"
+        .handler = start_coordinator,
+        .description = "Agregar el coordinator, que luego correra la shell de usuario y podes probar programas de la misma como lo harias normalmente"
     });
 
     add_test_command((struct CommandEntry){
