@@ -26,12 +26,12 @@ void main() {
         printf("Available runnable %d: %s\n", i, _app_names[i]);
     }
 
-    printf("\nSupported features:\n");
-    printf("  - Pipes: cmd1 | cmd2 | cmd3\n");
-    printf("  - Input redirection: cmd < file\n");
-    printf("  - Output redirection: cmd > file or cmd >> file\n");
-    printf("  - Error redirection: cmd 2> file or cmd 2>> file\n");
-    printf("\n");
+    // printf("\nSupported features:\n");
+    // printf("  - Pipes: cmd1 | cmd2 | cmd3\n");
+    // printf("  - Input redirection: cmd < file\n");
+    // printf("  - Output redirection: cmd > file or cmd >> file\n");
+    // printf("  - Error redirection: cmd 2> file or cmd 2>> file\n");
+    // printf("\n");
 
     while (1){
         printf("user> ");

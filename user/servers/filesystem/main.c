@@ -93,12 +93,11 @@ void handle_lseek(FilesystemOperation *op) {
 
 void print_file_stat(const char *filename, fileStat *st) {
     const char *type_str = (st->type == DIRECTORY) ? "directory" : "regular file";
-
-    //direct_printf("  File: %s\n", filename);
-    //direct_printf("  Size: %d | Blocks: %d\n", st->size, st->numBlocks);
-    //direct_printf("  Ino: %d | Links: %d | Type: %s\n", st->inodeNo, st->links, type_str);
+    direct_printf("  File: %s\n", filename);
+    direct_printf("  Size: %d | Blocks: %d\n", st->size, st->numBlocks);
+    direct_printf("  Ino: %d | Links: %d | Type: %s\n", st->inodeNo, st->links, type_str);
     
-    //direct_printf("Access: %d%d%d\n", st->owner_perms, st->group_perms, st->other_perms);
+    direct_printf("Access: %d%d%d\n", st->owner_perms, st->group_perms, st->other_perms);
 }
 
 void handle_fstat(FilesystemOperation *op) {
@@ -175,17 +174,17 @@ void handle_chdir(FilesystemOperation *op) {
     int32_t app_pid = op->app_id;
     char path[MAX_PATH_NAME];
 
-    direct_printf("[HANDLE_CHDIR] Extrayendo PID de la operacion: %d\n", app_pid);
+    // direct_printf("[HANDLE_CHDIR] Extrayendo PID de la operacion: %d\n", app_pid);
 
-    direct_printf("[HANDLE_CHDIR] Iniciando copia virtual de path (App VADDR: 0x%x, Len: %d)\n", op->content_1_vaddr, op->len_content_1);
+    // direct_printf("[HANDLE_CHDIR] Iniciando copia virtual de path (App VADDR: 0x%x, Len: %d)\n", op->content_1_vaddr, op->len_content_1);
     virtual_copy(app_pid, op->content_1_vaddr, (uint32_t)path, op->len_content_1);
 
-    direct_printf("[HANDLE_CHDIR] Copia virtual completada. Path extraido: %s\n", path);
-    direct_printf("[HANDLE_CHDIR] Invocando fs_cd para PID %d con path '%s'\n", app_pid, path);
+    // direct_printf("[HANDLE_CHDIR] Copia virtual completada. Path extraido: %s\n", path);
+    // direct_printf("[HANDLE_CHDIR] Invocando fs_cd para PID %d con path '%s'\n", app_pid, path);
 
     int res = fs_cd(path, app_pid);
 
-    direct_printf("[HANDLE_CHDIR] Retorno de fs_cd: %d. Emitiendo respuesta IPC.\n", res);
+    // direct_printf("[HANDLE_CHDIR] Retorno de fs_cd: %d. Emitiendo respuesta IPC.\n", res);
     give_response(FS_OP_CHDIR, res, 0, 0, 0,-1);
 }
 

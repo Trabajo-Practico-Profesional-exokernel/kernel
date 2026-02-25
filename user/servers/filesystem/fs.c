@@ -515,6 +515,15 @@ int fs_lseek(int fd, int offset, int proc) {
     if (offset >= 0) {
         table[proc][fd].rw_ptr = offset;
         return offset;
+    } else {
+        inode_t current_inode = get_inode_per_inum(table[proc][fd].inode);
+        if (MODE_MASK(current_inode.mode) != FILE) {
+            direct_printf("ls_seek dynamic on non FILE? NOT ALLOWED\n");
+            return -1;
+        }
+        // direct_printf("ls_seek dynamic f_size is %d\n", current_inode.size);
+        table[proc][fd].rw_ptr = current_inode.size;
+        return current_inode.size;        
     }
 
     return -1;
@@ -665,24 +674,24 @@ void update_path(char *dirName, int proc) {
 
 
 int fs_cd(char *dirName, int proc) {
-    direct_printf("[FS_CD] Solicitud de cambio de directorio. Destino: '%s', Proceso: %d\n", dirName, proc);
+    // direct_printf("[FS_CD] Solicitud de cambio de directorio. Destino: '%s', Proceso: %d\n", dirName, proc);
     
     DataBlock block;
     int parent_inum = current_dir[proc].files_inum[0];
     
-    direct_printf("[FS_CD] Obteniendo inodo padre. Inum: %d\n", parent_inum);
+    // direct_printf("[FS_CD] Obteniendo inodo padre. Inum: %d\n", parent_inum);
     inode_t parent_inode = get_inode_per_inum(parent_inum);
 
     int uid = proc;
     int gid = 0;
     
-    direct_printf("[FS_CD] Verificando permisos de ejecucion (I_X_OP) para UID %d, GID %d en inodo padre.\n", uid, gid);
+    // direct_printf("[FS_CD] Verificando permisos de ejecucion (I_X_OP) para UID %d, GID %d en inodo padre.\n", uid, gid);
     if (!check_file_permission(uid, gid, &parent_inode, I_X_OP)){
         direct_printf("[FS_CD] Permiso denegado. Retornando error.\n");
         return -1;
     }
 
-    direct_printf("[FS_CD] Permisos validados. Buscando '%s' en directorio padre.\n", dirName);
+    // direct_printf("[FS_CD] Permisos validados. Buscando '%s' en directorio padre.\n", dirName);
     int existFile = find_file_in_dir(parent_inode, dirName, NULL);
     
     if (existFile < 0) {
@@ -690,26 +699,26 @@ int fs_cd(char *dirName, int proc) {
         return -1;
     }
 
-    direct_printf("[FS_CD] Entrada encontrada. Inum destino: %d. Obteniendo inodo.\n", existFile);
+    // direct_printf("[FS_CD] Entrada encontrada. Inum destino: %d. Obteniendo inodo.\n", existFile);
     inode_t dir_inode = get_inode_per_inum(existFile);
     
-    direct_printf("[FS_CD] Verificando mascara de modo del inodo destino.\n");
+    // direct_printf("[FS_CD] Verificando mascara de modo del inodo destino.\n");
     if (MODE_MASK(dir_inode.mode) == FILE) {
         direct_printf("[FS_CD] Destino es un archivo regular, no un directorio. Retornando error.\n");
         return -1;
     }
 
-    direct_printf("[FS_CD] Destino valido. Obteniendo iblock 0.\n");
+    // direct_printf("[FS_CD] Destino valido. Obteniendo iblock 0.\n");
     int iblock = get_iblock(dir_inode, 0);
     
-    direct_printf("[FS_CD] Iblock resuelto: %d. Leyendo bloque fisico %d desde disco.\n", iblock, super.beg_data + iblock);
+    // direct_printf("[FS_CD] Iblock resuelto: %d. Leyendo bloque fisico %d desde disco.\n", iblock, super.beg_data + iblock);
     block_read(super.beg_data + iblock, (char *)&block);
 
-    direct_printf("[FS_CD] Bloque leido. Actualizando current_dir y path para proceso %d.\n", proc);
+    // direct_printf("[FS_CD] Bloque leido. Actualizando current_dir y path para proceso %d.\n", proc);
     current_dir[proc] = block.dir;
     update_path(dirName, proc);
     
-    direct_printf("[FS_CD] Cambio de directorio completado exitosamente.\n");
+    // direct_printf("[FS_CD] Cambio de directorio completado exitosamente.\n");
     return 0;
 }
 
@@ -821,6 +830,8 @@ int fs_unlink(char *fileName, int proc) {
 
     return 0;
 }
+
+
 
 int fs_stat(char *fileName, fileStat *buf, int proc) {
     // get inode of parent

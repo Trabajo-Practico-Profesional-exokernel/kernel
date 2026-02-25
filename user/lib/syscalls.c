@@ -147,11 +147,11 @@ int close(int fd) {
     if (server_pid < 0) {
 
         if (fd == STDIN || fd == STDOUT) {
-            if(fd == STDIN){
-                direct_printf("---> CLOSING CONSOLE STDIN? NO SERVER AND FD STDIN\n");
-            } else {
-                direct_printf("---> CLOSING CONSOLE STDOUT? NO SERVER AND FD STDOUT\n");
-            }
+            // if(fd == STDIN){
+            //     direct_printf("---> CLOSING CONSOLE STDIN? NO SERVER AND FD STDIN\n");
+            // } else {
+            //     direct_printf("---> CLOSING CONSOLE STDOUT? NO SERVER AND FD STDOUT\n");
+            // }
 
             int res = console_close(fd);
             send_msg(get_coord_pid(), OP_UPDATE, KERNEL, getpid(), fd, -1, -1);
@@ -162,7 +162,7 @@ int close(int fd) {
     }
     int real_fd = get_real_fd(OP_CLOSE, fd, server_pid);
     
-    direct_printf("Should close %d , real fd %d for server %d\n",fd, real_fd, server_pid );
+    // direct_printf("Should close %d , real fd %d for server %d\n",fd, real_fd, server_pid );
     int target_fd = (real_fd >= 0) ? real_fd : fd;
 
     int res = app_send_msg_to_server(OP_CLOSE, target_fd, 0, 0, 0, 0);
@@ -296,10 +296,10 @@ int dup(int prev_fd){
 }
 
 int do_dup2(int prev_fd,int new_fd){
-    direct_printf("-----------> DUP2 op: %d fd: %d trg: %d\n",OP_DUP,prev_fd, new_fd);
+    // direct_printf("-----------> DUP2 op: %d fd: %d trg: %d\n",OP_DUP,prev_fd, new_fd);
 
     int res = app_send_msg_to_server(OP_DUP, prev_fd, new_fd, 0, 0, 0);
-    direct_printf("-----------> SENT res: %d\n",res);
+    // direct_printf("-----------> SENT res: %d\n",res);
     if (res == ERROR) return ERROR;
     return app_receive_parameter(OP_DUP);
 }
@@ -314,7 +314,7 @@ int dup2(int src_fd, int trg_fd) {
         return ERROR;
     }
     
-    direct_printf("-----------> DUP2 CALL WITH src: %d to %d \n", src_fd, trg_fd);
+    // direct_printf("-----------> DUP2 CALL WITH src: %d to %d \n", src_fd, trg_fd);
 
     if (do_dup2(src_fd, trg_fd) == ERROR){
         direct_printf("Failed dup %d to %d\n", src_fd, trg_fd);
