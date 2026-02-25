@@ -175,10 +175,17 @@ void handle_chdir(FilesystemOperation *op) {
     int32_t app_pid = op->app_id;
     char path[MAX_PATH_NAME];
 
+    direct_printf("[HANDLE_CHDIR] Extrayendo PID de la operacion: %d\n", app_pid);
+
+    direct_printf("[HANDLE_CHDIR] Iniciando copia virtual de path (App VADDR: 0x%x, Len: %d)\n", op->content_1_vaddr, op->len_content_1);
     virtual_copy(app_pid, op->content_1_vaddr, (uint32_t)path, op->len_content_1);
+
+    direct_printf("[HANDLE_CHDIR] Copia virtual completada. Path extraido: %s\n", path);
+    direct_printf("[HANDLE_CHDIR] Invocando fs_cd para PID %d con path '%s'\n", app_pid, path);
 
     int res = fs_cd(path, app_pid);
 
+    direct_printf("[HANDLE_CHDIR] Retorno de fs_cd: %d. Emitiendo respuesta IPC.\n", res);
     give_response(FS_OP_CHDIR, res, 0, 0, 0,-1);
 }
 

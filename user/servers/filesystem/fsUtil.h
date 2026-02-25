@@ -57,4 +57,11 @@ int inodes_used();
 
 int check_file_permission(int uid, int gid, inode_t *file, int mode_requested);
 
+
+void printGreen_2(const uint8_t* text);
+void printRed_2(const uint8_t* text);
+void printYellow_2(const uint8_t* text);
+void printPurple_2(const uint8_t* text);
+void printBlue_2(const uint8_t* text);
+
 #endif

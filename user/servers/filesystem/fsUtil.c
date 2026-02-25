@@ -5,6 +5,7 @@
 #include "fsUtil.h"
 #include "common.h"
 #include "string.h"
+#include "direct_printf.h"
 
 extern superblock_t super;
 extern bmap_t map;
@@ -445,4 +446,24 @@ int inodes_used(){
     } 
     return cnt;
 }
+
+void printGreen_2(const uint8_t* text) {
+    direct_printf("\033[0;32m%s\033[0m", text);
+  }
+  
+  void printRed_2(const uint8_t* text) {
+    printf("\033[0;31m%s\033[0m", text);
+  }
+  
+  void printYellow_2(const uint8_t* text) {
+    printf("\033[0;33m%s\033[0m", text);
+  }
+  
+  void printPurple_2(const uint8_t* text) {
+    printf("\033[0;35m%s\033[0m", text);
+  }
+  
+  void printBlue_2(const uint8_t* text) {
+    direct_printf("\033[0;34m%s\033[0m", text);
+  }
 

@@ -66,18 +66,18 @@ void shell_ls(int proc) {
             }
             
             if (MODE_MASK(file_inode.mode) == DIRECTORY){
-                printBlue((char *)block.dir.files_name[j]);
-                //direct_printf("INODE MODE: [%x] MODE MASK [%x]", file_inode.mode, MODE_MASK(file_inode.mode));
+                printBlue_2((char *)block.dir.files_name[j]);
+                debug_printf("INODE MODE: [%x] MODE MASK [%x]", file_inode.mode, MODE_MASK(file_inode.mode));
             } else {
                 
-                printGreen((char *)block.dir.files_name[j]);
-                //direct_printf("INODE MODE: [%x] MODE MASK [%x]", file_inode.mode, MODE_MASK(file_inode.mode));
+                printGreen_2((char *)block.dir.files_name[j]);
+                debug_printf("INODE MODE: [%x] MODE MASK [%x]", file_inode.mode, MODE_MASK(file_inode.mode));
             }
-            //direct_printf("uid: [%d] - gid [%d]", file_inode.uid, file_inode.gid);
-            //direct_printf("    ");
+            debug_printf("uid: [%d] - gid [%d]", file_inode.uid, file_inode.gid);
+            direct_printf("    ");
         }
     }
-    //direct_printf("\n");
+    direct_printf("\n");
 }
 
 void fs_init(void) {
@@ -665,34 +665,51 @@ void update_path(char *dirName, int proc) {
 
 
 int fs_cd(char *dirName, int proc) {
+    direct_printf("[FS_CD] Solicitud de cambio de directorio. Destino: '%s', Proceso: %d\n", dirName, proc);
+    
     DataBlock block;
-    inode_t parent_inode = get_inode_per_inum(current_dir[proc].files_inum[0]);
+    int parent_inum = current_dir[proc].files_inum[0];
+    
+    direct_printf("[FS_CD] Obteniendo inodo padre. Inum: %d\n", parent_inum);
+    inode_t parent_inode = get_inode_per_inum(parent_inum);
 
     int uid = proc;
-    //lo dejo en 0 por el momento
     int gid = 0;
+    
+    direct_printf("[FS_CD] Verificando permisos de ejecucion (I_X_OP) para UID %d, GID %d en inodo padre.\n", uid, gid);
     if (!check_file_permission(uid, gid, &parent_inode, I_X_OP)){
+        direct_printf("[FS_CD] Permiso denegado. Retornando error.\n");
         return -1;
     }
 
-    // check if fileName exists
+    direct_printf("[FS_CD] Permisos validados. Buscando '%s' en directorio padre.\n", dirName);
     int existFile = find_file_in_dir(parent_inode, dirName, NULL);
+    
     if (existFile < 0) {
+        direct_printf("[FS_CD] Directorio destino '%s' inexistente. Retornando error.\n", dirName);
         return -1;
     }
 
-    // find fileName
+    direct_printf("[FS_CD] Entrada encontrada. Inum destino: %d. Obteniendo inodo.\n", existFile);
     inode_t dir_inode = get_inode_per_inum(existFile);
-    if (MODE_MASK(dir_inode.mode)== FILE) {
+    
+    direct_printf("[FS_CD] Verificando mascara de modo del inodo destino.\n");
+    if (MODE_MASK(dir_inode.mode) == FILE) {
+        direct_printf("[FS_CD] Destino es un archivo regular, no un directorio. Retornando error.\n");
         return -1;
     }
 
-    // update current_dir for process
+    direct_printf("[FS_CD] Destino valido. Obteniendo iblock 0.\n");
     int iblock = get_iblock(dir_inode, 0);
+    
+    direct_printf("[FS_CD] Iblock resuelto: %d. Leyendo bloque fisico %d desde disco.\n", iblock, super.beg_data + iblock);
     block_read(super.beg_data + iblock, (char *)&block);
 
+    direct_printf("[FS_CD] Bloque leido. Actualizando current_dir y path para proceso %d.\n", proc);
     current_dir[proc] = block.dir;
     update_path(dirName, proc);
+    
+    direct_printf("[FS_CD] Cambio de directorio completado exitosamente.\n");
     return 0;
 }
 
