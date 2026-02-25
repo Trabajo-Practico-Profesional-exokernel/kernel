@@ -64,10 +64,10 @@ static int apply_redirections(command_t *cmd) {
 
 // Apply temporary env assignments in a child (no need to restore)
 static void apply_envs_in_child(command_t *cmd) {
-    char* pwd_def = get_curr_path();
-    if(pwd_def && *pwd_def != 0){ // Non empty pwd
-        setenv("pwd", pwd_def, 1);
-    }
+    // char* pwd_def = get_curr_path();
+    // if(pwd_def && *pwd_def != 0){ // Non empty pwd
+    //     setenv("pwd", pwd_def, 1);
+    // }
 
     if (!cmd || !cmd->env_vars) return;
     for (int i = 0; i < cmd->env_count; i++) {
