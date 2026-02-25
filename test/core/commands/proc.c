@@ -118,7 +118,7 @@ int handle_create_proc(char*program_name){
 
 void init_proc_commands(void){
     add_test_command((struct CommandEntry){
-        .action_name = "run_shell",
+        .action_name = "run_main",
         .handler = start_coordinator,
         .description = "Agregar el coordinator, que luego correra la shell de usuario y podes probar programas de la misma como lo harias normalmente"
     });

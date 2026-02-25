@@ -111,7 +111,7 @@ void register_syscall(size_t sysno, syscall_handler_t handler){
 
 
 #ifdef IS_TESTING
-extern void on_syscall_called(FullTrapFrame *tf, uintptr_t pc);
+extern void on_syscall_called(unsigned sysno, FullTrapFrame *tf, uintptr_t pc);
 #endif
 
 
@@ -123,7 +123,7 @@ uintptr_t handle_syscall(FullTrapFrame *tf, uintptr_t pc) {
         printTrapFull(tf);
     } else {
         #ifdef IS_TESTING
-        on_syscall_called(tf, pc);
+        on_syscall_called(sysno, tf, pc);
         #endif
 
         syscall_table[sysno](tf, pc);

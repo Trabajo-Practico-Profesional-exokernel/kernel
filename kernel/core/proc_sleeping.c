@@ -9,6 +9,11 @@
 volatile uint64_t ticks = 0;
 int count_procs = 0;
 
+uint64_t get_sys_uptime(void){
+    return ticks;
+}
+
+
 struct ProcTimingInfo {
     uint32_t uptime_ticks;
     uint64_t locked_until_ticks;

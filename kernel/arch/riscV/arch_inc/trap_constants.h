@@ -169,8 +169,6 @@ setup_wait_mode(uint32_t x)
 
 
 
-
-
 /*
 // xv6 riscv-5 magic
 // Machine-mode Interrupt Enable

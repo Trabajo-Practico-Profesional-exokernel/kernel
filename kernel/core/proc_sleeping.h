@@ -12,4 +12,5 @@ void init_proc_uptime(struct Proc*  proc);
 
 int count_processes(void);
 
+uint64_t get_sys_uptime(void);
 #endif
