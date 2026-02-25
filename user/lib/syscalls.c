@@ -159,10 +159,12 @@ int close(int fd) {
             send_msg(get_coord_pid(), OP_UPDATE, KERNEL, getpid(), fd, -1, -1);
             return (res > 0) ? res : 0;
         }
+        printf("NOT STDIN NOR STDOT AND NO SERVER PID? %d\n", fd);
         return ERROR;
     }
-    
     int real_fd = get_real_fd(OP_CLOSE, fd, server_pid);
+    
+    printf("Should close %d , real fd %d for server %d\n",fd, real_fd, server_pid );
     int target_fd = (real_fd >= 0) ? real_fd : fd;
 
     int res = app_send_msg_to_server(OP_CLOSE, target_fd, 0, 0, 0, 0);
@@ -294,7 +296,10 @@ int dup(int prev_fd){
 }
 
 int do_dup2(int prev_fd,int new_fd){
+    printf("-----------> DUP2 op: %d fd: %d trg: %d\n",OP_DUP,prev_fd, new_fd);
+
     int res = app_send_msg_to_server(OP_DUP, prev_fd, new_fd, 0, 0, 0);
+    printf("-----------> SENT res: %d\n",res);
     if (res == ERROR) return ERROR;
     return app_receive_parameter(OP_DUP);
 }
@@ -314,7 +319,9 @@ int dup2(int src_fd, int trg_fd) {
         printf("Failed close of %d\n", trg_fd);
         return ERROR;
     }
+
     printf("-----------> CLOSED fd: %d \n",trg_fd);
+    printf("-----------> CLOSED LOG AGAIN ?fd: %d \n",trg_fd);
 
     if (do_dup2(src_fd, trg_fd) == ERROR){
         printf("Failed dup %d to %d\n", src_fd, trg_fd);

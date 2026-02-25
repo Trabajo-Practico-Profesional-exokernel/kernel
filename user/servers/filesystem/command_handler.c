@@ -80,6 +80,8 @@ int32_t get_command(FilesystemOperation *command){
     command->app_id = msg.sender_pid;
     command->type_op = map_op_code(msg.arg_1);
 
+    printf("FS GOT ARGS arg1: %d, arg2: %d, arg3: %d, arg4: %d, arg5: %d, arg6: %d\n",
+         msg.arg_1,msg.arg_2,msg.arg_3,msg.arg_4,msg.arg_5,msg.arg_6);
     //caso especial para link
     if (command->type_op == FS_OP_LINK) {
         command->fd = 0;
@@ -110,7 +112,7 @@ int32_t get_command(FilesystemOperation *command){
 }
 
 
-int32_t update_coord_state(int32_t type_server, int32_t type_command, int32_t current_client_pid, int32_t fd){
+int32_t update_coord_state(int32_t type_server, int32_t type_command, int32_t current_client_pid, int32_t fd,int32_t fd_2 ){
     
     if (type_command != OP_OPEN && type_command != OP_CLOSE && type_command != OP_DUP){
         return -1;
@@ -127,10 +129,11 @@ int32_t update_coord_state(int32_t type_server, int32_t type_command, int32_t cu
         return SUCCESS;
     }
 
-    return send_msg(coord_pid, OP_UPDATE, getpid(), current_client_pid, fd, state, 0);
+    printf("[FS] SEND UPD FD TO COORD %d to %d, state %d\n", fd, fd_2, state);
+    return send_msg(coord_pid, OP_UPDATE, getpid(), current_client_pid, fd, state, fd_2);
 }
 
-int32_t give_response(int32_t type_command, int32_t arg_1, int32_t arg_2, int32_t arg_3, int32_t fd){
+int32_t give_response(int32_t type_command, int32_t arg_1, int32_t arg_2, int32_t arg_3, int32_t fd, int32_t fd_2){
 
     int32_t protocol_op = unmap_op_code(type_command);
 
@@ -154,28 +157,29 @@ int32_t give_response(int32_t type_command, int32_t arg_1, int32_t arg_2, int32_
         // Respuesta estandar (exito/error o valor entero como FD)
         if (arg_1 >= 0) {
             if (protocol_op == OP_OPEN || protocol_op == OP_CLOSE) {
-                update_coord_state(FILESYSTEM, protocol_op, current_client_pid, fd);
+                update_coord_state(FILESYSTEM, protocol_op, current_client_pid, fd, -1);
             }
             if (protocol_op == OP_OPEN ){
                 int32_t real_fd = server_get_real_fd(arg_1, current_client_pid, FILESYSTEM);
+                printf("[GOT FD] %d for fs fd %d\n", real_fd, fd);
                 return server_send_parameter_to_app(current_client_pid, protocol_op, real_fd);
             }
             if (protocol_op == OP_DUP) {
-                update_coord_state(FILESYSTEM, OP_OPEN, current_client_pid, arg_1);
+                update_coord_state(FILESYSTEM, OP_OPEN, current_client_pid, arg_1, fd_2);
                 int32_t real_fd = server_get_real_fd(arg_1, current_client_pid, FILESYSTEM);
                 return server_send_parameter_to_app(current_client_pid, protocol_op, real_fd);
             }
             /*if (protocol_op == OP_FORK) {
                 for (int i = 0; i < MAX_OPEN_FILES; i++) {
                     if (table[current_client_pid][i].fd != -1) {
-                        update_coord_state(FILESYSTEM, OP_OPEN, current_client_pid, i);
+                        update_coord_state(FILESYSTEM, OP_OPEN, current_client_pid, i, -1);
                     }
                 }
             }*/
             if (protocol_op == OP_CLOSE_ALL) {
                 for (int i = 0; i < MAX_OPEN_FILES; i++) {
                     if (table[current_client_pid][i].fd != -1) {
-                        update_coord_state(FILESYSTEM, OP_CLOSE, current_client_pid, i);
+                        update_coord_state(FILESYSTEM, OP_CLOSE, current_client_pid, i, -1);
                     }
                 }
             }

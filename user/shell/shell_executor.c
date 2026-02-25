@@ -16,6 +16,7 @@ static int apply_redirections(command_t *cmd) {
             printf("Error: Cannot open file for input: %s\n", cmd->stdin_redir.path);
             return -1;
         }
+        printf("OPENED FILE %s fd at : %d for STDIN\n", cmd->stdout_redir.path, fd);
         // Redirect stdin to this file
         dup2(fd, 0);
         close(fd);
@@ -28,6 +29,8 @@ static int apply_redirections(command_t *cmd) {
             printf("Error: Cannot open file for output: %s\n", cmd->stdout_redir.path);
             return -1;
         }
+        printf("OPENED FILE %s fd at : %d for STDOUT\n", cmd->stdout_redir.path, fd);
+
         dup2(fd, 1); // Redirect stdout
         close(fd);
     }

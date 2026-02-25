@@ -108,12 +108,12 @@ int32_t pipe_fork(int32_t app_pid, int32_t app_father) {
     if (app_pid < 0 || app_pid >= PROCS_MAX || app_father < 0 || app_father >= PROCS_MAX) {
         return ERROR;
     }
-    printf("[PIPE] pipe_fork: Replicando estado de Padre [%d] a Hijo [%d]\n", app_father, app_pid);
+    // printf("[PIPE] pipe_fork: Replicando estado de Padre [%d] a Hijo [%d]\n", app_father, app_pid);
     
     for (int i = 0; i < MAX_FILES; i++) {
         struct File *father_file = get_file(app_father, i);
         if (father_file != NULL) {
-            printf("[PIPE] pipe_fork: Hijo [%d] asume FD [%d]\n", app_pid, i);
+            // printf("[PIPE] pipe_fork: Hijo [%d] asume FD [%d]\n", app_pid, i);
             files[app_pid][i].state = father_file->state;
             files[app_pid][i].readopen = father_file->readopen;
             files[app_pid][i].writeopen = father_file->writeopen;

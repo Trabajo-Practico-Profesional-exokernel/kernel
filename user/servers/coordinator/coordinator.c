@@ -98,7 +98,7 @@ int32_t set_server_type(int32_t server_fd, int32_t pid_app, int32_t pid_server, 
             break;
         }
     }
-    printf("[COORDINATOR SET SERVER ] server type %d \n", server_type);
+    printf("[COORDINATOR SET SERVER ] server type %d trg fd: %d,state : %d\n", server_type, trg_fd, state);
 
     if (server_type < 0) return ERROR;
 
@@ -124,9 +124,14 @@ int32_t set_server_type(int32_t server_fd, int32_t pid_app, int32_t pid_server, 
                     return i;
                 }
             }
-        } else if (coordinator.fd[pid_app][trg_fd].type_server == -1) {
+        } else {
             printf("[COORD] Apertura FD: PID [%d] mapeando FD Real [%d] a FD Virtual [%d] (Server %d)\n", 
                 pid_app, server_fd, trg_fd, server_type);
+            if(coordinator.fd[pid_app][trg_fd].type_server != -1){
+                printf("FD Had a server? %d \n", coordinator.fd[pid_app][trg_fd].type_server);
+                return ERROR;
+            }
+
             coordinator.fd[pid_app][trg_fd].fd = server_fd;
             coordinator.fd[pid_app][trg_fd].type_server = server_type;
             return trg_fd;
@@ -182,7 +187,12 @@ int32_t coordinator_close(int32_t fd, int32_t pid) {
         return ERROR;
     }
 
-    return server_map_get(&coordinator.server_map, server_type);
+    int32_t ret = server_map_get(&coordinator.server_map, server_type);
+    if(ret == 0 ){
+        coordinator.fd[pid][fd].type_server = -1;
+        return -1;
+    }
+    return ret;
 }
 
 int32_t coordinator_read(int32_t fd, int32_t pid) {

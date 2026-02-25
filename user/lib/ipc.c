@@ -217,6 +217,9 @@ int32_t app_send_msg_to_server(int32_t arg_1, int32_t arg_2, int32_t arg_3,
         arg_2 = real_fd;
     }
 
+    printf("SEND TO %d GOT ARGS arg1: %d, arg2: %d, arg3: %d, arg4: %d, arg5: %d, arg6: %d\n",
+        server_pid,
+         arg_1,arg_2,arg_3,arg_4,arg_5,arg_6);
     // ------------------------------------------------
     return send_msg(server_pid, arg_1, arg_2, arg_3, arg_4, arg_5, arg_6);
 }
@@ -228,33 +231,33 @@ int32_t app_recv_fork_msg() {
     if (msg.arg_1 != APP_OP_FORK) return ERROR;
 
     int32_t father_pid = msg.arg_2;
-    printf("[IPC-FORK] PID [%d] iniciando sincronizacion de herencia desde Padre [%d]\n", getpid(), father_pid);
+    // printf("[IPC-FORK] PID [%d] iniciando sincronizacion de herencia desde Padre [%d]\n", getpid(), father_pid);
 
-    printf("[IPC-FORK] Notificando al Coordinador...\n");
+    // printf("[IPC-FORK] Notificando al Coordinador...\n");
     send_msg(get_coord_pid(), OP_FORK, father_pid, 0, 0, 0, 0);
     app_receive_parameter(OP_FORK);
 
     int32_t fs_pid = get_server_pid(OP_OPEN, 0, 0, 0, 0, 0);
     if (fs_pid >= 0) {
-        printf("[IPC-FORK] Notificando al Filesystem (PID %d)...\n", fs_pid);
+        // printf("[IPC-FORK] Notificando al Filesystem (PID %d)...\n", fs_pid);
         send_msg(fs_pid, OP_FORK, 0, father_pid, 0, 0, 0);
         app_receive_parameter(OP_FORK);
     }
 
     int32_t pipe_pid = get_server_pid(OP_PIPE, 0, 0, 0, 0, 0);
     if (pipe_pid >= 0) {
-        printf("[IPC-FORK] Notificando al Pipe (PID %d)...\n", pipe_pid);
+        // printf("[IPC-FORK] Notificando al Pipe (PID %d)...\n", pipe_pid);
         send_msg(pipe_pid, OP_FORK, 0, father_pid, 0, 0, 0);
         app_receive_parameter(OP_FORK);
     }
     
-    printf("[IPC-FORK] Sincronizacion completa. Desbloqueando Padre [%d]\n", father_pid);
+    // printf("[IPC-FORK] Sincronizacion completa. Desbloqueando Padre [%d]\n", father_pid);
     send_msg(father_pid, APP_OP_FORK, SUCCESS, 0, 0, 0, 0);
     return SUCCESS;
 }
 int32_t app_send_fork_msg(int32_t child_pid) {
     int32_t father_pid = getpid();
-    printf("father pid [%d] child pid [%d]\n", father_pid, child_pid);
+    // printf("father pid [%d] child pid [%d]\n", father_pid, child_pid);
     int32_t res = send_msg(child_pid, APP_OP_FORK, father_pid, 0, 0, 0, 0);
     
     if (res < 0) {
