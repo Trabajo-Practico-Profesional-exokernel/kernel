@@ -18,6 +18,7 @@
 #include "command_handler.h"
 #include "inc/operations.h"
 #include "constants.h"
+#include "direct_printf.h"
 
 extern char current_path[PROCS_MAX][MAX_PATH_NAME];
 
@@ -27,7 +28,7 @@ void handle_ping(FilesystemOperation *op) {
 }
 
 void handle_open(FilesystemOperation *op) {
-    printf("HANDLE OPEN\n");
+    //direct_printf("HANDLE OPEN\n");
     int32_t app_pid = op->app_id;
     char path[MAX_PATH_NAME];
     
@@ -50,7 +51,7 @@ void handle_close(FilesystemOperation *op) {
 }
 
 void handle_read(FilesystemOperation *op) {
-    printf("HANDLE READ\n");
+    //direct_printf("HANDLE READ\n");
 
     int32_t app_pid = op->app_id;
     int fd = op->fd;
@@ -65,7 +66,7 @@ void handle_read(FilesystemOperation *op) {
 }
 
 void handle_write(FilesystemOperation *op) {
-    printf("HANDLE WRITE\n");
+    //direct_printf("HANDLE WRITE\n");
     int32_t app_pid = op->app_id;
     int fd = op->fd;
     int count = op->len_content_1;
@@ -93,15 +94,15 @@ void handle_lseek(FilesystemOperation *op) {
 void print_file_stat(const char *filename, fileStat *st) {
     const char *type_str = (st->type == DIRECTORY) ? "directory" : "regular file";
 
-    printf("  File: %s\n", filename);
-    printf("  Size: %d | Blocks: %d\n", st->size, st->numBlocks);
-    printf("  Ino: %d | Links: %d | Type: %s\n", st->inodeNo, st->links, type_str);
+    //direct_printf("  File: %s\n", filename);
+    //direct_printf("  Size: %d | Blocks: %d\n", st->size, st->numBlocks);
+    //direct_printf("  Ino: %d | Links: %d | Type: %s\n", st->inodeNo, st->links, type_str);
     
-    printf("Access: %d%d%d\n", st->owner_perms, st->group_perms, st->other_perms);
+    //direct_printf("Access: %d%d%d\n", st->owner_perms, st->group_perms, st->other_perms);
 }
 
 void handle_fstat(FilesystemOperation *op) {
-    printf("falta terminar el retorno correctamente");
+    //direct_printf("falta terminar el retorno correctamente");
     int32_t app_pid = op->app_id;
     
     char path[MAX_PATH_NAME];

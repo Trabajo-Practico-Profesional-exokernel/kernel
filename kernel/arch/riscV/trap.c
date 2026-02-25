@@ -5,6 +5,8 @@
 #include "arch/trap.h"
 #include "arch/proc.h"
 #include "stdio.h"
+#include "arch/logging.h"
+
 #include "console/debug.h"
 #include "arch/console.h"
 #include "arch/stdio.h"
@@ -37,7 +39,7 @@ ignore trap illegal ins scause=00000002, stval=30651073, sepc=8020008e csrw mcou
 #define IS_CLOCK_INTERRUPT(value) \
     (value & SCAUSE_INT_MASK) && ((value & SCAUSE_CAUSE_MASK) == SCAUSE_SUPERVISOR_TIMER) \
 
-
+struct Proc * myproc(void);
 #define SET_NEXT_INTERRUPT(delay) \
     w_stimecmp(r_time() + delay);
 
@@ -194,6 +196,12 @@ void handle_trap(FullTrapFrame *tf) {
         SET_NEXT_INTERRUPT(DELAY_INTERRUPT);
         clock_yield(tf, user_pc);
     } else {
+        struct Proc *proc = myproc();
+
+        if(proc){
+            printf("Curr proc: %s, pid: %d\n", proc->proc_name, proc->pid);
+        }
+        printTrapFull(tf);
         PANIC("unexpected trap scause=%u, stval=%x, sepc=%x\n", scause, stval, user_pc);
     }
 }

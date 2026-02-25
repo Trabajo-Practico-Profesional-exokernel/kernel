@@ -12,6 +12,27 @@
 #include "console_files.h"
 #include "proc_fs.h"
 
+
+
+void syscall_console_put_direct(FullTrapFrame *tf, uintptr_t pc) {
+
+    uint32_t buf_vaddr = SYSCALL_ARG0(tf);
+    uint32_t len = SYSCALL_ARG1(tf);
+    struct Proc *current_proc = myproc();
+
+    switch_to_kernel_tables();
+
+    uint32_t buf_paddr = get_paddr_for((uint32_t*)current_proc->pde_paddr, buf_vaddr);
+
+    int bytes_write = console_write((char*)buf_paddr, len);
+
+    SET_SYSCALL_RET0(tf, bytes_write);
+
+    switch_page_table((uint32_t *) current_proc->pde_paddr);
+
+}
+
+
 void syscall_console_put(FullTrapFrame *tf, uintptr_t pc) {
 
     uint32_t buf_vaddr = SYSCALL_ARG0(tf);
@@ -81,6 +102,7 @@ syscall_handler_t syscall_table[MAX_SYSCALLS] = {
     [SYS_CONSOLE_GET] = syscall_console_get,
     [SYS_CONSOLE_CLOSE] = syscall_console_close,
     [SYS_PROC_LS] = syscall_proc_ls,
+    [SYS_CONSOLE_PUT_DIRECT] = syscall_console_put_direct
     // ... other handlers, wil be registered with register_syscall
 };
 void register_syscall(size_t sysno, syscall_handler_t handler){

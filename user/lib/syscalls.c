@@ -12,6 +12,7 @@
 #include "constants.h"
 #include "parsers/strutil.h"
 #include "arch/console.h"
+#include "direct_printf.h"
 
 // #include "arch/proc.h"
 #include "environ.h"
@@ -28,10 +29,8 @@ int sys_fork(void){
     if (pid == 0) {
         int res = app_recv_fork_msg();
         if (res == ERROR){
-            printf("error en fork hijo\n");
             return ERROR;
         }
-        printf("devolviendo pid [%d]\n", pid);
     } else if (pid > 0) {
         int res = app_send_fork_msg(pid);
         if (res == ERROR){
@@ -70,7 +69,6 @@ void sys_yield(){
 __attribute__((noreturn)) void exit(int ret_code) {
     app_send_close_msg();
     syscall(SYS_EXIT, ret_code, 0, 0, 0);
-    printf("SHOULD NOT REACH HERE! AFTER EXIT\n");
     for(;;){}
 }
 
@@ -150,21 +148,21 @@ int close(int fd) {
 
         if (fd == STDIN || fd == STDOUT) {
             if(fd == STDIN){
-                printf("---> CLOSING CONSOLE STDIN? NO SERVER AND FD STDIN\n");
+                direct_printf("---> CLOSING CONSOLE STDIN? NO SERVER AND FD STDIN\n");
             } else {
-                printf("---> CLOSING CONSOLE STDOUT? NO SERVER AND FD STDOUT\n");
+                direct_printf("---> CLOSING CONSOLE STDOUT? NO SERVER AND FD STDOUT\n");
             }
 
             int res = console_close(fd);
             send_msg(get_coord_pid(), OP_UPDATE, KERNEL, getpid(), fd, -1, -1);
             return (res > 0) ? res : 0;
         }
-        printf("NOT STDIN NOR STDOT AND NO SERVER PID? %d\n", fd);
+        direct_printf("NOT STDIN NOR STDOT AND NO SERVER PID? %d\n", fd);
         return ERROR;
     }
     int real_fd = get_real_fd(OP_CLOSE, fd, server_pid);
     
-    printf("Should close %d , real fd %d for server %d\n",fd, real_fd, server_pid );
+    direct_printf("Should close %d , real fd %d for server %d\n",fd, real_fd, server_pid );
     int target_fd = (real_fd >= 0) ? real_fd : fd;
 
     int res = app_send_msg_to_server(OP_CLOSE, target_fd, 0, 0, 0, 0);
@@ -173,15 +171,17 @@ int close(int fd) {
     return app_receive_parameter(OP_CLOSE);
 }
 
-int read(int fd, char *buf, int size) {
-    if (fd == STDIN){
-        int res = console_read(buf, size);
-        if (res > 0) return res;
-    }
-    
+int read(int fd, char *buf, int size) {    
     while (1) {
         int res = app_send_msg_to_server(OP_READ, fd, 0, 0, (int)buf, size);
-        if (res == ERROR) return ERROR;
+        if (res == ERROR){
+            if (fd == STDIN){
+                int res = console_read(buf, size);
+                if (res > 0) return res;
+            }
+            
+            return ERROR;
+        }
         
         res = app_receive_content(OP_READ, buf, size);
         
@@ -194,14 +194,14 @@ int read(int fd, char *buf, int size) {
 }
 
 int write(int fd, char *content, int len) {
-
-    if (fd == STDOUT){
-        int res = console_write(content, len);
-        if (res > 0) return res;
-    }
-
     int res = app_send_msg_to_server(OP_WRITE, fd, 0, 0, (int)content, len);
-    if (res == ERROR) return ERROR;
+    if (res == ERROR){
+        if (fd == STDOUT){
+            int res = console_write(content, len);
+            if (res > 0) return res;
+        }
+        return ERROR;
+    } 
     return app_receive_parameter(OP_WRITE);
 }
 
@@ -296,10 +296,10 @@ int dup(int prev_fd){
 }
 
 int do_dup2(int prev_fd,int new_fd){
-    printf("-----------> DUP2 op: %d fd: %d trg: %d\n",OP_DUP,prev_fd, new_fd);
+    direct_printf("-----------> DUP2 op: %d fd: %d trg: %d\n",OP_DUP,prev_fd, new_fd);
 
     int res = app_send_msg_to_server(OP_DUP, prev_fd, new_fd, 0, 0, 0);
-    printf("-----------> SENT res: %d\n",res);
+    direct_printf("-----------> SENT res: %d\n",res);
     if (res == ERROR) return ERROR;
     return app_receive_parameter(OP_DUP);
 }
@@ -314,17 +314,10 @@ int dup2(int src_fd, int trg_fd) {
         return ERROR;
     }
     
-    printf("-----------> DUP2 CALL WITH src: %d to %d \n", src_fd, trg_fd);
-    if (close(trg_fd) == ERROR){
-        printf("Failed close of %d\n", trg_fd);
-        return ERROR;
-    }
-
-    printf("-----------> CLOSED fd: %d \n",trg_fd);
-    printf("-----------> CLOSED LOG AGAIN ?fd: %d \n",trg_fd);
+    direct_printf("-----------> DUP2 CALL WITH src: %d to %d \n", src_fd, trg_fd);
 
     if (do_dup2(src_fd, trg_fd) == ERROR){
-        printf("Failed dup %d to %d\n", src_fd, trg_fd);
+        direct_printf("Failed dup %d to %d\n", src_fd, trg_fd);
         return ERROR;
     }
     

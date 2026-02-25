@@ -2,6 +2,7 @@
 #include "files.h"
 #include "buffer.h"
 #include "constants.h"
+#include "direct_printf.h"
 
 #define TOTAL_FILES PROCS_MAX*MAX_FILES
 

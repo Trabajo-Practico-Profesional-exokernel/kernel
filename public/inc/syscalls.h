@@ -34,6 +34,7 @@
 #define SYS_PROC_EXECV 23
 
 #define SYS_PROC_SET_GID 24
+#define SYS_CONSOLE_PUT_DIRECT 25
 
 #define DEF_ERR_CODE -1
 

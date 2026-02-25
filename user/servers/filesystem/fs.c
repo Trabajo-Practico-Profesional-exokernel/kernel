@@ -9,6 +9,7 @@
 #include "console/colors.h"
 #include "string.h"
 #include "stdlib.h"
+#include "direct_printf.h"
 
 // Variables Globales del Filesystem
 superblock_t super;
@@ -29,7 +30,7 @@ void fs_sync_current_dir(int proc) {
     int block_index = dir_inode.direct[0];
 
     if (block_index < 0) {
-        debug_printf("[FS] ERROR: current dir has no data block\n");
+        //direct_printf("[FS] ERROR: current dir has no data block\n");
         return;
     }
 
@@ -66,17 +67,17 @@ void shell_ls(int proc) {
             
             if (MODE_MASK(file_inode.mode) == DIRECTORY){
                 printBlue((char *)block.dir.files_name[j]);
-                debug_printf("INODE MODE: [%x] MODE MASK [%x]", file_inode.mode, MODE_MASK(file_inode.mode));
+                //direct_printf("INODE MODE: [%x] MODE MASK [%x]", file_inode.mode, MODE_MASK(file_inode.mode));
             } else {
                 
                 printGreen((char *)block.dir.files_name[j]);
-                debug_printf("INODE MODE: [%x] MODE MASK [%x]", file_inode.mode, MODE_MASK(file_inode.mode));
+                //direct_printf("INODE MODE: [%x] MODE MASK [%x]", file_inode.mode, MODE_MASK(file_inode.mode));
             }
-            debug_printf("uid: [%d] - gid [%d]", file_inode.uid, file_inode.gid);
-            printf("    ");
+            //direct_printf("uid: [%d] - gid [%d]", file_inode.uid, file_inode.gid);
+            //direct_printf("    ");
         }
     }
-    printf("\n");
+    //direct_printf("\n");
 }
 
 void fs_init(void) {
@@ -866,18 +867,18 @@ int fs_chmod(int proc_pid, const char *filename, int new_mode){
         return -1;
     }
     
-    debug_printf("new_mode: [%x], [%d]", new_mode, new_mode);
+    //direct_printf("new_mode: [%x], [%d]", new_mode, new_mode);
     //se podria mejorar implementacion
     int owner_p = OWNER_PERMS(new_mode);
     int group_p = GROUP_PERMS(new_mode);
     int other_p = OTHERS_PERMS(new_mode);
     int inode_type = MODE_MASK(current_inode.mode);
     
-    debug_printf("Inode Type: %x, Mode: [%x%x%x]", 
-        inode_type, owner_p, group_p, other_p);
+    //direct_printf("Inode Type: %x, Mode: [%x%x%x]", 
+        // inode_type, owner_p, group_p, other_p);
 
     new_mode = BUILD_MODE(inode_type, owner_p, group_p, other_p);
-    debug_printf("old mode: [%x], new mode [%x]", current_inode.mode, new_mode);
+    //direct_printf("old mode: [%x], new mode [%x]", current_inode.mode, new_mode);
     current_inode.mode = new_mode;
 
     save_inode(existFile, current_inode);

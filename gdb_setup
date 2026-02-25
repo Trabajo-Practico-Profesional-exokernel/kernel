@@ -1,1 +1,2 @@
-b syscall_execv
+add-symbol-file user/build/shell/app.elf
+b *0x1000000

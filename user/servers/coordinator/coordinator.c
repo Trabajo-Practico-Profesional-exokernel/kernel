@@ -13,6 +13,7 @@
 #include "types.h"
 #include "arch/proc.h"
 #include "server_map.h"
+#include "direct_printf.h"
 
 
 Coordinator coordinator;
@@ -43,7 +44,7 @@ int32_t get_server_type(int32_t fd, int32_t pid) {
     // printf("[COORD] get_server_type query -> AppPID: %d | AppFD: %d\n", pid, fd);
 
     if (pid < 0 || pid >= PROCS_MAX || fd < 0 || fd >= MAX_FILES) {
-        printf("[COORD] ERROR: get_server_type out of bounds (PID: %d, FD: %d)\n", pid, fd);
+        //direct_printf("[COORD] ERROR: get_server_type out of bounds (PID: %d, FD: %d)\n", pid, fd);
         return -1;
     }
     
@@ -61,7 +62,7 @@ int32_t get_server_type(int32_t fd, int32_t pid) {
 
 int32_t get_server_fd(int32_t pid_app, int32_t fd, int32_t server_pid) {
     if (pid_app < 0 || pid_app >= PROCS_MAX || fd < 0 || fd >= MAX_FILES) {
-        printf("[COORD] ERROR: get_server_fd out of bounds (PID: %d, FD: %d)\n", pid_app, fd);
+        //direct_printf("[COORD] ERROR: get_server_fd out of bounds (PID: %d, FD: %d)\n", pid_app, fd);
         return -1;
     }
 
@@ -75,7 +76,7 @@ int32_t get_server_fd(int32_t pid_app, int32_t fd, int32_t server_pid) {
 
 int32_t get_server_real_fd(int32_t pid, int32_t fd, int32_t type){
     if (pid < 0 || pid >= PROCS_MAX || fd < 0 || fd >= MAX_FILES) {
-        printf("[COORD] ERROR: get_server_fd out of bounds (PID: %d, FD: %d)\n", pid, fd);
+        //direct_printf("[COORD] ERROR: get_server_fd out of bounds (PID: %d, FD: %d)\n", pid, fd);
         return -1;
     }
 
@@ -98,14 +99,14 @@ int32_t set_server_type(int32_t server_fd, int32_t pid_app, int32_t pid_server, 
             break;
         }
     }
-    printf("[COORDINATOR SET SERVER ] server type %d trg fd: %d,state : %d\n", server_type, trg_fd, state);
+    //direct_printf("[COORDINATOR SET SERVER ] server type %d trg fd: %d,state : %d\n", server_type, trg_fd, state);
 
     if (server_type < 0) return ERROR;
 
     if (state < 0) {
         for (int32_t i = 0; i < MAX_FILES; i++) {
             if (coordinator.fd[pid_app][i].fd == server_fd && coordinator.fd[pid_app][i].type_server == server_type) {
-                printf("[COORD] Cierre FD: PID [%d] liberando FD Virtual [%d]\n", pid_app, i);
+                //direct_printf("[COORD] Cierre FD: PID [%d] liberando FD Virtual [%d]\n", pid_app, i);
                 coordinator.fd[pid_app][i].fd = -1;
                 coordinator.fd[pid_app][i].type_server = -1;
                 return SUCCESS;
@@ -117,18 +118,20 @@ int32_t set_server_type(int32_t server_fd, int32_t pid_app, int32_t pid_server, 
         if (trg_fd<0){ // No target fd.. look for first available
             for (int32_t i = 0; i < MAX_FILES; i++) {
                 if (coordinator.fd[pid_app][i].type_server == -1) {
-                    printf("[COORD] Apertura FD: PID [%d] mapeando FD Real [%d] a FD Virtual [%d] (Server %d)\n", 
-                        pid_app, server_fd, i, server_type);
+                    //direct_printf("[COORD] Apertura FD: PID [%d] mapeando FD Real [%d] a FD Virtual [%d] (Server %d)\n", 
+                    //    pid_app, server_fd, i, server_type);
                     coordinator.fd[pid_app][i].fd = server_fd;
                     coordinator.fd[pid_app][i].type_server = server_type;
                     return i;
                 }
             }
         } else {
-            printf("[COORD] Apertura FD: PID [%d] mapeando FD Real [%d] a FD Virtual [%d] (Server %d)\n", 
-                pid_app, server_fd, trg_fd, server_type);
-            if(coordinator.fd[pid_app][trg_fd].type_server != -1){
-                printf("FD Had a server? %d \n", coordinator.fd[pid_app][trg_fd].type_server);
+            //direct_printf("[COORD] Apertura FD: PID [%d] mapeando FD Real [%d] a FD Virtual [%d] (Server %d)\n", 
+            //    pid_app, server_fd, trg_fd, server_type);
+            // IF it is kernel server i.e console one then no problem.. but > 1 is other server
+            // Close is needed.
+            if(coordinator.fd[pid_app][trg_fd].type_server > 1){ 
+                //direct_printf("FD Had a server? %d \n", coordinator.fd[pid_app][trg_fd].type_server);
                 return ERROR;
             }
 
@@ -155,8 +158,8 @@ int32_t coordinator_getchar(void) {
 }
 
 int32_t coordinator_update_fd(int32_t fd, int32_t pid, int32_t type, int32_t state, int trg_fd) {
-    printf("[COORDINATOR UPDATE FD ] fd: %d for pid: %d type? %d state: %d trg fd? %d\n",
-    fd,pid, type, state, trg_fd);
+    //direct_printf("[COORDINATOR UPDATE FD ] fd: %d for pid: %d type? %d state: %d trg fd? %d\n",
+    // fd,pid, type, state, trg_fd);
     if (fd < 0 || fd >= MAX_FILES || pid < 0 || pid >= PROCS_MAX) {
         return ERROR;
     }
@@ -362,7 +365,7 @@ int32_t coordinator_chmod(void) {
 }
 
 int32_t coordinator_fork(int32_t child_pid, int32_t father_pid) {
-    printf("[COORD] coordinator_fork: Clonando tabla de Padre [%d] a Hijo [%d]\n", father_pid, child_pid);
+    //direct_printf("[COORD] coordinator_fork: Clonando tabla de Padre [%d] a Hijo [%d]\n", father_pid, child_pid);
     if (child_pid < 0 || child_pid >= PROCS_MAX || father_pid < 0 || father_pid >= PROCS_MAX) {
         return ERROR;
     }
@@ -371,8 +374,8 @@ int32_t coordinator_fork(int32_t child_pid, int32_t father_pid) {
         coordinator.fd[child_pid][i].fd = coordinator.fd[father_pid][i].fd;
         coordinator.fd[child_pid][i].type_server = coordinator.fd[father_pid][i].type_server;
         if (coordinator.fd[child_pid][i].type_server != -1) {
-            printf("[COORD] Heredado: Hijo [%d] FD Virtual [%d] -> FD Real [%d] Server [%d]\n", 
-                   child_pid, i, coordinator.fd[child_pid][i].fd, coordinator.fd[child_pid][i].type_server);
+            //direct_printf("[COORD] Heredado: Hijo [%d] FD Virtual [%d] -> FD Real [%d] Server [%d]\n", 
+            //       child_pid, i, coordinator.fd[child_pid][i].fd, coordinator.fd[child_pid][i].type_server);
         }
     }
     return SUCCESS;
@@ -421,7 +424,7 @@ int32_t start_server(Server type) {
 
             int proc_pid = sys_exec(argv); // No necesitamos pasar el índice del programa, el exec se encargará de buscarlo por nombre
             if (proc_pid < 0) {
-                printf("[Coordinator] Failed to start %s. Error: %d\n", program_name, proc_pid);
+                //direct_printf("[Coordinator] Failed to start %s. Error: %d\n", program_name, proc_pid);
                 return ERROR;
             }
 

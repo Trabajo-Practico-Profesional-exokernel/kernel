@@ -7,6 +7,7 @@
 #include "syscalls.h"
 #include "files.h"
 #include "arch/proc.h"
+#include "direct_printf.h"
 
 extern struct File files[PROCS_MAX][MAX_FILES];
 
@@ -60,7 +61,7 @@ static int32_t update_coord_state(int32_t type_server, int32_t type_command, int
         return SUCCESS;
     }
 
-    printf("[PIPE] update_coord_state: Notificando Coordinador PID[%d] -> FD Real[%d], State[%d], extra: %d\n", client_pid, fd, state, fd_2);
+    //direct_printf("[PIPE] update_coord_state: Notificando Coordinador PID[%d] -> FD Real[%d], State[%d], extra: %d\n", client_pid, fd, state, fd_2);
     return send_msg(coord_pid, OP_UPDATE, getpid(), client_pid, fd, state, fd_2);
 }
 
@@ -77,8 +78,8 @@ int32_t get_command(PipeOperation *command) {
     command->type_op = map_op_code(msg.arg_1);
 
     // if(msg.arg_1 == OP_DUP){
-    printf("PIPE GOT ARGS arg1: %d, arg2: %d, arg3: %d, arg4: %d, arg5: %d, arg6: %d\n",
-         msg.arg_1,msg.arg_2,msg.arg_3,msg.arg_4,msg.arg_5,msg.arg_6);
+    // direct_printf("PIPE GOT ARGS arg1: %d, arg2: %d, arg3: %d, arg4: %d, arg5: %d, arg6: %d\n",
+    //      msg.arg_1,msg.arg_2,msg.arg_3,msg.arg_4,msg.arg_5,msg.arg_6);
     // }
 
     command->fd            = msg.arg_2;
@@ -107,7 +108,7 @@ int32_t give_response(int32_t type_command, int32_t arg_1, int32_t arg_2, int32_
                 int32_t real_fd_1 = server_get_real_fd(fd_1, current_client_pid, PIPE);
                 int32_t real_fd_2 = server_get_real_fd(fd_2, current_client_pid, PIPE);
                 int32_t real_fds[] = {real_fd_1, real_fd_2};
-                printf("OPEN PIPE REAL FDS? %d and %d\n", real_fd_1, real_fd_2);
+                //direct_printf("OPEN PIPE REAL FDS? %d and %d\n", real_fd_1, real_fd_2);
 
                 return server_send_content_to_app(current_client_pid, protocol_op, (char*)real_fds, arg_3, arg_1);
              } else {
